@@ -14,9 +14,6 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 
 	async refresh() {
 		try {
-			if (!StateManager.account) {
-				throw new Error('No account is connected.');
-			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: 'Refreshing query list.',
@@ -105,7 +102,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 					if (!alias) {
 						return Promise.resolve(undefined);
 					}
-					let query = await client.getQuery(alias);
+					const query = await client.getQuery(alias);
 					return Promise.resolve(query);
 				}
 				catch(err) {
@@ -113,10 +110,19 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 					return Promise.resolve();
 				}
 			});
-			//TODO: display
+			
+			//display text
+			//TODO: if already open, prompt to overwrite
 			if (reloadedQuery) {
-				//https://github.com/Microsoft/vscode-extension-samples/tree/master/contentprovider-sample
-				//https://stackoverflow.com/questions/42704792/vscode-is-there-a-way-to-create-an-instance-of-vscode-textdocument
+				const uri = vscode.Uri.parse(`untitled:${reloadedQuery.alias}.lql`);
+				const doc = await vscode.workspace.openTextDocument(uri);
+				const editor = await vscode.window.showTextDocument(doc, 1, false);
+				editor.edit(builder => {
+					if (!reloadedQuery) {
+						return;
+					}
+					builder.insert(new vscode.Position(0, 0), reloadedQuery.text);
+				});
 			}
 			return Promise.resolve(reloadedQuery);
 		}

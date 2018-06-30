@@ -96,11 +96,19 @@
             {
                 "command": "lytics.accounts.connect",
                 "title": "Connect",
+                "icon": {
+                    "light": "resources/icons/light/connect.svg",
+                    "dark": "resources/icons/dark/connect.svg"
+                },
                 "category": "Lytics"
             },
             {
                 "command": "lytics.accounts.disconnect",
                 "title": "Disconnect",
+                "icon": {
+                    "light": "resources/icons/light/disconnect.svg",
+                    "dark": "resources/icons/dark/disconnect.svg"
+                },
                 "category": "Lytics"
             },
             {
@@ -138,6 +146,10 @@
             {
                 "command": "lytics.queries.open",
                 "title": "Open Query",
+                "icon": {
+                    "light": "resources/icons/light/edit.svg",
+                    "dark": "resources/icons/dark/edit.svg"
+                },
                 "category": "Lytics"
             },
             {
@@ -212,8 +224,18 @@
                     "when": "view == lytics.accounts.explorer && viewItem == 'account'"
                 },
                 {
+                    "command": "lytics.accounts.connect",
+                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+                    "group": "inline"
+                },
+                {
                     "command": "lytics.accounts.disconnect",
                     "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+                },
+                {
+                    "command": "lytics.accounts.disconnect",
+                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+                    "group": "inline"
                 },
                 {
                     "command": "lytics.accounts.remove",
@@ -222,6 +244,11 @@
                 {
                     "command": "lytics.queries.open",
                     "when": "view == lytics.queries.explorer && viewItem == 'query'"
+                },
+                {
+                    "command": "lytics.queries.open",
+                    "when": "view == lytics.queries.explorer && viewItem == 'query'",
+                    "group": "inline"
                 },
                 {
                     "command": "lytics.tables.remove",

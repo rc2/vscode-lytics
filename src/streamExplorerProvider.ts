@@ -13,9 +13,6 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 	
 	async refresh() {
 		try {
-			if (!StateManager.account) {
-				throw new Error('No account is connected.');
-			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: 'Refreshing stream list.',
