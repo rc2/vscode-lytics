@@ -3,11 +3,14 @@
     "displayName": "Lytics",
     "description": "Manage and maintain your Lytics account",
     "version": "0.0.1",
-    "author": "Adam Conn",
+    "author": {
+        "name": "Adam Conn",
+        "email": "adam.conn@lytics.com"
+    },
     "publisher": "adamconn",
     "repository": {
-		"type": "git",
-		"url": "https://github.com/???"
+        "type": "git",
+        "url": "https://github.com/lytics/vscode-lytics"
     },
     "keywords": [
         "Lytics"
@@ -39,7 +42,8 @@
             {
                 "id": "lytics-lql",
                 "aliases": [
-                    "LQL", "lql"
+                    "LQL",
+                    "lql"
                 ],
                 "extensions": [
                     ".lql"
@@ -114,37 +118,37 @@
                 "category": "Lytics"
             },
             {
-				"command": "lytics.accounts.refresh",
-				"title": "Refresh Account List",
-				"icon": {
-					"light": "resources/icons/light/refresh.svg",
-					"dark": "resources/icons/dark/refresh.svg"
+                "command": "lytics.accounts.refresh",
+                "title": "Refresh Account List",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
                 },
                 "category": "Lytics"
-			},
+            },
             {
-				"command": "lytics.queries.refresh",
-				"title": "Refresh Query List",
-				"icon": {
-					"light": "resources/icons/light/refresh.svg",
-					"dark": "resources/icons/dark/refresh.svg"
+                "command": "lytics.queries.refresh",
+                "title": "Refresh Query List",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
                 },
                 "category": "Lytics"
-			},
+            },
             {
-				"command": "lytics.queries.open",
-				"title": "Open Query",
+                "command": "lytics.queries.open",
+                "title": "Open Query",
                 "category": "Lytics"
-			},
+            },
             {
-				"command": "lytics.streams.refresh",
-				"title": "Refresh Stream List",
-				"icon": {
-					"light": "resources/icons/light/refresh.svg",
-					"dark": "resources/icons/dark/refresh.svg"
+                "command": "lytics.streams.refresh",
+                "title": "Refresh Stream List",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
                 },
                 "category": "Lytics"
-			},
+            },
             {
                 "command": "lytics.tables.add",
                 "title": "Add Table",
@@ -160,14 +164,14 @@
                 "category": "Lytics"
             },
             {
-				"command": "lytics.tables.refresh",
-				"title": "Refresh Table List",
-				"icon": {
-					"light": "resources/icons/light/refresh.svg",
-					"dark": "resources/icons/dark/refresh.svg"
+                "command": "lytics.tables.refresh",
+                "title": "Refresh Table List",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
                 },
                 "category": "Lytics"
-			}
+            }
         ],
         "menus": {
             "view/title": [
@@ -225,8 +229,7 @@
                 }
             ]
         },
-        "configuration": 
-        {
+        "configuration": {
             "title": "Lytics configuration",
             "properties": {
                 "lytics.accounts": {
@@ -264,5 +267,8 @@
         "tslint": "^5.8.0",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "axios": "^0.18.0"
     }
 }
