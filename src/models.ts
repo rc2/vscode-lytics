@@ -5,22 +5,32 @@ export interface Account {
 	apikey: string;
 }
 export interface DataStreamNode {
-	name: string;
+	//stream
 	stream: string;
-	kind: string;
+	fields: DataStreamNode[];
+	//field
+	name: string;
 	type: string;
 	is_array: boolean;
+	//common
 	hidden: boolean;
-	fields: DataStreamNode[];
+	//custom
+	kind: string;
+	parentName: string;
 }
 export interface TableNode {
+	//table
 	name: string;
-	kind: string;
+	//field
 	as: string;
 	type: string;
 	is_by: boolean;
 	shortdesc: string;
 	longdesc: string;
+	//common
+	//custom
+	kind: string;
+	parentName: string;
 }
 export interface QueryNode {
 	queries: QueryNode[];

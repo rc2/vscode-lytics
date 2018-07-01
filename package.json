@@ -162,6 +162,15 @@
                 "category": "Lytics"
             },
             {
+                "command": "lytics.stream.field.info",
+                "title": "Show Stream Field Info",
+                "icon": {
+                    "light": "resources/icons/light/info.svg",
+                    "dark": "resources/icons/dark/info.svg"
+                },
+                "category": "Lytics"
+            },
+            {
                 "command": "lytics.tables.add",
                 "title": "Add Table",
                 "icon": {
@@ -181,6 +190,15 @@
                 "icon": {
                     "light": "resources/icons/light/refresh.svg",
                     "dark": "resources/icons/dark/refresh.svg"
+                },
+                "category": "Lytics"
+            },
+            {
+                "command": "lytics.table.field.info",
+                "title": "Show Table Field Info",
+                "icon": {
+                    "light": "resources/icons/light/info.svg",
+                    "dark": "resources/icons/dark/info.svg"
                 },
                 "category": "Lytics"
             }
@@ -248,6 +266,16 @@
                 {
                     "command": "lytics.queries.open",
                     "when": "view == lytics.queries.explorer && viewItem == 'query'",
+                    "group": "inline"
+                },
+                {
+                    "command": "lytics.stream.field.info",
+                    "when": "view == lytics.streams.explorer && viewItem == 'field'",
+                    "group": "inline"
+                },
+                {
+                    "command": "lytics.table.field.info",
+                    "when": "view == lytics.tables.explorer && viewItem == 'field'",
                     "group": "inline"
                 },
                 {

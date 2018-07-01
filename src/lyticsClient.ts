@@ -29,12 +29,43 @@ export class LyticsClient {
 		const streams = response.data.data as Array<DataStreamNode>;
 		streams.map(stream => {
 			stream.kind = 'stream';
-			stream.fields.map(field => field.kind = 'field');
+			stream.fields.map(field => {
+				field.kind = 'field';
+				field.parentName = stream.stream;
+			});
 		});
 		return Promise.resolve(streams);
 	}
 
-	async getFields(table:string): Promise<TableNode[]> {
+	async getStream(streamName:string): Promise<object> {
+		let response = await this._client.request({
+			url: `https://api.lytics.io/api/schema/_streams/${streamName}`
+		});
+		const streams = response.data.data as Array<DataStreamNode>;
+		streams.map(stream => {
+			stream.kind = 'stream';
+			stream.fields.map(field => {
+				field.kind = 'field';
+				field.parentName = stream.name;
+			});
+		});
+		return Promise.resolve(streams);
+	}
+
+	async getStreamField(streamName:string, fieldName:string): Promise<object | undefined> {
+		const streams = await this.getStreams();
+		const stream = streams.find(stream => stream.stream === streamName);
+		if (!stream) {
+			 return Promise.resolve(undefined);
+		}
+		var field = stream.fields.find(field => field.name === fieldName);
+		if (!field) {
+			return Promise.resolve(undefined);
+		}
+		return Promise.resolve(field);
+	}
+
+	async getTableFields(table:string): Promise<TableNode[]> {
 		let response = await this._client.request({
 			url: `https://api.lytics.io/api/schema/${table}`
 		});
@@ -44,10 +75,22 @@ export class LyticsClient {
 		}
 		fields.map(field => {
 			field.kind = 'field';
+			field.parentName = table;
 		});	
 		return Promise.resolve(fields);
 	}
-	
+
+	async getTableFieldInfo(tableName:string, fieldName:string): Promise<object> {
+		let response = await this._client.request({
+			url: `https://api.lytics.io/api/schema/${tableName}/fieldinfo?fields=${fieldName}`
+		});
+		const fields = response.data.data.fields as Array<TableNode>;
+		if (!fields || fields.length === 0) {
+			throw new Error(`The specified field does not exist in the specified table. (table: ${tableName}, field: ${fieldName})`);
+		}
+		return Promise.resolve(fields[0]);
+	}
+
 	async getQuery(alias: string): Promise<QueryNode> {
 		let response = await this._client.request({
 			url: `https://api.lytics.io/api/query/${alias}`

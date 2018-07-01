@@ -88,9 +88,13 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.streams.refresh',  () => streamExplorerProvider.refresh());
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.stream.field.info',  field => streamExplorerProvider.commandShowField(field));
+    context.subscriptions.push(disposable);
 
     const tableExplorerProvider = new TableExplorerProvider(context);
     disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.info',  field => tableExplorerProvider.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
 }
 
