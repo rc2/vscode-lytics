@@ -34,7 +34,11 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			return new TableTreeItem(element.name, element);
 		}
 		if (element.kind === 'field') {
-			let item = new TableFieldTreeItem(element.as, element);
+			var name = element.as;
+			if (element.is_by) {
+				name = `* ${name}`;
+			}
+			let item = new TableFieldTreeItem(name, element);
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
@@ -43,7 +47,15 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 	private getIcon(node: TableNode): any {
 		var icon:(string | undefined) = undefined;
 		if (node.kind === 'field') {
-			icon = `${node.type}.svg`;
+			if (node.type.startsWith('[]')) {
+				icon = 'array.svg';
+			}
+			else if (node.type.startsWith('map[')) {
+				icon = 'map.svg';
+			}
+			else {
+				icon = `${node.type}.svg`;
+			}
 		}
 		if (!icon) {
 			return undefined;
