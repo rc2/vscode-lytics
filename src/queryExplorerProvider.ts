@@ -5,7 +5,7 @@ import { QueryNode } from './models';
 import { StateManager } from './stateManager';
 
 export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode> {
-	
+
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 	tableNames: (string[] | undefined);
@@ -20,9 +20,9 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				cancellable: true
 			}, async (progress, token) => {
 				this._onDidChangeTreeData.fire();
-			});	
+			});
 		}
-		catch(err) {
+		catch (err) {
 			vscode.window.showErrorMessage(`Refreshing queries failed: ${err.message}`);
 			return Promise.resolve();
 		}
@@ -41,7 +41,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 	}
 
 	private getIcon(node: QueryNode): any {
-		return  {
+		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', 'arrows')),
 			dark: this.context.asAbsolutePath(path.join('resources', 'icons', 'dark', 'arrows'))
 		};
@@ -62,7 +62,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 					let tables = await client.getQueriesGroupedByTable();
 					return Promise.resolve(tables);
 				}
-				catch(err) {
+				catch (err) {
 					vscode.window.showErrorMessage(`Loading tables failed: ${err.message}`);
 					return Promise.resolve();
 				}
@@ -77,56 +77,18 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		}
 		return Promise.resolve([]);
 	}
+
 	async commandOpenQuery(query: QueryNode) {
 		try {
 			const account = StateManager.account;
-			if (!account) {
-				throw new Error('No account is connected.');
-			}
-			if (!query) {
-				var alias = await vscode.window.showInputBox({prompt: 'Enter the alias of the query you want to open.'});
-			}
-			else {
-				alias = query.alias;
-			}
-			if (!alias || alias.trim().length === 0) {
-				return Promise.resolve();
-			}
-			let reloadedQuery = await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: 'Loading query.',
-				cancellable: true
-			}, async (progress, token) => {
-				const client = new LyticsClient(account.apikey!);
-				try {
-					if (!alias) {
-						return Promise.resolve(undefined);
-					}
-					const query = await client.getQuery(alias);
-					return Promise.resolve(query);
-				}
-				catch(err) {
-					vscode.window.showErrorMessage(`Loading tables failed: ${err.message}`);
-					return Promise.resolve();
-				}
-			});
-			
-			//display text
-			//TODO: if already open, prompt to overwrite
-			if (reloadedQuery) {
-				const uri = vscode.Uri.parse(`untitled:${reloadedQuery.alias}.lql`);
+			if (account) {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.lql`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, 1, false);
-				editor.edit(builder => {
-					if (!reloadedQuery) {
-						return;
-					}
-					builder.insert(new vscode.Position(0, 0), reloadedQuery.text);
-				});
+				const editor = await vscode.window.showTextDocument(doc, { preview: false });
+				return Promise.resolve(editor);
 			}
-			return Promise.resolve(reloadedQuery);
 		}
-		catch(err) {
+		catch (err) {
 			vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
 			return Promise.resolve();
 		}
@@ -135,7 +97,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 
 class QueryTableTreeItem extends vscode.TreeItem {
 	constructor(
-		public readonly name: string, 
+		public readonly name: string,
 		element: QueryNode
 	) {
 		super(name, vscode.TreeItemCollapsibleState.Collapsed);
@@ -145,7 +107,7 @@ class QueryTableTreeItem extends vscode.TreeItem {
 
 class QueryTreeItem extends vscode.TreeItem {
 	constructor(
-		public readonly name: string, 
+		public readonly name: string,
 		public readonly element: QueryNode
 	) {
 		super(name, vscode.TreeItemCollapsibleState.None);

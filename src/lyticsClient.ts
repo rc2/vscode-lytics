@@ -12,14 +12,16 @@ export class LyticsClient {
 	private _client: axios.AxiosInstance;
 	private _apikey: string;
 
-	async getAccount(): Promise<Account> {
+	async getAccount(): Promise<Account | undefined> {
 		let response = await this._client.request({
 			url: 'https://api.lytics.io/api/account'
 		});
 		const accounts = response.data.data as Array<Account>;
-		accounts[0].isValid = true;
-		accounts[0].apikey = this._apikey;
-		return Promise.resolve(accounts[0]);
+		if (accounts.length === 1) {
+			accounts[0].isValid = true;
+			accounts[0].apikey = this._apikey;
+			return Promise.resolve(accounts[0]);
+		}
 	}
 
 	async getStreams(): Promise<DataStreamNode[]> {
@@ -27,13 +29,6 @@ export class LyticsClient {
 			url: 'https://api.lytics.io/api/schema/_streams'
 		});
 		const streams = response.data.data as Array<DataStreamNode>;
-		streams.map(stream => {
-			stream.kind = 'stream';
-			stream.fields.map(field => {
-				field.kind = 'field';
-				field.parentName = stream.stream;
-			});
-		});
 		return Promise.resolve(streams);
 	}
 

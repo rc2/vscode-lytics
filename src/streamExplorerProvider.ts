@@ -78,6 +78,13 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			const client = new LyticsClient(account.apikey!);
 			try {
 				let streams = await client.getStreams();
+				streams.map(stream => {
+					stream.kind = 'stream';
+					stream.fields.map(field => {
+						field.kind = 'field';
+						field.parentName = stream.stream;
+					});
+				});
 				streams = streams.sort((a, b) => {
 					if (a.stream < b.stream) {
 						return -1;
@@ -124,45 +131,12 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 	async commandShowField(field: DataStreamNode) {
 		try {
 			const account = StateManager.account;
-			if (!account) {
-				throw new Error('No account is connected.');
-			}
-			const fieldName = field.name;
-			const streamName = field.parentName;
-			if (!fieldName || fieldName.trim().length === 0) {
-				return Promise.resolve();
-			}
-			if (!streamName || streamName.trim().length === 0) {
-				return Promise.resolve();
-			}
-			let streamField = await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: 'Loading stream field.',
-				cancellable: true
-			}, async (progress, token) => {
-				const client = new LyticsClient(account.apikey!);
-				try {
-					const info = await client.getStreamField(streamName, fieldName);
-					return Promise.resolve(info);
-				}
-				catch (err) {
-					vscode.window.showErrorMessage(`Loading stream field failed: ${err.message}`);
-					return Promise.resolve();
-				}
-			});
-
-			if (streamField) {
-				const uri = vscode.Uri.parse(`untitled:streams:${streamName}:${fieldName}.json`);
+			if (account) {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${field.parentName}/${field.name}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, 1, false);
-				editor.edit(builder => {
-					if (!streamField) {
-						return;
-					}
-					builder.insert(new vscode.Position(0, 0), JSON.stringify(streamField, null, 4));
-				});
+				const editor = await vscode.window.showTextDocument(doc, { preview: false });
+				return Promise.resolve(editor);
 			}
-			return Promise.resolve(streamField);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Open stream field failed: ${err.message}`);

@@ -6,9 +6,11 @@ import { QueryExplorerProvider } from './queryExplorerProvider';
 import { StreamExplorerProvider } from './streamExplorerProvider';
 import { TableExplorerProvider } from './tableExplorerProvider';
 import { StateManager } from './stateManager';
+import LyticsContentProvider from './lyticsContentProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     activateAccounts(context);
+    activateContentProviders(context);
 }
 
 function activateAccounts(context: vscode.ExtensionContext) {
@@ -95,6 +97,12 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info',  field => tableExplorerProvider.commandShowFieldInfo(field));
+    context.subscriptions.push(disposable);
+}
+
+function activateContentProviders(context: vscode.ExtensionContext) {
+    const lyticsProvider = new LyticsContentProvider();
+    let disposable = vscode.workspace.registerTextDocumentContentProvider('lytics', lyticsProvider);
     context.subscriptions.push(disposable);
 }
 

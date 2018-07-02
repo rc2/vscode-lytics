@@ -4,10 +4,10 @@ import { LyticsClient } from './lyticsClient';
 
 export class SettingsManager {
 
-	constructor() {
+    constructor() {
     }
-    
-    static async getAccount(aid: number): Promise<Account> {
+
+    static async getAccount(aid: number): Promise<Account | undefined> {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
         let existing = settings.find(obj => obj.aid === aid);
         if (!existing) {
@@ -16,7 +16,7 @@ export class SettingsManager {
         return this.getAccountFromSettings(existing);
     }
 
-    private static async getAccountFromSettings(setting: AccountSetting): Promise<Account> {
+    private static async getAccountFromSettings(setting: AccountSetting): Promise<Account | undefined> {
         let client = new LyticsClient(setting.apikey);
         var account = await client.getAccount();
         return Promise.resolve(account);
@@ -24,17 +24,20 @@ export class SettingsManager {
 
     static async getAccounts(): Promise<Account[]> {
         const settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
-        let accounts:Account[] = [];
+        let accounts: Account[] = [];
         for (let setting of settings) {
             try {
                 var account = await this.getAccountFromSettings(setting);
+                if (!account) {
+                    throw new Error();
+                }
             }
-            catch(err) {
-                account = {name: '', aid: setting.aid, isValid: false, apikey: setting.apikey};
+            catch (err) {
+                account = { name: '', aid: setting.aid, isValid: false, apikey: setting.apikey };
             }
             accounts.push(account);
         }
-        accounts = accounts.sort( (a, b) => {
+        accounts = accounts.sort((a, b) => {
             if (a.aid < b.aid) {
                 return -1;
             }
@@ -53,7 +56,7 @@ export class SettingsManager {
             let err = new Error(`The specified API key is already being used for account ${aid}.`);
             return Promise.reject(err);
         }
-        settings.push(<AccountSetting>{apikey: apikey, aid: aid});
+        settings.push(<AccountSetting>{ apikey: apikey, aid: aid });
         await vscode.workspace.getConfiguration().update('lytics.accounts', settings, true);
     }
 
@@ -73,21 +76,22 @@ export class SettingsManager {
     }
 
     static async getTables(aid: number): Promise<TableNode[]> {
-        let tables:TableNode[] = [];
+        let tables: TableNode[] = [];
         const settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
         var setting = settings.find((account) => account.aid === aid);
         if (setting) {
             if (setting.tables) {
-                for (let i=0; i<setting.tables.length; i++) {
-                    let table = <TableNode>{ 
-                        name: setting.tables[i], 
-                        kind: 'table'}
-                    ;
+                for (let i = 0; i < setting.tables.length; i++) {
+                    let table = <TableNode>{
+                        name: setting.tables[i],
+                        kind: 'table'
+                    }
+                        ;
                     tables.push(table);
                 }
             }
         }
-        tables = tables.sort( (a, b) => {
+        tables = tables.sort((a, b) => {
             if (a.name < b.name) {
                 return -1;
             }
@@ -97,7 +101,7 @@ export class SettingsManager {
             return 0;
         });
         return Promise.resolve(tables);
-}
+    }
 
     static async addTable(name: string, aid: number) {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);

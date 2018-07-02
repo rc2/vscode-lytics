@@ -194,15 +194,10 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			});
 
 			if (fieldInfo) {
-				const uri = vscode.Uri.parse(`untitled:tables:${tableName}:${fieldName}.json`);
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${fieldName}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, 1, false);
-				editor.edit(builder => {
-					if (!fieldInfo) {
-						return;
-					}
-					builder.insert(new vscode.Position(0, 0), JSON.stringify(fieldInfo, null, 4));
-				});
+				const editor = await vscode.window.showTextDocument(doc, { preview: false });
+				return Promise.resolve(editor);
 			}
 			return Promise.resolve(fieldInfo);
 		}
