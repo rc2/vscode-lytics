@@ -32,7 +32,7 @@ export class LyticsClient {
 		return Promise.resolve(streams);
 	}
 
-	async getStream(streamName:string): Promise<object> {
+	async getStream(streamName: string): Promise<object> {
 		let response = await this._client.request({
 			url: `https://api.lytics.io/api/schema/_streams/${streamName}`
 		});
@@ -47,11 +47,11 @@ export class LyticsClient {
 		return Promise.resolve(streams);
 	}
 
-	async getStreamField(streamName:string, fieldName:string): Promise<object | undefined> {
+	async getStreamField(streamName: string, fieldName: string): Promise<object | undefined> {
 		const streams = await this.getStreams();
 		const stream = streams.find(stream => stream.stream === streamName);
 		if (!stream) {
-			 return Promise.resolve(undefined);
+			return Promise.resolve(undefined);
 		}
 		var field = stream.fields.find(field => field.name === fieldName);
 		if (!field) {
@@ -60,7 +60,7 @@ export class LyticsClient {
 		return Promise.resolve(field);
 	}
 
-	async getTableFields(table:string): Promise<TableNode[]> {
+	async getTableFields(table: string): Promise<TableNode[]> {
 		let response = await this._client.request({
 			url: `https://api.lytics.io/api/schema/${table}`
 		});
@@ -71,11 +71,11 @@ export class LyticsClient {
 		fields.map(field => {
 			field.kind = 'field';
 			field.parentName = table;
-		});	
+		});
 		return Promise.resolve(fields);
 	}
 
-	async getTableFieldInfo(tableName:string, fieldName:string): Promise<object> {
+	async getTableFieldInfo(tableName: string, fieldName: string): Promise<object> {
 		let response = await this._client.request({
 			url: `https://api.lytics.io/api/schema/${tableName}/fieldinfo?fields=${fieldName}`
 		});
@@ -101,7 +101,7 @@ export class LyticsClient {
 		const data = response.data.data as Array<QueryNode>;
 
 		let map: Map<string, QueryNode[]> = new Map();
-		for (let i=0; i<data.length; i++) {
+		for (let i = 0; i < data.length; i++) {
 			let query = data[i];
 			let values = map.get(query.table);
 			if (!values) {
@@ -111,17 +111,17 @@ export class LyticsClient {
 			query.kind = 'query';
 			values.push(query);
 		}
-		let queries:QueryNode[] = [];
+		let tables: QueryNode[] = [];
 		for (let key of map.keys()) {
-			let query = <QueryNode>{ 
+			let query = <QueryNode>{
 				kind: 'table',
-				table: key, 
+				table: key,
 				queries: map.get(key)
 			};
-			queries.push(query);
+			tables.push(query);
 		}
-		
-		queries = queries.sort( (a, b) => {
+
+		tables = tables.sort((a, b) => {
 			if (a.table < b.table) {
 				return -1;
 			}
@@ -131,6 +131,19 @@ export class LyticsClient {
 			return 0;
 		});
 
-		return Promise.resolve(queries);
+		for (let i = 0; i < tables.length; i++) {
+			let table = tables[i];
+			table.queries = table.queries.sort((a, b) => {
+				if (a.alias < b.alias) {
+					return -1;
+				}
+				if (a.alias > b.alias) {
+					return 1;
+				}
+				return 0;
+			});
+		}
+
+		return Promise.resolve(tables);
 	}
 }
