@@ -2,7 +2,7 @@
     "name": "vscode-lytics",
     "displayName": "Lytics",
     "description": "Manage and maintain your Lytics account",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": {
         "name": "Adam Conn",
         "email": "adam.conn@lytics.com"
@@ -52,6 +52,11 @@
                 "configuration": "./language-configuration.json"
             }
         ],
+        "grammars": [{
+            "language": "lytics-lql",
+            "scopeName": "source.lytics",
+            "path": "./syntaxes/lytics-lql.tmLanguage.json"
+        }],
         "viewsContainers": {
             "activitybar": [
                 {
