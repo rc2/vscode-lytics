@@ -1,13 +1,24 @@
-# vscode-lytics README
+# Lytics for Visual Studio Code
 
 This extension allows you to interact with Lytics from Visual Studio Code.
 
 ## Features
 
-    * List and display LQL queries
-    * List data streams
-    * List and display fields from data streams
-    * List fields and display field info from tables (entities) 
+#### Connect a Lytics account 
+
+![Alt text](images/01-accounts.gif?raw=true "accounts")
+
+#### View an LQL query
+
+![Alt text](images/02-queries.gif?raw=true "queries")
+
+#### View information on a field from a data stream
+
+![Alt text](images/03-streams.gif?raw=true "data streams")
+
+#### View information on a field from a table
+
+![Alt text](images/04-tables.gif?raw=true "tables")
 
 ## Requirements
 
@@ -21,6 +32,6 @@ None.
 
 Release notes.
 
-### 1.0.0
+### 0.0.3
 
 Initial release.

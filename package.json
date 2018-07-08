@@ -12,6 +12,7 @@
         "type": "git",
         "url": "https://github.com/lytics/vscode-lytics"
     },
+    "icon": "images/lytics.png",
     "keywords": [
         "Lytics"
     ],
