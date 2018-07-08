@@ -108,6 +108,10 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			else {
 				aid = account.aid;
 			}
+			if (StateManager.account && StateManager.account.aid === aid) {
+				throw new Error(`You must disconnect the account before you can remove it.`);
+				return Promise.resolve();
+			}
 			await SettingsManager.removeAccount(aid);
 			await this.refresh();
 			vscode.window.showInformationMessage(`Account ${aid} was removed.`);
