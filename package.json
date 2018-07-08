@@ -25,15 +25,6 @@
     "activationEvents": [
         "onCommand:lytics.accounts.add",
         "onCommand:lytics.accounts.connect",
-        "onCommand:lytics.accounts.show",
-        "onCommand:lytics.accounts.disconnect",
-        "onCommand:lytics.accounts.remove",
-        "onCommand:lytics.queries.refresh",
-        "onCommand:lytics.queries.open",
-        "onCommand:lytics.streams.refresh",
-        "onCommand:lytics.tables.add",
-        "onCommand:lytics.tables.refresh",
-        "onCommand:lytics.tables.remove",
         "onLanguage:lql",
         "onView:lytics.accounts.explorer"
     ],
@@ -53,11 +44,13 @@
                 "configuration": "./language-configuration.json"
             }
         ],
-        "grammars": [{
-            "language": "lql",
-            "scopeName": "source.lql",
-            "path": "./syntaxes/lql.tmLanguage.json"
-        }],
+        "grammars": [
+            {
+                "language": "lql",
+                "scopeName": "source.lql",
+                "path": "./syntaxes/lql.tmLanguage.json"
+            }
+        ],
         "viewsContainers": {
             "activitybar": [
                 {
@@ -214,36 +207,61 @@
             }
         ],
         "menus": {
-            "view/title": [
+            "commandPalette": [
                 {
-                    "command": "lytics.accounts.refresh",
-                    "when": "view == lytics.accounts.explorer",
-                    "group": "navigation"
+                    "command": "lytics.accounts.disconnect",
+                    "when": "false"
                 },
                 {
-                    "command": "lytics.accounts.add",
-                    "when": "view == lytics.accounts.explorer",
-                    "group": "navigation"
+                    "command": "lytics.accounts.show",
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.accounts.refresh",
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.accounts.remove",
+                    "when": "false"
                 },
                 {
                     "command": "lytics.queries.refresh",
-                    "when": "view == lytics.queries.explorer",
-                    "group": "navigation"
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.queries.open",
+                    "when": "false"
                 },
                 {
                     "command": "lytics.streams.refresh",
-                    "when": "view == lytics.streams.explorer",
-                    "group": "navigation"
+                    "when": "false"
                 },
                 {
-                    "command": "lytics.tables.refresh",
-                    "when": "view == lytics.tables.explorer",
-                    "group": "navigation"
+                    "command": "lytics.stream.field.info",
+                    "when": "false"
                 },
                 {
                     "command": "lytics.tables.add",
-                    "when": "view == lytics.tables.explorer",
-                    "group": "navigation"
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.tables.remove",
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.tables.refresh",
+                    "when": "false"
+                },
+                {
+                    "command": "lytics.table.field.info",
+                    "when": "false"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "command": "lytics.accounts.refresh",
+                    "when": "resourceLangId == lql",
+                    "group": "lytics"
                 }
             ],
             "view/item/context": [
