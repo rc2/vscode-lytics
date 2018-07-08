@@ -6,7 +6,7 @@ This extension allows you to interact with Lytics from Visual Studio Code.
 
 #### Connect a Lytics account 
 
-![Alt text](https://github.com/lytics/vscode-lyticsimages/01-accounts.gif?raw=true "accounts")
+![Alt text](https://github.com/lytics/vscode-lytics/images/01-accounts.gif?raw=true "accounts")
 
 #### View an LQL query
 
