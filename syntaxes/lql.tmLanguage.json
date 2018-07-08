@@ -1,0 +1,93 @@
+{
+    "name": "Lytics Query Language",
+    "scopeName": "source.lql",
+    "fileTypes": [
+        "lql"
+    ],
+    "patterns": [
+        {
+            "name": "keyword.other.lql",
+            "match": "(?<=[\\s]|^)(SELECT|FROM|WHERE|INTO|BY|AS|ALIAS|EXISTS|IN|LIKE|KIND|MERGEOP)(?=\\s)"
+        },
+        {
+            "name": "keyword.operator.lql",
+            "match": "(?<=[\\s]|^)(\\=\\=|\\!\\=|\\>|\\<|\\<\\=|\\>\\=)(?=\\s)"
+        },
+        {
+            "name": "keyword.words.lql",
+            "match": "(?<=[\\s]|^)(SHORTDESC|LONGDESC)(?=\\s)"
+        },
+        {
+            "name": "keyword.control.conditional.lql",
+            "match": "(?<=[\\s]|^)(IF|CONTAINS|NOT|OR|AND)(?=\\s)"
+        },
+        {
+            "name": "comment.line.lql",
+            "match": "--.*"
+        },
+        {
+            "name": "support.type.lql",
+            "match": "(?<=[\\s]|^)(int|number|bool|date|string)(?=\\s)"
+        },
+        {
+            "name": "support.type.array.lql",
+            "match": "(?<=[\\s]|^)\\[\\](string|time)(?=\\s)"
+        },
+        {
+            "name": "support.type.time-ordered-array.lql",
+            "match": "(?<=[\\s]|^)ts\\[\\]string(?=\\s)"
+        },
+        {
+            "name": "support.type.map.lql",
+            "match": "(?<=[\\s]|^)map\\[string\\](int|number|string|time)(?=\\s)"
+        },
+        {
+            "name": "support.function.aggregate.lql",
+            "match": "(?<=[\\s]|^)(count|set|min|max|sum)(?=\\()"
+        },
+        {
+            "name": "support.function.logical.lql",
+            "match": "(?<=[\\s]|^)(all|any|exists|in|eq|ne|lt|le|gt|ge|not|or)(?=\\()"
+        },
+        {
+            "name": "support.function.string.lql",
+            "match": "(?<=[\\s]|^)(join|len|oneof|replace|split|strip|string.uppercase|string.lowercase|string.titlecase|contains|hasprefix|hassuffix)(?=\\()"
+        },
+        {
+            "name": "support.function.hash-and-encoding.lql",
+            "match": "(?<=[\\s]|^)(hash.sip|hash.md5|hash.sha1|hash.sha256|hash.sha512|encoding.b64encode|encoding.b64decode)(?=\\()"
+        },
+        {
+            "name": "support.function.cast-and-convert.lql",
+            "match": "(?<=[\\s]|^)(toint|tonumber|todate|tobool)(?=\\()"
+        },
+        {
+            "name": "support.function.map-and-set.lql",
+            "match": "(?<=[\\s]|^)(filter|len|map|match|mapkeys|mapvalues|mapinvert|array.index|array.slice)(?=\\()"
+        },
+        {
+            "name": "support.function.url-and-email.lql",
+            "match": "(?<=[\\s]|^)(email|emailname|emaildomain|domain|host|path|qs|urldecode|urlminusqa|useragent|useragent.map)(?=\\()"
+        },
+        {
+            "name": "support.function.date-and-time.lql",
+            "match": "(?<=[\\s]|^)(dayofweek|epochms|extract|hourofday|hourofweek|mm|monthofyear|now|seconds|todate|todatein|totimestamp|yy|yymm|timebucket)(?=\\()"
+        },
+        {
+            "name": "variable.identifier.lql",
+            "match": "`([a-zA-Z][a-zA-Z0-9_]+)`"
+        },
+        {
+			"name": "string.quoted.double.lql",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.lql",
+					"match": "\\\\."
+				}
+			]
+        }
+    ],
+    "uuid": "53d676e5-9d70-4e5d-b5db-bfe578ba4a16"
+}

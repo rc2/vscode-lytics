@@ -40,7 +40,7 @@
     "contributes": {
         "languages": [
             {
-                "id": "lytics-lql",
+                "id": "lql",
                 "aliases": [
                     "LQL",
                     "lql"
@@ -53,9 +53,9 @@
             }
         ],
         "grammars": [{
-            "language": "lytics-lql",
-            "scopeName": "source.lytics",
-            "path": "./syntaxes/lytics-lql.tmLanguage.json"
+            "language": "lql",
+            "scopeName": "source.lql",
+            "path": "./syntaxes/lql.tmLanguage.json"
         }],
         "viewsContainers": {
             "activitybar": [
