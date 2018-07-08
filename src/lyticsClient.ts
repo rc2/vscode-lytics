@@ -4,24 +4,26 @@ import { Account, DataStreamNode, TableNode, QueryNode } from './models';
 export class LyticsClient {
 
 	constructor(apikey: string) {
-		this._apikey = apikey;
 		this._client = axios.default.create({
 			headers: { 'Authorization': apikey }
 		});
 	}
 	private _client: axios.AxiosInstance;
-	private _apikey: string;
 
-	async getAccount(): Promise<Account | undefined> {
+	async getClientAccount(): Promise<Account | undefined> {
 		let response = await this._client.request({
 			url: 'https://api.lytics.io/api/account'
 		});
 		const accounts = response.data.data as Array<Account>;
 		if (accounts.length === 1) {
-			accounts[0].isValid = true;
-			accounts[0].apikey = this._apikey;
 			return Promise.resolve(accounts[0]);
 		}
+	}
+
+	static async getAccount(apikey: string): Promise<Account | undefined> {
+		const client = new LyticsClient(apikey);
+		const account = await client.getClientAccount();
+		return account;
 	}
 
 	async getStreams(): Promise<DataStreamNode[]> {

@@ -25,7 +25,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 
 	getTreeItem(element: Account): vscode.TreeItem {
 		let item = new AccountTreeItem(element.name, element.aid, vscode.TreeItemCollapsibleState.None);
-		if (!element.isValid) {
+		if (element.isNotValid) {
 			item.tooltip = "A connection to the account cannot be made with the specified API key.";
 		}
 		item.iconPath = this.getIcon(element);
@@ -34,7 +34,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 
 	private getIcon(account: Account): any {
 		var icon = 'cloud_inactive.svg';
-		if (!account.isValid) {
+		if (account.isNotValid) {
 			icon = 'ban.svg';
 		}
 		const currentAccount = StateManager.account;
@@ -74,7 +74,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			const client = new LyticsClient(apikey!);
 			try {
 				progress.report({ increment: 25 });
-				let account = await client.getAccount();
+				let account = await client.getClientAccount();
 				if (account) {
 					progress.report({ increment: 50 });
 					await SettingsManager.addAccount(apikey, account.aid);
@@ -173,6 +173,32 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		vscode.window.showInformationMessage(`The account ${account.aid} has been disconnected.`);
 		return Promise.resolve(account);
 	}
+
+	async commandShowAccount(accountItem: AccountTreeItem) {
+		try {
+			let aid = 0;
+			if (accountItem) {
+				aid = accountItem.aid;
+			}
+			else {
+				const account = StateManager.account;
+				if (account) {
+					aid = account.aid;
+				}
+			}
+			if (aid === 0) {
+				throw new Error('Unable to determine account id.');
+			}
+			const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
+			const doc = await vscode.workspace.openTextDocument(uri);
+			const editor = await vscode.window.showTextDocument(doc, { preview: false });
+			return Promise.resolve(editor);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Show account failed: ${err.message}`);
+			return Promise.resolve();
+		}
+	}
 }
 
 class AccountTreeItem extends vscode.TreeItem {
@@ -181,7 +207,7 @@ class AccountTreeItem extends vscode.TreeItem {
 		public readonly name: string,
 		public readonly aid: number,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly command?: vscode.Command,
+		public readonly command ?: vscode.Command,
 	) {
 		super(`[${aid}] ${name}`, collapsibleState);
 	}

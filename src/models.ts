@@ -1,7 +1,7 @@
 export interface Account {
 	name: string;
 	aid: number;
-	isValid: boolean;
+	isNotValid: boolean;
 	apikey: string;
 }
 export interface DataStreamNode {

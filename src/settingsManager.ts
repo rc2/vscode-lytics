@@ -18,7 +18,7 @@ export class SettingsManager {
 
     private static async getAccountFromSettings(setting: AccountSetting): Promise<Account | undefined> {
         let client = new LyticsClient(setting.apikey);
-        var account = await client.getAccount();
+        var account = await client.getClientAccount();
         return Promise.resolve(account);
     }
 
@@ -33,7 +33,7 @@ export class SettingsManager {
                 }
             }
             catch (err) {
-                account = { name: '', aid: setting.aid, isValid: false, apikey: setting.apikey };
+                account = { name: '', aid: setting.aid, isNotValid: true, apikey: setting.apikey };
             }
             accounts.push(account);
         }

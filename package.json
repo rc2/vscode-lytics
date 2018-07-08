@@ -24,7 +24,7 @@
     "activationEvents": [
         "onCommand:lytics.accounts.add",
         "onCommand:lytics.accounts.connect",
-        "onCommand:lytics.accounts.connected.show",
+        "onCommand:lytics.accounts.show",
         "onCommand:lytics.accounts.disconnect",
         "onCommand:lytics.accounts.remove",
         "onCommand:lytics.queries.refresh",
@@ -94,8 +94,12 @@
         },
         "commands": [
             {
-                "command": "lytics.accounts.connected.show",
-                "title": "Show Connected Account",
+                "command": "lytics.accounts.show",
+                "title": "Show Account",
+                "icon": {
+                    "light": "resources/icons/light/info.svg",
+                    "dark": "resources/icons/dark/info.svg"
+                },
                 "category": "Lytics"
             },
             {
@@ -263,6 +267,15 @@
                 {
                     "command": "lytics.accounts.remove",
                     "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+                },
+                {
+                    "command": "lytics.accounts.show",
+                    "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+                },
+                {
+                    "command": "lytics.accounts.show",
+                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+                    "group": "inline"
                 },
                 {
                     "command": "lytics.queries.open",

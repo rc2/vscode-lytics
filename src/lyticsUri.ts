@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 
 export class LyticsUri {
     private readonly _uri: vscode.Uri;
+    public isAccountUri: boolean = false;
     public isQueryUri: boolean = false;
     public isStreamUri: boolean = false;
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
+    public accountId: number = 0;
     public queryAlias: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
@@ -16,6 +18,12 @@ export class LyticsUri {
     constructor(uri: vscode.Uri) {
         this._uri = uri;
         var parts = this._uri.path.substring(1).split('/');
+        if (uri.authority === 'accounts') {
+            if (parts.length === 1) {
+                this.handleAccountsUri();
+                return;
+            }
+        }
         if (parts.length > 1) {
             switch (parts[0]) {
                 case 'queries':
@@ -30,6 +38,19 @@ export class LyticsUri {
                     this.handleTablesUri();
                     return;
                     break;
+            }
+        }
+    }
+
+    private handleAccountsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://accounts/{aid}.json
+        if (parts.length === 1) {
+            var aid =  parseInt(parts[0].substring(0, parts[0].indexOf('.json')));
+            if (aid !== NaN) {
+                this.isAccountUri = true;
+                this.accountId = aid;
+                return;
             }
         }
     }

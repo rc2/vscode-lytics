@@ -5,8 +5,27 @@ import { StateManager } from './stateManager';
 import { LyticsClient } from './lyticsClient';
 import { Account, QueryNode } from './models';
 import { LyticsUri } from './lyticsUri';
+import { SettingsManager } from './settingsManager';
 
 export default class LyticsContentProvider implements vscode.TextDocumentContentProvider {
+
+    private async getAccount(aid: number): Promise<Account | undefined> {
+        try {
+            const account = await SettingsManager.getAccount(aid);
+            if (!account) {
+                throw new Error(`The account ${aid} is not defined.`);
+            }
+            const reloadedAccount = await LyticsClient.getAccount(account.apikey!);
+            if (!reloadedAccount) {
+                throw new Error(`The account ${aid} was not loaded.`);
+            }
+            return Promise.resolve(reloadedAccount);
+        }
+        catch (err) {
+            vscode.window.showErrorMessage(`Loading account failed: ${err.message}`);
+            return Promise.resolve(undefined);
+        }
+    }
 
     private async getQuery(alias: string, account: Account): Promise<QueryNode | undefined> {
         const client = new LyticsClient(account.apikey!);
@@ -49,11 +68,14 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
 
     public async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         try {
+            var luri = new LyticsUri(uri);
+            if (luri.isAccountUri && luri.accountId) {
+                return await this.provideTextDocumentContentForAccount(luri.accountId);
+            }
             const account = StateManager.account;
             if (!account) {
                 throw new Error('No account is connected.');
             }
-            var luri = new LyticsUri(uri);
             if (luri.isQueryUri && luri.queryAlias) {
                 return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
             }
@@ -67,6 +89,20 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         }
         catch (err) {
             vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
+        }
+        return Promise.reject();
+    }
+
+    private async provideTextDocumentContentForAccount(aid: number): Promise<string> {
+        let reloadedAccount = await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Loading account.',
+            cancellable: true
+        }, async (progress, token) => {
+            return await this.getAccount(aid);
+        });
+        if (reloadedAccount) {
+            return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
         }
         return Promise.reject();
     }

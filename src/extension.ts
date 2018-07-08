@@ -27,6 +27,9 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.accounts.remove', account => accountExplorerProvider.commandRemoveAccount(account));
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('lytics.accounts.show', account => accountExplorerProvider.commandShowAccount(account));
+    context.subscriptions.push(disposable);
+
     disposable = vscode.commands.registerCommand('lytics.tables.add',  () => tableExplorerProvider.commandAddTable());
     context.subscriptions.push(disposable);
 
@@ -69,13 +72,8 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-	status.command = 'lytics.accounts.connected.show';
+	status.command = 'lytics.accounts.show';
     context.subscriptions.push(status);
-    disposable = vscode.commands.registerCommand('lytics.accounts.connected.show', () => {
-        //TODO: implement
-        return;
-    });
-    context.subscriptions.push(disposable);
     
     const queryExplorerProvider = new QueryExplorerProvider(context);
     disposable = vscode.window.registerTreeDataProvider('lytics.queries.explorer', queryExplorerProvider);
