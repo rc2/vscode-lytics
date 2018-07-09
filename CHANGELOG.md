@@ -1,7 +1,12 @@
-# Change Log
-All notable changes to the "vscode-lytics" extension will be documented in this file.
+## [0.0.5] - 2018-07-08
+### Added
+- **Upload LQL to Lytics** - Add editor context command for uploading LQL to Lytics. After an LQL file is saved locally, the user can right-click in the editor and select an option to upload the file to Lytics.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+### Changed
+None. 
 
-## [Unreleased]
-- Initial release
+### Removed
+- Reduce the number of commands available in the command palette.
+
+## [0.0.4] - 2015-07-07
+Initial release.

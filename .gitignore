@@ -4,3 +4,7 @@ node_modules
 *.vsix
 .DS_Store
 coverage
+resources/icons/.DS_Store
+resources/icons/.DS_Store
+resources/.DS_Store
+resources/icons/.DS_Store

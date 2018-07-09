@@ -1,366 +1,381 @@
 {
-    "name": "vscode-lytics",
-    "displayName": "Lytics",
-    "description": "Manage and maintain your Lytics account",
-    "version": "0.0.4",
-    "author": {
-        "name": "Adam Conn",
-        "email": "adam.conn@lytics.com"
-    },
-    "publisher": "adamconn",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/lytics/vscode-lytics"
-    },
-    "icon": "images/lytics.png",
-    "keywords": [
-        "Lytics"
+  "name": "vscode-lytics",
+  "displayName": "Lytics",
+  "description": "Manage and maintain your Lytics account",
+  "version": "0.0.5",
+  "author": {
+    "name": "Adam Conn",
+    "email": "adam.conn@lytics.com"
+  },
+  "publisher": "adamconn",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lytics/vscode-lytics"
+  },
+  "icon": "images/lytics.png",
+  "keywords": [
+    "Lytics"
+  ],
+  "engines": {
+    "vscode": "^1.24.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:lytics.accounts.add",
+    "onCommand:lytics.accounts.connect",
+    "onLanguage:lql",
+    "onView:lytics.accounts.explorer"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "lql",
+        "aliases": [
+          "LQL",
+          "lql"
+        ],
+        "extensions": [
+          ".lql"
+        ],
+        "firstLine": "^SELECT\\s.*",
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "engines": {
-        "vscode": "^1.24.0"
-    },
-    "categories": [
-        "Other"
+    "grammars": [
+      {
+        "language": "lql",
+        "scopeName": "source.lql",
+        "path": "./syntaxes/lql.tmLanguage.json"
+      }
     ],
-    "activationEvents": [
-        "onCommand:lytics.accounts.add",
-        "onCommand:lytics.accounts.connect",
-        "onLanguage:lql",
-        "onView:lytics.accounts.explorer"
-    ],
-    "main": "./out/extension",
-    "contributes": {
-        "languages": [
-            {
-                "id": "lql",
-                "aliases": [
-                    "LQL",
-                    "lql"
-                ],
-                "extensions": [
-                    ".lql"
-                ],
-                "firstLine": "^SELECT\\s.*",
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "lql",
-                "scopeName": "source.lql",
-                "path": "./syntaxes/lql.tmLanguage.json"
-            }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "lytics",
-                    "title": "Lytics",
-                    "icon": "resources/lytics.svg"
-                }
-            ]
-        },
-        "keybindings": [
-            {
-                "command": "workbench.view.extension.lytics",
-                "key": "ctrl+alt+l"
-            }
-        ],
-        "views": {
-            "lytics": [
-                {
-                    "id": "lytics.accounts.explorer",
-                    "name": "Accounts"
-                },
-                {
-                    "id": "lytics.queries.explorer",
-                    "name": "Queries"
-                },
-                {
-                    "id": "lytics.streams.explorer",
-                    "name": "Data Streams"
-                },
-                {
-                    "id": "lytics.tables.explorer",
-                    "name": "Tables"
-                }
-            ]
-        },
-        "commands": [
-            {
-                "command": "lytics.accounts.show",
-                "title": "Show Account",
-                "icon": {
-                    "light": "resources/icons/light/info.svg",
-                    "dark": "resources/icons/dark/info.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.accounts.connect",
-                "title": "Connect",
-                "icon": {
-                    "light": "resources/icons/light/connect.svg",
-                    "dark": "resources/icons/dark/connect.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.accounts.disconnect",
-                "title": "Disconnect",
-                "icon": {
-                    "light": "resources/icons/light/disconnect.svg",
-                    "dark": "resources/icons/dark/disconnect.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.accounts.add",
-                "title": "Add Account",
-                "icon": {
-                    "light": "resources/icons/light/add.svg",
-                    "dark": "resources/icons/dark/add.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.accounts.remove",
-                "title": "Remove Account",
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.accounts.refresh",
-                "title": "Refresh Account List",
-                "icon": {
-                    "light": "resources/icons/light/refresh.svg",
-                    "dark": "resources/icons/dark/refresh.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.queries.refresh",
-                "title": "Refresh Query List",
-                "icon": {
-                    "light": "resources/icons/light/refresh.svg",
-                    "dark": "resources/icons/dark/refresh.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.queries.open",
-                "title": "Open Query",
-                "icon": {
-                    "light": "resources/icons/light/edit.svg",
-                    "dark": "resources/icons/dark/edit.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.streams.refresh",
-                "title": "Refresh Stream List",
-                "icon": {
-                    "light": "resources/icons/light/refresh.svg",
-                    "dark": "resources/icons/dark/refresh.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.stream.field.info",
-                "title": "Show Stream Field Info",
-                "icon": {
-                    "light": "resources/icons/light/info.svg",
-                    "dark": "resources/icons/dark/info.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.tables.add",
-                "title": "Add Table",
-                "icon": {
-                    "light": "resources/icons/light/add.svg",
-                    "dark": "resources/icons/dark/add.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.tables.remove",
-                "title": "Remove Table",
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.tables.refresh",
-                "title": "Refresh Table List",
-                "icon": {
-                    "light": "resources/icons/light/refresh.svg",
-                    "dark": "resources/icons/dark/refresh.svg"
-                },
-                "category": "Lytics"
-            },
-            {
-                "command": "lytics.table.field.info",
-                "title": "Show Table Field Info",
-                "icon": {
-                    "light": "resources/icons/light/info.svg",
-                    "dark": "resources/icons/dark/info.svg"
-                },
-                "category": "Lytics"
-            }
-        ],
-        "menus": {
-            "commandPalette": [
-                {
-                    "command": "lytics.accounts.disconnect",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.accounts.show",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.accounts.refresh",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.accounts.remove",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.queries.refresh",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.queries.open",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.streams.refresh",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.stream.field.info",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.tables.add",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.tables.remove",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.tables.refresh",
-                    "when": "false"
-                },
-                {
-                    "command": "lytics.table.field.info",
-                    "when": "false"
-                }
-            ],
-            "editor/title/context": [
-                {
-                    "command": "lytics.accounts.refresh",
-                    "when": "resourceLangId == lql",
-                    "group": "lytics"
-                }
-            ],
-            "view/item/context": [
-                {
-                    "command": "lytics.accounts.connect",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'"
-                },
-                {
-                    "command": "lytics.accounts.connect",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.accounts.disconnect",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'"
-                },
-                {
-                    "command": "lytics.accounts.disconnect",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.accounts.remove",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'"
-                },
-                {
-                    "command": "lytics.accounts.show",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'"
-                },
-                {
-                    "command": "lytics.accounts.show",
-                    "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.queries.open",
-                    "when": "view == lytics.queries.explorer && viewItem == 'query'"
-                },
-                {
-                    "command": "lytics.queries.open",
-                    "when": "view == lytics.queries.explorer && viewItem == 'query'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.stream.field.info",
-                    "when": "view == lytics.streams.explorer && viewItem == 'field'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.table.field.info",
-                    "when": "view == lytics.tables.explorer && viewItem == 'field'",
-                    "group": "inline"
-                },
-                {
-                    "command": "lytics.tables.remove",
-                    "when": "view == lytics.tables.explorer && viewItem == 'table'"
-                }
-            ]
-        },
-        "configuration": {
-            "title": "Lytics configuration",
-            "properties": {
-                "lytics.accounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "title": "accounts",
-                        "properties": {
-                            "aid": {
-                                "type": "int",
-                                "description": "Account ID"
-                            },
-                            "apikey": {
-                                "type": "string",
-                                "description": "API key"
-                            }
-                        }
-                    },
-                    "default": [],
-                    "description": "my test configurations"
-                }
-            }
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lytics",
+          "title": "Lytics",
+          "icon": "resources/lytics.svg"
         }
+      ]
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    "keybindings": [
+      {
+        "command": "workbench.view.extension.lytics",
+        "key": "ctrl+alt+l"
+      }
+    ],
+    "views": {
+      "lytics": [
+        {
+          "id": "lytics.accounts.explorer",
+          "name": "Accounts"
+        },
+        {
+          "id": "lytics.queries.explorer",
+          "name": "Queries"
+        },
+        {
+          "id": "lytics.streams.explorer",
+          "name": "Data Streams"
+        },
+        {
+          "id": "lytics.tables.explorer",
+          "name": "Tables"
+        }
+      ]
     },
-    "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "tslint": "^5.8.0",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+    "commands": [
+      {
+        "command": "lytics.accounts.show",
+        "title": "Show Account",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.connect",
+        "title": "Connect",
+        "icon": {
+          "light": "resources/icons/light/connect.svg",
+          "dark": "resources/icons/dark/connect.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.disconnect",
+        "title": "Disconnect",
+        "icon": {
+          "light": "resources/icons/light/disconnect.svg",
+          "dark": "resources/icons/dark/disconnect.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.add",
+        "title": "Add Account",
+        "icon": {
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.remove",
+        "title": "Remove Account",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.refresh",
+        "title": "Refresh Account List",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.queries.refresh",
+        "title": "Refresh Query List",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.queries.open",
+        "title": "Open Query",
+        "icon": {
+          "light": "resources/icons/light/edit.svg",
+          "dark": "resources/icons/dark/edit.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.queries.upload",
+        "title": "Lytics: Upload query",
+        "icon": {
+          "light": "resources/icons/light/upload.svg",
+          "dark": "resources/icons/dark/upload.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.streams.refresh",
+        "title": "Refresh Stream List",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.stream.field.info",
+        "title": "Show Stream Field Info",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.tables.add",
+        "title": "Add Table",
+        "icon": {
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.tables.remove",
+        "title": "Remove Table",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.tables.refresh",
+        "title": "Refresh Table List",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.table.field.info",
+        "title": "Show Table Field Info",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        },
+        "category": "Lytics"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "lytics.accounts.disconnect",
+          "when": "false"
+        },
+        {
+          "command": "lytics.accounts.show",
+          "when": "false"
+        },
+        {
+          "command": "lytics.accounts.refresh",
+          "when": "false"
+        },
+        {
+          "command": "lytics.accounts.remove",
+          "when": "false"
+        },
+        {
+          "command": "lytics.queries.refresh",
+          "when": "false"
+        },
+        {
+          "command": "lytics.queries.open",
+          "when": "false"
+        },
+        {
+          "command": "lytics.queries.upload",
+          "when": "false"
+        },
+        {
+          "command": "lytics.streams.refresh",
+          "when": "false"
+        },
+        {
+          "command": "lytics.stream.field.info",
+          "when": "false"
+        },
+        {
+          "command": "lytics.tables.add",
+          "when": "false"
+        },
+        {
+          "command": "lytics.tables.remove",
+          "when": "false"
+        },
+        {
+          "command": "lytics.tables.refresh",
+          "when": "false"
+        },
+        {
+          "command": "lytics.table.field.info",
+          "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "lytics.queries.upload",
+          "group": "lytics",
+          "when": "editorLangId == lql && editorReadOnly == false"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "lytics.accounts.connect",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.accounts.connect",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.accounts.disconnect",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.accounts.disconnect",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.accounts.remove",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.accounts.show",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.accounts.show",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.queries.open",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.queries.open",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.stream.field.info",
+          "when": "view == lytics.streams.explorer && viewItem == 'field'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.table.field.info",
+          "when": "view == lytics.tables.explorer && viewItem == 'field'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.tables.remove",
+          "when": "view == lytics.tables.explorer && viewItem == 'table'"
+        }
+      ]
     },
-    "dependencies": {
-        "axios": "^0.18.0"
+    "configuration": {
+      "title": "Lytics configuration",
+      "properties": {
+        "lytics.accounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "accounts",
+            "properties": {
+              "aid": {
+                "type": "int",
+                "description": "Account ID"
+              },
+              "apikey": {
+                "type": "string",
+                "description": "API key"
+              }
+            }
+          },
+          "default": [],
+          "description": "my test configurations"
+        }
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/form-data": "^2.2.1",
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^7.0.43",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.1",
+    "vscode": "^1.1.6"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "fs": "0.0.1-security"
+  }
 }

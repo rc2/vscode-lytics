@@ -96,6 +96,20 @@ export class LyticsClient {
 		return data;
 	}
 
+	async upsertQuery(lql: string): Promise<any> {
+		try {
+			let response = await this._client.request({
+				url: `https://api.lytics.io/api/query`,
+				method: 'POST',
+				data: lql
+			});
+			return Promise.resolve(response.data);
+		}
+		catch (err) {
+			return Promise.resolve(err.response.data);
+		}
+	}
+
 	async getQueriesGroupedByTable(): Promise<QueryNode[]> {
 		let response = await this._client.request({
 			url: 'https://api.lytics.io/api/query'
