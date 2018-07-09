@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -275,6 +275,38 @@
           "command": "lytics.queries.upload",
           "group": "lytics",
           "when": "editorLangId == lql && editorReadOnly == false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "lytics.accounts.add",
+          "when": "view == lytics.accounts.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.accounts.refresh",
+          "when": "view == lytics.accounts.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.queries.refresh",
+          "when": "view == lytics.queries.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.streams.refresh",
+          "when": "view == lytics.streams.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.tables.add",
+          "when": "view == lytics.tables.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.tables.refresh",
+          "when": "view == lytics.tables.explorer",
+          "group": "navigation"
         }
       ],
       "view/item/context": [

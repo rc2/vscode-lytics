@@ -32,6 +32,9 @@ None.
 
 For more details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).
 
+#### 0.0.6
+Added back explorer view commands accidentally removed.
+
 #### 0.0.5
 - **Upload LQL to Lytics** - After you have saved an LQL file locally, you can right-click in the editor and select an option to upload the LQL to Lytics.
 
