@@ -26,6 +26,16 @@
             "match": "--.*"
         },
         {
+            "begin": "/\\*",
+            "captures": {
+                "0": {
+                    "name": "punctuation.definition.comment.lql"
+                }
+            },
+            "end": "\\*/|(?=</script)",
+            "name": "comment.block.lql"
+        },
+        {
             "name": "support.type.lql",
             "match": "(?<=[\\s]|^)(int|number|bool|date|string)(?=\\s)"
         },
