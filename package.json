@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -100,8 +100,8 @@
         "command": "lytics.accounts.connect",
         "title": "Connect",
         "icon": {
-          "light": "resources/icons/light/connect.svg",
-          "dark": "resources/icons/dark/connect.svg"
+          "light": "resources/icons/light/power.svg",
+          "dark": "resources/icons/dark/power.svg"
         },
         "category": "Lytics"
       },
@@ -109,8 +109,8 @@
         "command": "lytics.accounts.disconnect",
         "title": "Disconnect",
         "icon": {
-          "light": "resources/icons/light/disconnect.svg",
-          "dark": "resources/icons/dark/disconnect.svg"
+          "light": "resources/icons/light/power-off.svg",
+          "dark": "resources/icons/dark/power-off.svg"
         },
         "category": "Lytics"
       },
@@ -147,11 +147,29 @@
         "category": "Lytics"
       },
       {
-        "command": "lytics.queries.open",
+        "command": "lytics.queries.download",
+        "title": "Download Queries",
+        "icon": {
+          "light": "resources/icons/light/get-app.svg",
+          "dark": "resources/icons/dark/get-app.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.query.download",
+        "title": "Download Query",
+        "icon": {
+          "light": "resources/icons/light/get-app.svg",
+          "dark": "resources/icons/dark/get-app.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.query.open",
         "title": "Open Query",
         "icon": {
-          "light": "resources/icons/light/edit.svg",
-          "dark": "resources/icons/dark/edit.svg"
+          "light": "resources/icons/light/open-in-new.svg",
+          "dark": "resources/icons/dark/open-in-new.svg"
         },
         "category": "Lytics"
       },
@@ -159,8 +177,8 @@
         "command": "lytics.queries.upload",
         "title": "Lytics: Upload query",
         "icon": {
-          "light": "resources/icons/light/upload.svg",
-          "dark": "resources/icons/dark/upload.svg"
+          "light": "resources/icons/light/cloud-upload.svg",
+          "dark": "resources/icons/dark/cloud-upload.svg"
         },
         "category": "Lytics"
       },
@@ -238,7 +256,15 @@
           "when": "false"
         },
         {
-          "command": "lytics.queries.open",
+          "command": "lytics.queries.download",
+          "when": "false"
+        },
+        {
+          "command": "lytics.query.download",
+          "when": "false"
+        },
+        {
+          "command": "lytics.query.open",
           "when": "false"
         },
         {
@@ -342,11 +368,29 @@
           "group": "inline"
         },
         {
-          "command": "lytics.queries.open",
+          "command": "lytics.queries.download",
+          "when": "view == lytics.queries.explorer && viewItem == 'table'"
+        },
+        {
+          "command": "lytics.queries.download",
+          "when": "view == lytics.queries.explorer && viewItem == 'table'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.query.open",
           "when": "view == lytics.queries.explorer && viewItem == 'query'"
         },
         {
-          "command": "lytics.queries.open",
+          "command": "lytics.query.open",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.query.download",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.query.download",
           "when": "view == lytics.queries.explorer && viewItem == 'query'",
           "group": "inline"
         },

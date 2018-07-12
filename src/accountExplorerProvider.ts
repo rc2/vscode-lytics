@@ -33,13 +33,13 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 	}
 
 	private getIcon(account: Account): any {
-		var icon = 'cloud_inactive.svg';
+		var icon = 'cloud.svg';
 		if (account.isNotValid) {
-			icon = 'ban.svg';
+			icon = 'sync-problem.svg';
 		}
 		const currentAccount = StateManager.account;
 		if (currentAccount && currentAccount.aid === account.aid) {
-			icon = 'cloud_active.svg';
+			icon = 'cloud-active.svg';
 		}
 		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', icon)),
