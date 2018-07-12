@@ -32,6 +32,9 @@ None.
 
 For more details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).
 
+#### 0.0.7
+Added ability to download queries as LQL files.
+
 #### 0.0.6
 Added back explorer view commands accidentally removed.
 

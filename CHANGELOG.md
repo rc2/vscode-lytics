@@ -1,3 +1,9 @@
+## [0.0.7] - 2018-07-11
+- **Download queries** - Queries can be downloaded as lql files. This can be done on an individual query, or at the table level (i.e. download all user queries).
+- Updated icons. 
+- Added support for multi-line comments.
+- Added support for field names that start with _ character.
+
 ## [0.0.6] - 2018-07-09
 ### Added
 - Added back explorer view commands accidentally removed.
