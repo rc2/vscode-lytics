@@ -15,7 +15,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             if (!account) {
                 throw new Error(`The account ${aid} is not defined.`);
             }
-            const reloadedAccount = await LyticsClient.getAccount(account.apikey!);
+            const client = new LyticsClient(account.apikey);
+            const reloadedAccount = await client.getAccount(aid);
             if (!reloadedAccount) {
                 throw new Error(`The account ${aid} was not loaded.`);
             }

@@ -73,20 +73,35 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		}, async (progress, token) => {
 			const client = new LyticsClient(apikey!);
 			try {
-				progress.report({ increment: 25 });
-				let account = await client.getClientAccount();
-				if (account) {
-					progress.report({ increment: 50 });
-					await SettingsManager.addAccount(apikey, account.aid);
-					progress.report({ increment: 75 });
+				let accounts = await client.getAccounts();
+				if (!accounts || accounts.length === 0) {
+					vscode.window.showErrorMessage('No accounts were found for the specified API key.');
+					return Promise.resolve();
+				}
+				const accountOptions = accounts.map(a => `${a.aid} : ${a.name}`);
+				const selectedAccount = await vscode.window.showQuickPick(accountOptions);
+				if (!selectedAccount || selectedAccount.trim().length === 0) {
+					return Promise.resolve();
+				}
+				const aid = parseInt(selectedAccount.split(':')[0]);
+				if (! isNaN(aid)) {
+					await SettingsManager.addAccount(aid, apikey);
 					await this.refresh();
-					progress.report({ increment: 100 });
-					vscode.window.showInformationMessage(`Account ${account.aid} was added.`);
+					vscode.window.showInformationMessage(`Account ${aid} was added.`);
 					return Promise.resolve();
 				}
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(`Add account failed: ${err.message}`);
+				let message:(string|undefined);
+				if (err.response) {
+					if (err.response.status === 401) {
+						message = 'Invalid API key was provided.';
+					}
+				}
+				if (!message) {
+					message = `Add account failed: ${err.message}`;
+				}
+				vscode.window.showErrorMessage(message);
 				return Promise.resolve();
 			}
 		});

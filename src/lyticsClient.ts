@@ -10,20 +10,28 @@ export class LyticsClient {
 	}
 	private _client: axios.AxiosInstance;
 
-	async getClientAccount(): Promise<Account | undefined> {
+	async getAccounts(): Promise<Account[]> {
 		let response = await this._client.request({
 			url: 'https://api.lytics.io/api/account'
 		});
-		const accounts = response.data.data as Array<Account>;
-		if (accounts.length === 1) {
-			return Promise.resolve(accounts[0]);
+		if (response && response.data && response.data.data) {
+			const accounts = response.data.data as Array<Account>;
+			if (accounts) {
+				return Promise.resolve(accounts);
+			}
 		}
+		return Promise.resolve([]);
 	}
 
-	static async getAccount(apikey: string): Promise<Account | undefined> {
-		const client = new LyticsClient(apikey);
-		const account = await client.getClientAccount();
-		return account;
+	async getAccount(aid: number): Promise<Account | undefined> {
+		let response = await this._client.request({
+			url: `https://api.lytics.io/api/account/${aid}`
+		});
+		if (response && response.data && response.data.data) {
+			const account = response.data.data as Account;
+			return Promise.resolve(account);
+		}
+		return Promise.resolve(undefined);
 	}
 
 	async getStreams(): Promise<DataStreamNode[]> {
