@@ -31,7 +31,7 @@ export class QueryEditorProvider  {
 			}
 		}
 		//get the query alias from the file
-		fs.readFile(uri.path, 'utf-8', async (err, data) => {
+		fs.readFile(uri.fsPath, 'utf-8', async (err, data) => {
 			const regex = /\bALIAS\s*([a-zA-Z_\-]+)/;
 			const matches = data.match(regex);
 			let alias;

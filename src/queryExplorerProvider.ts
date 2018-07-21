@@ -103,8 +103,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		if (!paths || paths.length !== 1) {
 			return Promise.resolve(undefined);
 		}
-		//TODO: check if any files exist and warn that files will be overwritten
-		return Promise.resolve(paths[0].path);
+		return Promise.resolve(paths[0].fsPath);
 	}
 
 	async commandDownloadQuery(query: QueryNode) {
