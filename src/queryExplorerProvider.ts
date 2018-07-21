@@ -196,7 +196,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		return Promise.resolve(query);
 	}
 	async saveQueryToFolder(query: QueryNode, downloadPath: string): Promise<string | undefined> {
-		const filePath = `${downloadPath}/${query.alias}.lql`;
+		const filePath =  path.join(downloadPath, `${query.alias}.lql`);
 		if (fs.existsSync(filePath)) {
 			const confirmation = await vscode.window.showQuickPick(['Ignore', 'Overwrite'], {
 				canPickMany: false,

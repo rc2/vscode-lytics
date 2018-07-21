@@ -18,7 +18,7 @@ export class SettingsManager {
 
     private static async getAccountFromSettings(setting: AccountSetting): Promise<Account | undefined> {
         let client = new LyticsClient(setting.apikey);
-        var account = await client.getClientAccount();
+        var account = await client.getAccount(setting.aid);
         return Promise.resolve(account);
     }
 
@@ -49,11 +49,11 @@ export class SettingsManager {
         return Promise.resolve(accounts);
     }
 
-    static async addAccount(apikey: string, aid: number) {
+    static async addAccount(aid: number, apikey: string) {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
-        let existing = settings.find(obj => obj.apikey === apikey);
+        let existing = settings.find(obj => obj.apikey === apikey && obj.aid === aid);
         if (existing) {
-            let err = new Error(`The specified API key is already being used for account ${aid}.`);
+            let err = new Error(`Account ${aid} already exists.`);
             return Promise.reject(err);
         }
         settings.push(<AccountSetting>{ apikey: apikey, aid: aid });
