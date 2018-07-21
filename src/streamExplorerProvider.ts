@@ -97,7 +97,16 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 				return Promise.resolve(streams);
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(`Loading data streams failed: ${err.message}`);
+				let message:(string|undefined);
+				if (err && err.response) {
+					if (err.response.status === 404) {
+						return Promise.resolve([]);
+					}
+				}
+				if (!message) {
+					message = `Loading data streams failed: ${err.message}`;
+				}
+				vscode.window.showErrorMessage(message);
 				return Promise.resolve();
 			}
 		});
