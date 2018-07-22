@@ -97,6 +97,8 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.streams.refresh', () => streamExplorerProvider.refresh());
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.stream.queries', stream => streamExplorerProvider.commandShowQueryInfo(stream));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.stream.field.info', field => streamExplorerProvider.commandShowField(field));
     context.subscriptions.push(disposable);
 

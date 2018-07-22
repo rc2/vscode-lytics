@@ -97,7 +97,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 				return Promise.resolve(streams);
 			}
 			catch (err) {
-				let message:(string|undefined);
+				let message: (string | undefined);
 				if (err && err.response) {
 					if (err.response.status === 404) {
 						return Promise.resolve([]);
@@ -135,6 +135,22 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			return 0;
 		});
 		return Promise.resolve(fields);
+	}
+
+	async commandShowQueryInfo(stream: DataStreamNode) {
+		try {
+			const account = StateManager.account;
+			if (account) {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/queries/${stream.stream}-queries.json`);
+				const doc = await vscode.workspace.openTextDocument(uri);
+				const editor = await vscode.window.showTextDocument(doc, { preview: false });
+				return Promise.resolve(editor);
+			}
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Show query info failed: ${err.message}`);
+			return Promise.resolve();
+		}
 	}
 
 	async commandShowField(field: DataStreamNode) {
