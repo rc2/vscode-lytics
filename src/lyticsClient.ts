@@ -118,12 +118,25 @@ export class LyticsClient {
 		}
 	}
 
-	async getQueriesGroupedByTable(): Promise<QueryNode[]> {
+	async getQueries(): Promise<QueryNode[]> {
 		let response = await this._client.request({
 			url: 'https://api.lytics.io/api/query'
 		});
-		const data = response.data.data as Array<QueryNode>;
-
+		let queries = response.data.data as Array<QueryNode>;
+		queries = queries.sort((a, b) => {
+			if (a.alias < b.alias) {
+				return -1;
+			}
+			if (a.alias > b.alias) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(queries);
+	}
+	async getQueriesGroupedByTable(): Promise<QueryNode[]> {
+		const data = await this.getQueries();
+		
 		let map: Map<string, QueryNode[]> = new Map();
 		for (let i = 0; i < data.length; i++) {
 			let query = data[i];
@@ -154,19 +167,6 @@ export class LyticsClient {
 			}
 			return 0;
 		});
-
-		for (let i = 0; i < tables.length; i++) {
-			let table = tables[i];
-			table.queries = table.queries.sort((a, b) => {
-				if (a.alias < b.alias) {
-					return -1;
-				}
-				if (a.alias > b.alias) {
-					return 1;
-				}
-				return 0;
-			});
-		}
 
 		return Promise.resolve(tables);
 	}
