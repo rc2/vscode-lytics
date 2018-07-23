@@ -5,6 +5,7 @@ export class LyticsUri {
     public isAccountUri: boolean = false;
     public isQueryUri: boolean = false;
     public isStreamUri: boolean = false;
+    public isStreamQueriesUri: boolean = false;
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
@@ -46,7 +47,7 @@ export class LyticsUri {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://accounts/{aid}.json
         if (parts.length === 1) {
-            var aid =  parseInt(parts[0].substring(0, parts[0].indexOf('.json')));
+            var aid = parseInt(parts[0].substring(0, parts[0].indexOf('.json')));
             if (aid !== NaN) {
                 this.isAccountUri = true;
                 this.accountId = aid;
@@ -76,6 +77,19 @@ export class LyticsUri {
                 const streamName = parts[1].substring(0, parts[1].indexOf('.json')).trim();
                 if (streamName.length > 0) {
                     this.isStreamUri = true;
+                    this.streamName = streamName;
+                    return;
+                }
+            }
+            return;
+        }
+        // lytics://{aid}/streams/default/queries/default-queries.json
+        else if (parts.length === 4) {
+            if (parts[3].endsWith('.json')) {
+                const streamName = parts[1].trim();
+                const queriesConstant = parts[2];
+                if (streamName.length > 0 && queriesConstant === 'queries') {
+                    this.isStreamQueriesUri = true;
                     this.streamName = streamName;
                     return;
                 }

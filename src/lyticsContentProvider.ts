@@ -80,6 +80,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             if (luri.isQueryUri && luri.queryAlias) {
                 return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
             }
+            else if (luri.isStreamQueriesUri && luri.streamName) {
+                return await this.provideTextDocumentContentForStreamQueries(luri.streamName, account);
+            }
             else if (luri.isStreamFieldUri && luri.streamName && luri.streamFieldName) {
                 return await this.provideTextDocumentContentForStreamField(luri.streamName, luri.streamFieldName, account);
             }
@@ -121,7 +124,26 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         }
         return Promise.reject();
     }
-
+    private async provideTextDocumentContentForStreamQueries(streamName: string, account: Account): Promise<string> {
+        let queries = await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Loading stream queries.',
+            cancellable: true
+        }, async (progress, token) => {
+            const client = new LyticsClient(account.apikey!);
+            let queries2 = await client.getQueries();
+            queries2 = queries2.filter(q => q.from === streamName);
+            const aliases = queries2.map(q => q.alias);
+            return {
+                stream: streamName,
+                aliases: aliases
+            };
+        });
+        if (queries) {
+            return Promise.resolve(JSON.stringify(queries, null, 4));
+        }
+        return Promise.reject();
+    }
     private async provideTextDocumentContentForStreamField(streamName: string, fieldName: string, account: Account): Promise<string> {
         let field = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -135,6 +157,26 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         }
         return Promise.reject();
     }
+    // private async provideTextDocumentContentForStreamFieldQueries(streamName: string, fieldName:string, account: Account): Promise<string> {
+    //     let queries = await vscode.window.withProgress({
+    //         location: vscode.ProgressLocation.Notification,
+    //         title: 'Loading stream field queries.',
+    //         cancellable: true
+    //     }, async (progress, token) => {
+    //         const client = new LyticsClient(account.apikey!);
+    //         let queries2 = await client.getQueries();
+    //         queries2 = queries2.filter(q => q.from === streamName);
+    //         const aliases = queries2.map(q => q.alias);
+    //         return {
+    //             stream: streamName,
+    //             aliases: aliases
+    //         };
+    //     });
+    //     if (queries) {
+    //         return Promise.resolve(JSON.stringify(queries, null, 4));
+    //     }
+    //     return Promise.reject();
+    // }
 
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: Account): Promise<string> {
         let field = await vscode.window.withProgress({
