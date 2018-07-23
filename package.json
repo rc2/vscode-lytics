@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -192,6 +192,15 @@
         "category": "Lytics"
       },
       {
+        "command": "lytics.stream.queries",
+        "title": "Show Query Info",
+        "icon": {
+          "light": "resources/icons/light/question.svg",
+          "dark": "resources/icons/dark/question.svg"
+        },
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.stream.field.info",
         "title": "Show Stream Field Info",
         "icon": {
@@ -273,6 +282,10 @@
         },
         {
           "command": "lytics.streams.refresh",
+          "when": "false"
+        },
+        {
+          "command": "lytics.stream.queries",
           "when": "false"
         },
         {
@@ -395,6 +408,11 @@
           "group": "inline"
         },
         {
+          "command": "lytics.stream.queries",
+          "when": "view == lytics.streams.explorer && viewItem == 'stream'",
+          "group": "inline"
+        },
+        {
           "command": "lytics.stream.field.info",
           "when": "view == lytics.streams.explorer && viewItem == 'field'",
           "group": "inline"
@@ -452,6 +470,6 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "fs": "0.0.1-security"
+    "path": "^0.12.7"
   }
 }
