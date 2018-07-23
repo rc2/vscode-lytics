@@ -1,4 +1,4 @@
-## [0.0.8] - 2018-07-22
+## [0.0.9] - 2018-07-22
 - Added more descriptive error message when an invalid API key is provided.
 - (issue 1) Added support for the function `valuect` in LQL files.
 - (issue 9) Added support for API keys that have multiple accounts associated with them.
