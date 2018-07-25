@@ -136,7 +136,7 @@ export class LyticsClient {
 	}
 	async getQueriesGroupedByTable(): Promise<QueryNode[]> {
 		const data = await this.getQueries();
-		
+
 		let map: Map<string, QueryNode[]> = new Map();
 		for (let i = 0; i < data.length; i++) {
 			let query = data[i];
@@ -170,4 +170,22 @@ export class LyticsClient {
 
 		return Promise.resolve(tables);
 	}
+	async getEntity(table: string, field: string, value: any): Promise<any> {
+		try {
+			let response = await this._client.request({
+				url: `https://api.lytics.io/api/entity/${table}/${field}/${value}`
+			});
+			if (response && response.status === 200) {
+				const msg = response.data ? response.data.message : undefined;
+				if (msg === 'success') {
+					return Promise.resolve(response.data.data);
+				}
+			}
+			return Promise.resolve();
+		}
+		catch (err) {
+			return Promise.resolve(err.response.data);
+		}
+	}
+
 }

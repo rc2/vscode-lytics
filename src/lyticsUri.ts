@@ -9,12 +9,14 @@ export class LyticsUri {
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
+    public isEntityUri: boolean = false;
     public accountId: number = 0;
     public queryAlias: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
     public tableName: (string | undefined);
     public tableFieldName: (string | undefined);
+    public tableFieldValue: (string | undefined);
 
     constructor(uri: vscode.Uri) {
         this._uri = uri;
@@ -134,6 +136,22 @@ export class LyticsUri {
                     this.isTableFieldUri = true;
                     this.tableName = tableName;
                     this.tableFieldName = fieldName;
+                    return;
+                }
+            }
+            return;
+        }
+        // lytics://{aid}/tables/user/email/test@something.com.json
+        else if (parts.length === 4) {
+            if (parts[3].endsWith('.json')) {
+                const tableName = parts[1].trim();
+                const fieldName = parts[2].trim();
+                const value = parts[3].substring(0, parts[3].indexOf('.json')).trim();
+                if (tableName.length > 0 && fieldName.length > 0 && value.length > 0) {
+                    this.isEntityUri = true;
+                    this.tableName = tableName;
+                    this.tableFieldName = fieldName;
+                    this.tableFieldValue = value;
                     return;
                 }
             }

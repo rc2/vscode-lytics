@@ -89,6 +89,13 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             else if (luri.isTableFieldUri && luri.tableName && luri.tableFieldName) {
                 return await this.provideTextDocumentContentForTableFieldInfo(luri.tableName, luri.tableFieldName, account);
             }
+            else if (luri.isEntityUri && luri.tableName && luri.tableFieldName && luri.tableFieldValue) {
+                let entity = await this.provideTextDocumentContentForEntity(luri.tableName, luri.tableFieldName, luri.tableFieldValue, account);
+                if (!entity) {
+                    entity = '';
+                }
+                return Promise.resolve(entity);
+            }
             throw new Error(`Invalid uri: ${uri.toString()}`);
         }
         catch (err) {
@@ -157,27 +164,6 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         }
         return Promise.reject();
     }
-    // private async provideTextDocumentContentForStreamFieldQueries(streamName: string, fieldName:string, account: Account): Promise<string> {
-    //     let queries = await vscode.window.withProgress({
-    //         location: vscode.ProgressLocation.Notification,
-    //         title: 'Loading stream field queries.',
-    //         cancellable: true
-    //     }, async (progress, token) => {
-    //         const client = new LyticsClient(account.apikey!);
-    //         let queries2 = await client.getQueries();
-    //         queries2 = queries2.filter(q => q.from === streamName);
-    //         const aliases = queries2.map(q => q.alias);
-    //         return {
-    //             stream: streamName,
-    //             aliases: aliases
-    //         };
-    //     });
-    //     if (queries) {
-    //         return Promise.resolve(JSON.stringify(queries, null, 4));
-    //     }
-    //     return Promise.reject();
-    // }
-
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: Account): Promise<string> {
         let field = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -190,5 +176,19 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             return Promise.resolve(JSON.stringify(field, null, 4));
         }
         return Promise.reject();
+    }
+    private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: Account): Promise<string> {
+        let entity = await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Loading entity.',
+            cancellable: true
+        }, async (progress, token) => {
+            const client = new LyticsClient(account.apikey!);
+            return client.getEntity(tableName, fieldName, value);
+        });
+        if (!entity) {
+            entity = {};
+        }
+        return Promise.resolve(JSON.stringify(entity, null, 4));
     }
 }
