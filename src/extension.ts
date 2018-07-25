@@ -105,6 +105,8 @@ function activateAccounts(context: vscode.ExtensionContext) {
     const tableExplorerProvider = new TableExplorerProvider(context);
     disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.search', field => tableExplorerProvider.commandShowEntitySearch(field));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info', field => tableExplorerProvider.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
 }

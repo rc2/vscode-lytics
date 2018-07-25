@@ -163,6 +163,30 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		}
 	}
 
+	async commandShowEntitySearch(field: TableNode) {
+		try {
+			const tableName = field.parentName;
+			const account = StateManager.account;
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			const value = await vscode.window.showInputBox({
+				prompt: `Enter the search value for ${field.as}.`
+			});
+			if (!value || value.trim().length === 0) {
+				return;
+			}
+			const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${field.as}/${value}.json`);
+			const doc = await vscode.workspace.openTextDocument(uri);
+			const editor = await vscode.window.showTextDocument(doc, { preview: false });
+			return Promise.resolve(editor);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
+			return Promise.resolve();
+		}
+	}
+
 	async commandShowFieldInfo(field: TableNode) {
 		try {
 			const account = StateManager.account;
@@ -219,15 +243,21 @@ class TableTreeItem extends vscode.TreeItem {
 }
 
 class TableFieldTreeItem extends vscode.TreeItem {
-	tableName: string;
+	fieldName: string;
 	constructor(
 		public readonly name: string,
-		table: TableNode
+		field: TableNode
 	) {
 		super(name, vscode.TreeItemCollapsibleState.None);
-		this.tableName = table.name;
-		if (table.shortdesc && table.shortdesc.trim().length > 0) {
-			this.tooltip = table.shortdesc;
+		this.fieldName = field.name;
+		if (field.is_by) {
+			this.contextValue = 'field-identifier';
+		}
+		else {
+			this.contextValue = 'field';
+		}
+		if (field.shortdesc && field.shortdesc.trim().length > 0) {
+			this.tooltip = field.shortdesc;
 		}
 	}
 	contextValue = 'field';
