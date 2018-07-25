@@ -110,21 +110,28 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		try {
 			const account = StateManager.account;
 			if (!account) {
-				return Promise.resolve();
+				throw new Error('No account is connected.');
 			}
 			const downloadPath = await this.getFolderPathForDownload();
 			if (!downloadPath) {
+				vscode.window.showErrorMessage(`Unable to get path where query ${query.alias} should be saved.`);
 				return Promise.resolve();
 			}
-			const query2 = await this.getQuery(query.alias);
-			if (!query2) {
-				return Promise.resolve();
-			}
-			const filePath = await this.saveQueryToFolder(query2, downloadPath);
-			if (!filePath) {
-				return Promise.resolve();
-			}
-			vscode.window.showInformationMessage(`Query was saved as ${filePath}`);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Downloading query ${query.alias}.`,
+				cancellable: true
+			}, async (progress, token) => {
+				const query2 = await this.getQuery(query.alias);
+				if (!query2) {
+					return Promise.resolve();
+				}
+				const filePath = await this.saveQueryToFolder(query2, downloadPath);
+				if (filePath) {
+					vscode.window.showInformationMessage(`Query was saved as ${filePath}`);
+					return;
+				}
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Downloading query failed: ${err.message}`);
@@ -135,29 +142,40 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		try {
 			const account = StateManager.account;
 			if (!account) {
-				return Promise.resolve();
+				throw new Error('No account is connected.');
 			}
 			const downloadPath = await this.getFolderPathForDownload();
 			if (!downloadPath) {
+				vscode.window.showErrorMessage(`Unable to get path where ${selectedTable.table} queries should be saved.`);
 				return Promise.resolve();
 			}
-			const queries = await this.getQueries(selectedTable.table);
-			if (!queries) {
-				return Promise.resolve();
-			}
-			for (let i = 0; i < queries.length; i++) {
-				const query = queries[i];
-				try {
-					const filePath = await this.saveQueryToFolder(query, downloadPath);	
-					if (filePath) {
-						vscode.window.showInformationMessage(`Query was saved as ${filePath}`);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Downloading queries for ${selectedTable.table}.`,
+				cancellable: true
+			}, async (progress, token) => {
+				const queries = await this.getQueries(selectedTable.table);
+				if (!queries) {
+					return Promise.resolve();
+				}
+				const saved: string[] = [];
+				for (let i = 0; i < queries.length; i++) {
+					const query = queries[i];
+					try {
+						const filePath = await this.saveQueryToFolder(query, downloadPath);
+						if (filePath) {
+							saved.push(query.alias);
+						}
+					}
+					catch (err) {
+						vscode.window.showErrorMessage(`Unable to save query ${query.alias}: ${err.message}`);
 					}
 				}
-				catch(err) {
-					vscode.window.showErrorMessage(`Unable to save query ${query.alias}: ${err.message}`);
+				if (saved.length > 0) {
+					const msg = saved.length === 1 ? 'query was' : 'queries were';
+					vscode.window.showInformationMessage(`${saved.length} ${msg} saved to ${downloadPath}.`);
 				}
-			}
-			return Promise.resolve();
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Downloading query failed: ${err.message}`);
@@ -195,14 +213,14 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		return Promise.resolve(query);
 	}
 	async saveQueryToFolder(query: QueryNode, downloadPath: string): Promise<string | undefined> {
-		const filePath =  path.join(downloadPath, `${query.alias}.lql`);
+		const filePath = path.join(downloadPath, `${query.alias}.lql`);
 		if (fs.existsSync(filePath)) {
 			const confirmation = await vscode.window.showQuickPick(['Ignore', 'Overwrite'], {
 				canPickMany: false,
 				placeHolder: `Do you want to overwrite the file ${query.alias}.lql?`
 			});
 			if (confirmation !== 'Overwrite') {
-				return Promise.reject({message: 'file already exists'});
+				return Promise.reject({ message: 'file already exists' });
 			}
 		}
 		const filePath2 = await vscode.window.withProgress({

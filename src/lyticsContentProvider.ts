@@ -3,72 +3,16 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
 import { LyticsClient } from './lyticsClient';
-import { Account, QueryNode } from './models';
+import { Account } from './models';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
 
 export default class LyticsContentProvider implements vscode.TextDocumentContentProvider {
 
-    private async getAccount(aid: number): Promise<Account | undefined> {
-        try {
-            const account = await SettingsManager.getAccount(aid);
-            if (!account) {
-                throw new Error(`The account ${aid} is not defined.`);
-            }
-            const client = new LyticsClient(account.apikey);
-            const reloadedAccount = await client.getAccount(aid);
-            if (!reloadedAccount) {
-                throw new Error(`The account ${aid} was not loaded.`);
-            }
-            return Promise.resolve(reloadedAccount);
-        }
-        catch (err) {
-            vscode.window.showErrorMessage(`Loading account failed: ${err.message}`);
-            return Promise.resolve(undefined);
-        }
-    }
-
-    private async getQuery(alias: string, account: Account): Promise<QueryNode | undefined> {
-        const client = new LyticsClient(account.apikey!);
-        try {
-            if (!alias) {
-                return Promise.resolve(undefined);
-            }
-            const query = await client.getQuery(alias);
-            return Promise.resolve(query);
-        }
-        catch (err) {
-            vscode.window.showErrorMessage(`Loading query failed: ${err.message}`);
-            return Promise.resolve(undefined);
-        }
-    }
-
-    private async getStreamField(streamName: string, fieldName: string, account: Account): Promise<object | undefined> {
-        const client = new LyticsClient(account.apikey!);
-        try {
-            const field = await client.getStreamField(streamName, fieldName);
-            return Promise.resolve(field);
-        }
-        catch (err) {
-            vscode.window.showErrorMessage(`Loading stream field failed: ${err.message}`);
-            return Promise.resolve(undefined);
-        }
-    }
-
-    private async getTableFieldInfo(tableName: string, fieldName: string, account: Account): Promise<object | undefined> {
-        const client = new LyticsClient(account.apikey!);
-        try {
-            const field = await client.getTableFieldInfo(tableName, fieldName);
-            return Promise.resolve(field);
-        }
-        catch (err) {
-            vscode.window.showErrorMessage(`Loading table field info failed: ${err.message}`);
-            return Promise.resolve(undefined);
-        }
-    }
-
     public async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         try {
+            //
+            //data that doesn't require an account be connected
             var luri = new LyticsUri(uri);
             if (luri.isAccountUri && luri.accountId) {
                 return await this.provideTextDocumentContentForAccount(luri.accountId);
@@ -77,6 +21,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             if (!account) {
                 throw new Error('No account is connected.');
             }
+            //
+            //data that requires an account be connected
             if (luri.isQueryUri && luri.queryAlias) {
                 return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
             }
@@ -105,87 +51,49 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     }
 
     private async provideTextDocumentContentForAccount(aid: number): Promise<string> {
-        let reloadedAccount = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading account.',
-            cancellable: true
-        }, async (progress, token) => {
-            return await this.getAccount(aid);
-        });
-        if (reloadedAccount) {
-            return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
+        const account = await SettingsManager.getAccount(aid);
+        if (!account) {
+            throw new Error(`The account ${aid} is not defined.`);
         }
-        return Promise.reject();
+        const client = new LyticsClient(account.apikey);
+        const reloadedAccount = await client.getAccount(aid);
+        return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
     }
-
     private async provideTextDocumentContentForQuery(queryAlias: string, account: Account): Promise<string> {
-        let reloadedQuery = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading query.',
-            cancellable: true
-        }, async (progress, token) => {
-            return await this.getQuery(queryAlias, account);
-        });
-        if (reloadedQuery) {
-            return Promise.resolve(reloadedQuery.text);
-        }
-        return Promise.reject();
+        const client = new LyticsClient(account.apikey!);
+        const query = await client.getQuery(queryAlias);
+        return Promise.resolve(JSON.stringify(query, null, 4));
     }
     private async provideTextDocumentContentForStreamQueries(streamName: string, account: Account): Promise<string> {
-        let queries = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading stream queries.',
-            cancellable: true
-        }, async (progress, token) => {
-            const client = new LyticsClient(account.apikey!);
-            let queries2 = await client.getQueries();
-            queries2 = queries2.filter(q => q.from === streamName);
-            const aliases = queries2.map(q => q.alias);
-            return {
-                stream: streamName,
-                aliases: aliases
-            };
-        });
-        if (queries) {
-            return Promise.resolve(JSON.stringify(queries, null, 4));
-        }
-        return Promise.reject();
+        const client = new LyticsClient(account.apikey!);
+        let queries = await client.getQueries();
+        queries = queries.filter(q => q.from === streamName);
+        const aliases = queries.map(q => q.alias);
+        const result = {
+            stream: streamName,
+            aliases: aliases
+        };
+        return Promise.resolve(JSON.stringify(result, null, 4));
     }
     private async provideTextDocumentContentForStreamField(streamName: string, fieldName: string, account: Account): Promise<string> {
-        let field = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading stream field.',
-            cancellable: true
-        }, async (progress, token) => {
-            return await this.getStreamField(streamName, fieldName, account);
-        });
-        if (field) {
-            return Promise.resolve(JSON.stringify(field, null, 4));
+        const client = new LyticsClient(account.apikey!);
+        let field = await client.getStreamField(streamName, fieldName);
+        if (!field) {
+            field = {};
         }
-        return Promise.reject();
+        return Promise.resolve(JSON.stringify(field, null, 4));
     }
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: Account): Promise<string> {
-        let field = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading table field.',
-            cancellable: true
-        }, async (progress, token) => {
-            return await this.getTableFieldInfo(tableName, fieldName, account);
-        });
-        if (field) {
-            return Promise.resolve(JSON.stringify(field, null, 4));
+        const client = new LyticsClient(account.apikey);
+        let info = await client.getTableFieldInfo(tableName, fieldName);
+        if (!info) {
+            info = {};
         }
-        return Promise.reject();
+        return Promise.resolve(JSON.stringify(info, null, 4));
     }
     private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: Account): Promise<string> {
-        let entity = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Loading entity.',
-            cancellable: true
-        }, async (progress, token) => {
-            const client = new LyticsClient(account.apikey!);
-            return client.getEntity(tableName, fieldName, value);
-        });
+        const client = new LyticsClient(account.apikey);
+        let entity = await client.getEntity(tableName, fieldName, value);
         if (!entity) {
             entity = {};
         }

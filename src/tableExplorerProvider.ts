@@ -165,10 +165,13 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 
 	async commandShowEntitySearch(field: TableNode) {
 		try {
-			const tableName = field.parentName;
 			const account = StateManager.account;
 			if (!account) {
 				throw new Error('No account is connected.');
+			}
+			const tableName = field.parentName;
+			if (!tableName || tableName.trim().length === 0) {
+				return;
 			}
 			const value = await vscode.window.showInputBox({
 				prompt: `Enter the search value for ${field.as}.`
@@ -176,10 +179,16 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			if (!value || value.trim().length === 0) {
 				return;
 			}
-			const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${field.as}/${value}.json`);
-			const doc = await vscode.workspace.openTextDocument(uri);
-			const editor = await vscode.window.showTextDocument(doc, { preview: false });
-			return Promise.resolve(editor);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: 'Loading entity.',
+				cancellable: true
+			}, async (progress, token) => {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${field.as}/${value}.json`);
+				const doc = await vscode.workspace.openTextDocument(uri);
+				await vscode.window.showTextDocument(doc, { preview: false });
+			});
+			return Promise.resolve();
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
@@ -193,37 +202,23 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const fieldName = field.as;
 			const tableName = field.parentName;
-			if (!fieldName || fieldName.trim().length === 0) {
-				return Promise.resolve();
-			}
 			if (!tableName || tableName.trim().length === 0) {
 				return Promise.resolve();
 			}
-			let fieldInfo = await vscode.window.withProgress({
+			const fieldName = field.as;
+			if (!fieldName || fieldName.trim().length === 0) {
+				return Promise.resolve();
+			}
+			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: 'Loading table field info.',
 				cancellable: true
 			}, async (progress, token) => {
-				const client = new LyticsClient(account.apikey!);
-				try {
-					const info = await client.getTableFieldInfo(tableName, fieldName);
-					return Promise.resolve(info);
-				}
-				catch (err) {
-					vscode.window.showErrorMessage(`Loading table field info failed: ${err.message}`);
-					return Promise.resolve();
-				}
-			});
-
-			if (fieldInfo) {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${fieldName}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, { preview: false });
-				return Promise.resolve(editor);
-			}
-			return Promise.resolve(fieldInfo);
+				await vscode.window.showTextDocument(doc, { preview: false });
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Open table field failed: ${err.message}`);

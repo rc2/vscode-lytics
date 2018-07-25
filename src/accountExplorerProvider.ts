@@ -84,7 +84,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 					return Promise.resolve();
 				}
 				const aid = parseInt(selectedAccount.split(':')[0]);
-				if (! isNaN(aid)) {
+				if (!isNaN(aid)) {
 					await SettingsManager.addAccount(aid, apikey);
 					await this.refresh();
 					vscode.window.showInformationMessage(`Account ${aid} was added.`);
@@ -92,7 +92,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 				}
 			}
 			catch (err) {
-				let message:(string|undefined);
+				let message: (string | undefined);
 				if (err.response) {
 					if (err.response.status === 401) {
 						message = 'Invalid API key was provided.';
@@ -208,10 +208,16 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			if (aid === 0) {
 				throw new Error('Unable to determine account id.');
 			}
-			const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
-			const doc = await vscode.workspace.openTextDocument(uri);
-			const editor = await vscode.window.showTextDocument(doc, { preview: false });
-			return Promise.resolve(editor);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: 'Loading account info.',
+				cancellable: true
+			}, async (progress, token) => {
+
+				const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
+				const doc = await vscode.workspace.openTextDocument(uri);
+				await vscode.window.showTextDocument(doc, { preview: false });
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Show account failed: ${err.message}`);
@@ -226,7 +232,7 @@ class AccountTreeItem extends vscode.TreeItem {
 		public readonly name: string,
 		public readonly aid: number,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly command ?: vscode.Command,
+		public readonly command?: vscode.Command,
 	) {
 		super(`[${aid}] ${name}`, collapsibleState);
 	}

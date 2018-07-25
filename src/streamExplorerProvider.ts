@@ -140,12 +140,18 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 	async commandShowQueryInfo(stream: DataStreamNode) {
 		try {
 			const account = StateManager.account;
-			if (account) {
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: 'Loading query info.',
+				cancellable: true
+			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/queries/${stream.stream}-queries.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, { preview: false });
-				return Promise.resolve(editor);
-			}
+				await vscode.window.showTextDocument(doc, { preview: false });
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Show query info failed: ${err.message}`);
@@ -156,12 +162,19 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 	async commandShowField(field: DataStreamNode) {
 		try {
 			const account = StateManager.account;
-			if (account) {
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: 'Loading stream field info.',
+				cancellable: true
+			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${field.parentName}/${field.name}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
 				const editor = await vscode.window.showTextDocument(doc, { preview: false });
 				return Promise.resolve(editor);
-			}
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Open stream field failed: ${err.message}`);
