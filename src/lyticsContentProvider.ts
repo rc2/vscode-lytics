@@ -62,7 +62,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     private async provideTextDocumentContentForQuery(queryAlias: string, account: Account): Promise<string> {
         const client = new LyticsClient(account.apikey!);
         const query = await client.getQuery(queryAlias);
-        return Promise.resolve(JSON.stringify(query, null, 4));
+        const text = query ? query.text : '';
+        return Promise.resolve(text);
     }
     private async provideTextDocumentContentForStreamQueries(streamName: string, account: Account): Promise<string> {
         const client = new LyticsClient(account.apikey!);
