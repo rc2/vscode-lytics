@@ -1,3 +1,6 @@
+## [0.0.10] - 2018-07-25
+- (issue 20) Added command on table explorer for identifier fields to allow you to search on that field.
+
 ## [0.0.9] - 2018-07-22
 - Added more descriptive error message when an invalid API key is provided.
 - (issue 1) Added support for the function `valuect` in LQL files.
