@@ -1,3 +1,6 @@
+## [0.0.11] - 2018-07-26
+- (issue 22) Fixed bug where download/open query was showing JSON instead of the query text.
+
 ## [0.0.10] - 2018-07-25
 - (issue 20) Added command on table explorer for identifier fields to allow you to search on that field.
 
