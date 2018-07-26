@@ -17,7 +17,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		try {
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Refreshing query list.',
+				title: `Refreshing query list.`,
 				cancellable: true
 			}, async (progress, token) => {
 				this._onDidChangeTreeData.fire();
@@ -38,7 +38,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`QueryNode type ${element.kind} is not supported.`);
+		throw new Error(`QueryNode type is not supported: ${element.kind} `);
 	}
 
 	private getIcon(node: QueryNode): any {
@@ -55,7 +55,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		if (!element) {
 			let tables = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading queries.',
+				title: `Loading queries for account: ${account.aid}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const client = new LyticsClient(account.apikey!);
@@ -64,7 +64,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 					return Promise.resolve(tables);
 				}
 				catch (err) {
-					vscode.window.showErrorMessage(`Loading tables failed: ${err.message}`);
+					vscode.window.showErrorMessage(`Loading tables failed for account ${account.aid}: ${err.message}`);
 					return Promise.resolve();
 				}
 			});
@@ -79,15 +79,21 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		return Promise.resolve([]);
 	}
 
-	async commandOpenQuery(query: QueryNode) {
+	async commandShowQuery(query: QueryNode) {
 		try {
 			const account = StateManager.account;
-			if (account) {
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Opening query: ${query.alias}`,
+				cancellable: true
+			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.lql`);
 				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, { preview: false });
-				return Promise.resolve(editor);
-			}
+				await vscode.window.showTextDocument(doc, { preview: false });
+			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
@@ -113,13 +119,12 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				throw new Error('No account is connected.');
 			}
 			const downloadPath = await this.getFolderPathForDownload();
-			if (!downloadPath) {
-				vscode.window.showErrorMessage(`Unable to get path where query ${query.alias} should be saved.`);
+			if (!downloadPath || downloadPath.trim().length === 0) {
 				return Promise.resolve();
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: `Downloading query ${query.alias}.`,
+				title: `Downloading query: ${query.alias}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const query2 = await this.getQuery(query.alias);
@@ -128,7 +133,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				}
 				const filePath = await this.saveQueryToFolder(query2, downloadPath);
 				if (filePath) {
-					vscode.window.showInformationMessage(`Query was saved as ${filePath}`);
+					vscode.window.showInformationMessage(`Query downloaded: ${filePath}`);
 					return;
 				}
 			});
@@ -145,13 +150,12 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				throw new Error('No account is connected.');
 			}
 			const downloadPath = await this.getFolderPathForDownload();
-			if (!downloadPath) {
-				vscode.window.showErrorMessage(`Unable to get path where ${selectedTable.table} queries should be saved.`);
+			if (!downloadPath || downloadPath.trim().length === 0) {
 				return Promise.resolve();
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: `Downloading queries for ${selectedTable.table}.`,
+				title: `Downloading queries for table: ${selectedTable.table}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const queries = await this.getQueries(selectedTable.table);
@@ -173,7 +177,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				}
 				if (saved.length > 0) {
 					const msg = saved.length === 1 ? 'query was' : 'queries were';
-					vscode.window.showInformationMessage(`${saved.length} ${msg} saved to ${downloadPath}.`);
+					vscode.window.showInformationMessage(`${saved.length} ${msg} saved to: ${downloadPath}`);
 				}
 			});
 		}
@@ -223,16 +227,8 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				return Promise.reject({ message: 'file already exists' });
 			}
 		}
-		const filePath2 = await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: 'Downloading query.',
-			cancellable: true
-		}, async (progress, token) => {
-			var path = filePath;
-			fs.writeFile(path, query.text, err => { });
-			return Promise.resolve(path);
-		});
-		return Promise.resolve(filePath2);
+		await fs.writeFile(filePath, query.text, err => { });
+		return Promise.resolve(filePath);
 	}
 }
 

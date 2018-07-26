@@ -52,7 +52,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`DataStreamNode type ${element.kind} is not supported.`);
+		throw new Error(`DataStreamNode type is not supported: ${element.kind}`);
 	}
 
 	private getIcon(node: DataStreamNode): any {
@@ -72,7 +72,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 	async getStreams(account: Account): Promise<DataStreamNode[]> {
 		let streams = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: 'Loading data streams.',
+			title: `Loading data streams for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
 			const client = new LyticsClient(account.apikey!);
@@ -145,7 +145,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading query info.',
+				title: `Loading query info: ${stream.stream}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/queries/${stream.stream}-queries.json`);
@@ -167,7 +167,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading stream field info.',
+				title: `Loading stream field info: ${field.name}.`,
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${field.parentName}/${field.name}.json`);
@@ -177,7 +177,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			});
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(`Open stream field failed: ${err.message}`);
+			vscode.window.showErrorMessage(`Show stream field failed: ${err.message}`);
 			return Promise.resolve();
 		}
 	}

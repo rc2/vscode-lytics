@@ -163,7 +163,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 				if (account) {
 					StateManager.account = account;
 					await this.refresh();
-					vscode.window.showInformationMessage(`Account ${account.aid} is now connected.`);
+					vscode.window.showInformationMessage(`Account is connected: ${account.aid}`);
 					return Promise.resolve(account);
 				}
 			});
@@ -184,12 +184,12 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		}
 
 		if (accountItem && accountItem.aid !== account.aid) {
-			vscode.window.showErrorMessage('The selected account is not connected.');
+			vscode.window.showErrorMessage(`The selected account is not connected: ${account.aid}`);
 			return Promise.resolve(undefined);
 		}
 		StateManager.account = undefined;
 		await this.refresh();
-		vscode.window.showInformationMessage(`The account ${account.aid} has been disconnected.`);
+		vscode.window.showInformationMessage(`The account is disconnected: ${account.aid}`);
 		return Promise.resolve(account);
 	}
 
@@ -210,7 +210,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading account info.',
+				title: `Loading account info: ${aid}`,
 				cancellable: true
 			}, async (progress, token) => {
 

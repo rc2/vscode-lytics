@@ -170,10 +170,14 @@ export class LyticsClient {
 
 		return Promise.resolve(tables);
 	}
-	async getEntity(table: string, field: string, value: any): Promise<any> {
+	async getEntity(table: string, field: string, value: any, wait:boolean = false): Promise<any> {
 		try {
+			let url = `https://api.lytics.io/api/entity/${table}/${field}/${value}`;
+			if (wait) {
+				url += '?deep=true';
+			}
 			let response = await this._client.request({
-				url: `https://api.lytics.io/api/entity/${table}/${field}/${value}`
+				url: url
 			});
 			if (response && response.status === 200) {
 				const msg = response.data ? response.data.message : undefined;

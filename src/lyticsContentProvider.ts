@@ -93,7 +93,7 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     }
     private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: Account): Promise<string> {
         const client = new LyticsClient(account.apikey);
-        let entity = await client.getEntity(tableName, fieldName, value);
+        let entity = await client.getEntity(tableName, fieldName, value, true);
         if (!entity) {
             entity = {};
         }

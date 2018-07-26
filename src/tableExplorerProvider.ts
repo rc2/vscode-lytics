@@ -56,7 +56,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`TableNode type ${element.kind} is not supported.`);
+		throw new Error(`TableNode type is not supported: ${element.kind}`);
 	}
 	private getIcon(node: TableNode): any {
 		var icon: (string | undefined) = undefined;
@@ -88,7 +88,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 	async getFields(element: TableNode, account: Account): Promise<TableNode[]> {
 		let fields = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Loading fields for table ${element.name}.`,
+			title: `Loading fields for table: ${element.name}.`,
 			cancellable: true
 		}, async (progress, token) => {
 			const client = new LyticsClient(account.apikey!);
@@ -106,7 +106,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 				return Promise.resolve(fields);
 			}
 			catch (err) {
-				vscode.window.showErrorMessage(`Loading tables failed: ${err.message}`);
+				vscode.window.showErrorMessage(`Loading table fields failed: ${err.message}`);
 				return Promise.resolve();
 			}
 		});
@@ -128,7 +128,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			}
 			await SettingsManager.addTable(name, account.aid);
 			await this.refresh();
-			vscode.window.showInformationMessage(`Table ${name} was added.`);
+			vscode.window.showInformationMessage(`Table was added: ${name}`);
 			return Promise.resolve();
 		}
 		catch (err) {
@@ -154,7 +154,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			}
 			await SettingsManager.removeTable(name, account.aid);
 			await this.refresh();
-			vscode.window.showInformationMessage(`Table ${name} was removed.`);
+			vscode.window.showInformationMessage(`Table was removed: ${name}`);
 			return Promise.resolve();
 		}
 		catch (err) {
@@ -181,7 +181,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading entity.',
+				title: `Loading entity by ${field.as}: ${value}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${field.as}/${value}.json`);
@@ -212,7 +212,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: 'Loading table field info.',
+				title: `Loading table field info: ${fieldName}`,
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${fieldName}.json`);
@@ -221,7 +221,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			});
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(`Open table field failed: ${err.message}`);
+			vscode.window.showErrorMessage(`Show table field info failed: ${err.message}`);
 			return Promise.resolve();
 		}
 	}

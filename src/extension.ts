@@ -87,7 +87,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.queries.download', table => queryExplorerProvider.commandDownloadQueries(table));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.query.open', query => queryExplorerProvider.commandOpenQuery(query));
+    disposable = vscode.commands.registerCommand('lytics.query.open', query => queryExplorerProvider.commandShowQuery(query));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.query.download', query => queryExplorerProvider.commandDownloadQuery(query));
     context.subscriptions.push(disposable);
