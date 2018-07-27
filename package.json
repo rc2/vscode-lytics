@@ -25,6 +25,7 @@
   "activationEvents": [
     "onCommand:lytics.accounts.add",
     "onCommand:lytics.accounts.connect",
+    "onCommand:lytics.accounts.export",
     "onLanguage:lql",
     "onView:lytics.accounts.explorer"
   ],
@@ -103,6 +104,11 @@
           "light": "resources/icons/light/power.svg",
           "dark": "resources/icons/dark/power.svg"
         },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.accounts.export",
+        "title": "Export Accounts",
         "category": "Lytics"
       },
       {

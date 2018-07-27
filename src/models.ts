@@ -3,6 +3,8 @@ export interface Account {
 	aid: number;
 	isNotValid: boolean;
 	apikey: string;
+	domain: string;
+	dataapikey: string;
 }
 export interface DataStreamNode {
 	//stream

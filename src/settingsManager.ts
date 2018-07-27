@@ -33,7 +33,7 @@ export class SettingsManager {
                 }
             }
             catch (err) {
-                account = { name: '', aid: setting.aid, isNotValid: true, apikey: setting.apikey };
+                account = { name: '', aid: setting.aid, isNotValid: true, apikey: setting.apikey, domain: '', dataapikey: '' };
             }
             accounts.push(account);
         }
