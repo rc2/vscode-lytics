@@ -59,6 +59,9 @@ function activateAccounts(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('lytics.accounts.export', accountExplorerProvider.commandExportAccounts);
+    context.subscriptions.push(disposable);
+    
     disposable = vscode.commands.registerCommand('lytics.accounts.disconnect', async (account) => {
         if (!StateManager.account) {
             return;

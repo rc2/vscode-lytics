@@ -4,6 +4,8 @@ import { LyticsClient } from './lyticsClient';
 import { Account } from './models';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
+import { AccountsExportFilezilla } from './accountsExportFilezilla';
+import { AccountsExportHandler } from './exports';
 
 export class AccountExplorerProvider implements vscode.TreeDataProvider<Account> {
 
@@ -213,7 +215,6 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 				title: `Loading account info: ${aid}`,
 				cancellable: true
 			}, async (progress, token) => {
-
 				const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
 				await vscode.window.showTextDocument(doc, { preview: false });
@@ -223,6 +224,31 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			vscode.window.showErrorMessage(`Show account failed: ${err.message}`);
 			return Promise.resolve();
 		}
+	}
+	async commandExportAccounts() {
+		let exportHandler:(AccountsExportHandler|undefined);
+		const handlerName = await vscode.window.showQuickPick(['Export to FileZilla']);
+		if (!handlerName || handlerName.trim().length === 0) {
+			return;
+		}
+		if (handlerName === 'Export to FileZilla') {
+			exportHandler = new AccountsExportFilezilla();
+		}
+		if (!exportHandler) {
+			vscode.window.showErrorMessage(`Export handler could not be resolved: ${handlerName}`);
+			return;
+		}
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: 'Exporting accounts',
+			cancellable: true
+		}, async (progress, token) => {
+			const getAccounts = async () => {
+				const accounts:Account[] = await SettingsManager.getAccounts();
+				return Promise.resolve(accounts);
+			};
+			return await exportHandler!.export(getAccounts, progress);
+		});
 	}
 }
 
