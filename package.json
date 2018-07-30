@@ -23,6 +23,7 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:lytics.watch.folder",
     "onCommand:lytics.accounts.add",
     "onCommand:lytics.accounts.connect",
     "onCommand:lytics.accounts.export",
@@ -88,6 +89,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "lytics.watch.folder",
+        "title": "Lytics Watch",
+        "category": "Lytics"
+      },
       {
         "command": "lytics.accounts.show",
         "title": "Show Account",
@@ -260,6 +266,11 @@
     "menus": {
       "commandPalette": [
         {
+          "command": "lytics.watch.folder",
+          "group": "Lytics",
+          "when": "explorerResourceIsFolder"
+        },
+        {
           "command": "lytics.accounts.disconnect",
           "when": "false"
         },
@@ -340,6 +351,11 @@
           "command": "lytics.queries.upload",
           "group": "7_modification",
           "when": "resourceLangId == lql"
+        },
+        {
+          "command": "lytics.watch.folder",
+          "when": "explorerResourceIsFolder",
+          "group": "2_workspace"
         }
       ],
       "view/title": [
