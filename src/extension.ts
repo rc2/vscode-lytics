@@ -88,11 +88,11 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.queries.refresh', () => queryExplorerProvider.refresh());
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.queries.download', table => queryExplorerProvider.commandDownloadQueries(table));
+    disposable = vscode.commands.registerCommand('lytics.queries.download', (table) => queryExplorerProvider.commandDownloadQueries(table));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.query.open', query => queryExplorerProvider.commandShowQuery(query));
+    disposable = vscode.commands.registerCommand('lytics.query.open', (query) => queryExplorerProvider.commandShowQuery(query));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.query.download', query => queryExplorerProvider.commandDownloadQuery(query));
+    disposable = vscode.commands.registerCommand('lytics.query.download', (query) => queryExplorerProvider.commandDownloadQuery(query));
     context.subscriptions.push(disposable);
 
     const streamExplorerProvider = new StreamExplorerProvider(context);
@@ -100,17 +100,17 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.streams.refresh', () => streamExplorerProvider.refresh());
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.stream.queries', stream => streamExplorerProvider.commandShowQueryInfo(stream));
+    disposable = vscode.commands.registerCommand('lytics.stream.queries', (stream) => streamExplorerProvider.commandShowQueryInfo(stream));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.stream.field.info', field => streamExplorerProvider.commandShowField(field));
+    disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => streamExplorerProvider.commandShowField(field));
     context.subscriptions.push(disposable);
 
     const tableExplorerProvider = new TableExplorerProvider(context);
     disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.table.field.search', field => tableExplorerProvider.commandShowEntitySearch(field));
+    disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => tableExplorerProvider.commandShowEntitySearch(field));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.table.field.info', field => tableExplorerProvider.commandShowFieldInfo(field));
+    disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
 }
 
