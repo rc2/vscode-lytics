@@ -6,6 +6,7 @@ import { QueryEditorProvider } from './queryEditorProvider';
 import { QueryExplorerProvider } from './queryExplorerProvider';
 import { StreamExplorerProvider } from './streamExplorerProvider';
 import { TableExplorerProvider } from './tableExplorerProvider';
+import { TerminalManager } from './terminalManager';
 import { StateManager } from './stateManager';
 import LyticsContentProvider from './lyticsContentProvider';
 
@@ -111,6 +112,11 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => tableExplorerProvider.commandShowEntitySearch(field));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
+    context.subscriptions.push(disposable);
+
+    const termManager = new TerminalManager();
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.watch.folder', (uri) => termManager.watch(uri));
     context.subscriptions.push(disposable);
 }
 
