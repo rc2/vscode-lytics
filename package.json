@@ -335,6 +335,13 @@
           "when": "editorLangId == lql && editorReadOnly == false"
         }
       ],
+      "explorer/context": [
+        {
+          "command": "lytics.queries.upload",
+          "group": "7_modification",
+          "when": "resourceLangId == lql"
+        }
+      ],
       "view/title": [
         {
           "command": "lytics.accounts.add",
