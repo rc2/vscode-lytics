@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { Account, TableNode } from './models';
-import { LyticsClient } from './lyticsClient';
+import lytics = require("lytics-js");
+import { LyticsAccount, TableSchema } from '../node_modules/lytics-js/dist/types';
 
 export class SettingsManager {
 
     constructor() {
     }
 
-    static async getAccount(aid: number): Promise<Account | undefined> {
+    static async getAccount(aid: number): Promise<LyticsAccount | undefined> {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
         let existing = settings.find(obj => obj.aid === aid);
         if (!existing) {
@@ -16,15 +16,15 @@ export class SettingsManager {
         return this.getAccountFromSettings(existing);
     }
 
-    private static async getAccountFromSettings(setting: AccountSetting): Promise<Account | undefined> {
-        let client = new LyticsClient(setting.apikey);
+    private static async getAccountFromSettings(setting: AccountSetting): Promise<LyticsAccount | undefined> {
+        let client = lytics.getClient(setting.apikey);
         var account = await client.getAccount(setting.aid);
         return Promise.resolve(account);
     }
 
-    static async getAccounts(): Promise<Account[]> {
+    static async getAccounts(): Promise<LyticsAccount[]> {
         const settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
-        let accounts: Account[] = [];
+        let accounts: LyticsAccount[] = [];
         for (let setting of settings) {
             try {
                 var account = await this.getAccountFromSettings(setting);
@@ -33,7 +33,9 @@ export class SettingsManager {
                 }
             }
             catch (err) {
-                account = { name: '', aid: setting.aid, isNotValid: true, apikey: setting.apikey, domain: '', dataapikey: '' };
+                account = new LyticsAccount();
+                account.aid = setting.aid;
+                account.apikey = setting.apikey;
             }
             accounts.push(account);
         }
@@ -75,31 +77,20 @@ export class SettingsManager {
         return Promise.resolve();
     }
 
-    static async getTables(aid: number): Promise<TableNode[]> {
-        let tables: TableNode[] = [];
+    static async getTables(aid: number): Promise<TableSchema[]> {
+        let tables: TableSchema[] = [];
         const settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
         var setting = settings.find((account) => account.aid === aid);
         if (setting) {
             if (setting.tables) {
+                setting.tables.sort();
                 for (let i = 0; i < setting.tables.length; i++) {
-                    let table = <TableNode>{
-                        name: setting.tables[i],
-                        kind: 'table'
-                    }
-                        ;
+                    let table = new TableSchema();
+                    table.name = setting.tables[i];
                     tables.push(table);
                 }
             }
         }
-        tables = tables.sort((a, b) => {
-            if (a.name < b.name) {
-                return -1;
-            }
-            if (a.name > b.name) {
-                return 1;
-            }
-            return 0;
-        });
         return Promise.resolve(tables);
     }
 

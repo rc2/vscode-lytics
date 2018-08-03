@@ -2,10 +2,10 @@
 
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
-import { LyticsClient } from './lyticsClient';
-import { Account } from './models';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
+import lytics = require("lytics-js");
+import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
 
 export default class LyticsContentProvider implements vscode.TextDocumentContentProvider {
 
@@ -55,18 +55,21 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         if (!account) {
             throw new Error(`The account ${aid} is not defined.`);
         }
-        const client = new LyticsClient(account.apikey);
+        if (!account.apikey) {
+            throw new Error(`The account ${aid} does not have an API key specified.`);
+        }
+        const client = lytics.getClient(account.apikey!);
         const reloadedAccount = await client.getAccount(aid);
         return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
     }
-    private async provideTextDocumentContentForQuery(queryAlias: string, account: Account): Promise<string> {
-        const client = new LyticsClient(account.apikey!);
+    private async provideTextDocumentContentForQuery(queryAlias: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
         const query = await client.getQuery(queryAlias);
         const text = query ? query.text : '';
-        return Promise.resolve(text);
+        return Promise.resolve(text!);
     }
-    private async provideTextDocumentContentForStreamQueries(streamName: string, account: Account): Promise<string> {
-        const client = new LyticsClient(account.apikey!);
+    private async provideTextDocumentContentForStreamQueries(streamName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
         let queries = await client.getQueries();
         queries = queries.filter(q => q.from === streamName);
         const aliases = queries.map(q => q.alias);
@@ -76,24 +79,19 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         };
         return Promise.resolve(JSON.stringify(result, null, 4));
     }
-    private async provideTextDocumentContentForStreamField(streamName: string, fieldName: string, account: Account): Promise<string> {
-        const client = new LyticsClient(account.apikey!);
+    private async provideTextDocumentContentForStreamField(streamName: string, fieldName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
         let field = await client.getStreamField(streamName, fieldName);
-        if (!field) {
-            field = {};
-        }
-        return Promise.resolve(JSON.stringify(field, null, 4));
+        return Promise.resolve(JSON.stringify(field ? field : {}, null, 4));
     }
-    private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: Account): Promise<string> {
-        const client = new LyticsClient(account.apikey);
-        let info = await client.getTableFieldInfo(tableName, fieldName);
-        if (!info) {
-            info = {};
-        }
-        return Promise.resolve(JSON.stringify(info, null, 4));
+    private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        //let info = await client.getTableFieldInfo(tableName, fieldName);
+        const info = await client.getTableSchemaFieldInfo(tableName, fieldName); 
+        return Promise.resolve(JSON.stringify(info ? info : {}, null, 4));
     }
-    private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: Account): Promise<string> {
-        const client = new LyticsClient(account.apikey);
+    private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
         let entity = await client.getEntity(tableName, fieldName, value, true);
         if (!entity) {
             entity = {};

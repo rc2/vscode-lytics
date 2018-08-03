@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { LyticsClient } from './lyticsClient';
-import { DataStreamNode, Account } from './models';
 import { StateManager } from './stateManager';
+import { LyticsAccount, DataStream, DataStreamField } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js");
 
-export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStreamNode> {
+export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStream | DataStreamField> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
@@ -27,7 +27,9 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 		}
 	}
 
-	async getChildren(element?: DataStreamNode): Promise<DataStreamNode[]> {
+	private mapOfFieldToStream: Map<DataStreamField, DataStream> = new Map<DataStreamField, DataStream>();
+
+	async getChildren(element?: DataStream): Promise<any[]> {
 		const account = StateManager.account;
 		if (!account) {
 			return Promise.resolve([]);
@@ -36,29 +38,46 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 			return this.getStreams(account);
 		}
 		else {
+			this.mapOfFieldToStream.clear();
 			if (element.fields) {
-				return this.getFields(element, account);
+				const fields = await this.getFields(element, account);
+				if (fields && fields.length > 0) {
+					for (let i = 0; i < fields.length; i++) {
+						this.mapOfFieldToStream.set(fields[i], element);
+					}
+				}
+				return Promise.resolve(fields);
 			}
 		}
 		return Promise.resolve([]);
 	}
 
-	getTreeItem(element: DataStreamNode): vscode.TreeItem {
-		if (element.kind === 'stream') {
+	async getParent(element?: any): Promise<any> {
+		if (!element) {
+			return Promise.resolve(undefined);
+		}
+		if (element.name) {
+			return Promise.resolve(this.mapOfFieldToStream.get(element));
+		}
+		return Promise.resolve(undefined);
+	}
+
+	getTreeItem(element: any): vscode.TreeItem {
+		if (element.stream) {
 			return new DataStreamTreeItem(element);
 		}
-		if (element.kind === 'field') {
+		if (element.name) {
 			let item = new DataStreamFieldTreeItem(element);
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`DataStreamNode type is not supported: ${element.kind}`);
+		throw new Error(`The specified element is not supported by the stream explorer provider.`);
 	}
 
-	private getIcon(node: DataStreamNode): any {
+	private getIcon(element: DataStreamField): any {
 		var icon: (string | undefined) = undefined;
-		if (node.kind === 'field') {
-			icon = `${node.type}.svg`;
+		if (element instanceof DataStreamField) {
+			icon = `${element.type}.svg`;
 		}
 		if (!icon) {
 			return undefined;
@@ -69,32 +88,25 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 		};
 	}
 
-	async getStreams(account: Account): Promise<DataStreamNode[]> {
+	async getStreams(account: LyticsAccount): Promise<DataStream[]> {
 		let streams = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Loading data streams for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = new LyticsClient(account.apikey!);
+			const client = lytics.getClient(account.apikey!);
 			try {
-				let streams = await client.getStreams();
-				streams.map(stream => {
-					stream.kind = 'stream';
-					stream.fields.map(field => {
-						field.kind = 'field';
-						field.parentName = stream.stream;
-					});
-				});
-				streams = streams.sort((a, b) => {
-					if (a.stream < b.stream) {
+				const streams = await client.getStreams();
+				var sortedStreams = streams.sort((a, b) => {
+					if (a.stream! < b.stream!) {
 						return -1;
 					}
-					if (a.stream > b.stream) {
+					if (a.stream! > b.stream!) {
 						return 1;
 					}
 					return 0;
 				});
-				return Promise.resolve(streams);
+				return Promise.resolve(sortedStreams);
 			}
 			catch (err) {
 				let message: (string | undefined);
@@ -116,20 +128,15 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 		return Promise.resolve(streams);
 	}
 
-	async getFields(element: DataStreamNode, account: Account): Promise<DataStreamNode[]> {
-		if (!element.fields) {
+	async getFields(stream: DataStream, account: LyticsAccount): Promise<DataStreamField[]> {
+		if (!stream.fields) {
 			return Promise.resolve([]);
 		}
-		let fields: DataStreamNode[] = [];
-		for (let i = 0; i < element.fields.length; i++) {
-			let field = element.fields[i];
-			fields.push(field);
-		}
-		fields = fields.sort((a, b) => {
-			if (a.name < b.name) {
+		const fields: DataStreamField[] = stream.fields.sort((a, b) => {
+			if (a.name! < b.name!) {
 				return -1;
 			}
-			if (a.name > b.name) {
+			if (a.name! > b.name!) {
 				return 1;
 			}
 			return 0;
@@ -137,7 +144,7 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 		return Promise.resolve(fields);
 	}
 
-	async commandShowQueryInfo(stream: DataStreamNode) {
+	async commandShowQueryInfo(stream: DataStream) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
@@ -159,18 +166,22 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 		}
 	}
 
-	async commandShowField(field: DataStreamNode) {
+	async commandShowField(field: DataStreamField) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
 				throw new Error('No account is connected.');
+			}
+			const stream = await this.getParent(field) as DataStream;
+			if (!stream) {
+				throw new Error(`No parent was found for field ${field.name}`);
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Loading stream field info: ${field.name}.`,
 				cancellable: true
 			}, async (progress, token) => {
-				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${field.parentName}/${field.name}.json`);
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/${field.name}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
 				const editor = await vscode.window.showTextDocument(doc, { preview: false });
 				return Promise.resolve(editor);
@@ -184,18 +195,18 @@ export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStrea
 }
 
 class DataStreamTreeItem extends vscode.TreeItem {
-	constructor(element: DataStreamNode) {
-		super(element.stream, vscode.TreeItemCollapsibleState.Collapsed);
-		this.contextValue = element.kind;
+	constructor(element: DataStream) {
+		super(element.stream!, vscode.TreeItemCollapsibleState.Collapsed);
+		this.contextValue = 'stream';
 	}
 }
 
 class DataStreamFieldTreeItem extends vscode.TreeItem {
 	streamName: string;
-	constructor(element: DataStreamNode) {
-		super(element.name, vscode.TreeItemCollapsibleState.None);
-		this.streamName = element.name;
-		this.contextValue = element.kind;
+	constructor(element: DataStreamField) {
+		super(element.name!, vscode.TreeItemCollapsibleState.None);
+		this.streamName = element.name!;
+		this.contextValue = 'field';
 		this.label = element.name;
 		let properties: string[] = [];
 		if (element.is_array) {

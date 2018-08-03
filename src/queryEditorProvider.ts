@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { LyticsClient } from './lyticsClient';
 import { StateManager } from './stateManager';
+import lytics = require("lytics-js");
 
 export class QueryEditorProvider  {
 	constructor(private context: vscode.ExtensionContext) {
@@ -44,7 +44,7 @@ export class QueryEditorProvider  {
 			}
 			//determine if the query already exists
 			var currentQuery;
-			const client = new LyticsClient(account.apikey);
+			const client = lytics.getClient(account.apikey!);
 			try {
 				currentQuery = await client.getQuery(alias);
 			}
@@ -62,8 +62,8 @@ export class QueryEditorProvider  {
 				return Promise.resolve();
 			}
 			const response = await client.upsertQuery(data);
-			if (response.status !== 200) {
-				vscode.window.showErrorMessage(`Unable to upload query ${alias} to Lytics: ${response.message}.`);
+			if (response.length < 1) {
+				vscode.window.showErrorMessage(`Unable to upload query ${alias} to Lytics}.`);
 				return Promise.resolve();
 			}
 			vscode.window.showInformationMessage(`Query ${alias} was uploaded to Lytics.`);

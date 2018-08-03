@@ -1,8 +1,8 @@
-import { Account } from './models';
+import { LyticsAccount } from "../node_modules/lytics-js/dist/types";
 
 export class StateManager {
 
 	constructor() {
     }
-    static account: (Account | undefined);
+    static account: (LyticsAccount | undefined);
 }
