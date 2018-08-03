@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { Account } from "./models";
-import { LyticsClient } from "./lyticsClient";
 import { AccountsExportHandler } from './exports';
+import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js");
 
 export class AccountsExportFilezilla implements AccountsExportHandler {
-    async export(getAccounts: () => Promise<Account[]>, progress: vscode.Progress<{
+    async export(getAccounts: () => Promise<LyticsAccount[]>, progress: vscode.Progress<{
         message?: string | undefined;
         increment?: number | undefined;
     }>) {
@@ -29,8 +29,8 @@ export class AccountsExportFilezilla implements AccountsExportHandler {
         const servers: string[] = [];
         for (let i = 0; i < accounts.length; i++) {
             const account = accounts[i];
-            const client = new LyticsClient(account.apikey);
-            const account2 = await client.getAccount(account.aid) as Account;
+            const client = lytics.getClient(account.apikey!);
+            const account2 = await client.getAccount(account.aid);
             if (account2) {
                 const server = AccountsExportFilezilla.getServer(account2);
                 servers.push(server);
@@ -49,8 +49,8 @@ export class AccountsExportFilezilla implements AccountsExportHandler {
         vscode.window.showInformationMessage(`Accounts exported for FileZilla: ${path.fsPath}`);
         return Promise.resolve();
     }
-    static getServer(account: Account): string {
-        const pass = new Buffer(account.dataapikey).toString('base64');
+    static getServer(account: LyticsAccount): string {
+        const pass = new Buffer(account.dataapikey!).toString('base64');
         const server = `
 			<Server>
 				<Host>lytics.brickftp.com</Host>

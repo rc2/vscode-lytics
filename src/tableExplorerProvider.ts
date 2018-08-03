@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { LyticsClient } from './lyticsClient';
-import { TableNode, Account } from './models';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
+import { LyticsAccount, TableSchemaField, TableSchema } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js");
 
-export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode> {
+export class TableExplorerProvider implements vscode.TreeDataProvider<TableSchema | TableSchemaField> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
@@ -29,7 +29,9 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		}
 	}
 
-	async getChildren(element?: TableNode): Promise<TableNode[]> {
+	private mapOfFieldToTable: Map<TableSchemaField, TableSchema> = new Map<TableSchemaField, TableSchema>();
+
+	async getChildren(element?: any): Promise<any[]> {
 		const account = StateManager.account;
 		if (!account) {
 			return Promise.resolve([]);
@@ -37,17 +39,27 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		if (!element) {
 			return this.getTables(account);
 		}
-		if (element.kind === 'table') {
+		if (element.name) {
 			return this.getFields(element, account);
 		}
 		return Promise.resolve([]);
 	}
 
-	getTreeItem(element: TableNode): vscode.TreeItem {
-		if (element.kind === 'table') {
+	async getParent(element?: any): Promise<any> {
+		if (!element) {
+			return Promise.resolve(undefined);
+		}
+		if (element.as) {
+			return Promise.resolve(this.mapOfFieldToTable.get(element));
+		}
+		return Promise.resolve(undefined);
+	}
+
+	getTreeItem(element: any): vscode.TreeItem {
+		if (element.name) {
 			return new TableTreeItem(element.name, element);
 		}
-		if (element.kind === 'field') {
+		if (element.as) {
 			var name = element.as;
 			if (element.is_by) {
 				name = `* ${name}`;
@@ -56,11 +68,11 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`TableNode type is not supported: ${element.kind}`);
+		throw new Error(`The specified element is not supported by the table explorer provider.`);
 	}
-	private getIcon(node: TableNode): any {
+	private getIcon(node: any): any {
 		var icon: (string | undefined) = undefined;
-		if (node.kind === 'field') {
+		if (node.as) {
 			if (node.type.startsWith('[]')) {
 				icon = 'array.svg';
 			}
@@ -80,30 +92,42 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		};
 	}
 
-	async getTables(account: Account): Promise<TableNode[]> {
+	private async getTables(account: LyticsAccount): Promise<TableSchema[]> {
 		const tables = await SettingsManager.getTables(account.aid);
 		return Promise.resolve(tables);
 	}
 
-	async getFields(element: TableNode, account: Account): Promise<TableNode[]> {
+	private async getFields(element: TableSchema, account: LyticsAccount): Promise<TableSchemaField[]> {
+		//
+		//Schema is loaded because the element parameter is 
+		//not fully populated. It only contains information
+		//from the settings.
 		let fields = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: `Loading fields for table: ${element.name}.`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = new LyticsClient(account.apikey!);
+			const client = lytics.getClient(account.apikey!);
 			try {
-				let fields = await client.getTableFields(element.name);
-				fields = fields.sort((a, b) => {
-					if (a.as < b.as) {
+				this.mapOfFieldToTable.clear();
+				const table = await client.getTableSchema(element.name!);
+				if (!table) {
+					return Promise.resolve([]);
+				}
+				let columns = table.columns;
+				columns.forEach(col => {
+					this.mapOfFieldToTable.set(col, element);
+				});
+				columns = columns.sort((a, b) => {
+					if (a.as! < b.as!) {
 						return -1;
 					}
-					if (a.as > b.as) {
+					if (a.as! > b.as!) {
 						return 1;
 					}
 					return 0;
 				});
-				return Promise.resolve(fields);
+				return Promise.resolve(columns);
 			}
 			catch (err) {
 				vscode.window.showErrorMessage(`Loading table fields failed: ${err.message}`);
@@ -163,15 +187,15 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		}
 	}
 
-	async commandShowEntitySearch(field: TableNode) {
+	async commandShowEntitySearch(field: TableSchemaField) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const tableName = field.parentName;
-			if (!tableName || tableName.trim().length === 0) {
-				return;
+			const table = await this.getParent(field) as TableSchema;
+			if (!table) {
+				throw new Error(`No parent was found for field ${field.as}`);
 			}
 			const value = await vscode.window.showInputBox({
 				prompt: `Enter the search value for ${field.as}.`
@@ -184,7 +208,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 				title: `Loading entity by ${field.as}: ${value}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${field.as}/${value}.json`);
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${field.as}/${value}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
 				await vscode.window.showTextDocument(doc, { preview: false });
 			});
@@ -196,15 +220,15 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 		}
 	}
 
-	async commandShowFieldInfo(field: TableNode) {
+	async commandShowFieldInfo(field: TableSchemaField) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const tableName = field.parentName;
-			if (!tableName || tableName.trim().length === 0) {
-				return Promise.resolve();
+			const table = await this.getParent(field) as TableSchema;
+			if (!table) {
+				throw new Error(`No parent was found for field ${field.as}`);
 			}
 			const fieldName = field.as;
 			if (!fieldName || fieldName.trim().length === 0) {
@@ -215,7 +239,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 				title: `Loading table field info: ${fieldName}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${tableName}/${fieldName}.json`);
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${fieldName}.json`);
 				const doc = await vscode.workspace.openTextDocument(uri);
 				await vscode.window.showTextDocument(doc, { preview: false });
 			});
@@ -230,7 +254,7 @@ export class TableExplorerProvider implements vscode.TreeDataProvider<TableNode>
 class TableTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-		element: TableNode
+		element: TableSchema
 	) {
 		super(name, vscode.TreeItemCollapsibleState.Collapsed);
 	}
@@ -241,10 +265,10 @@ class TableFieldTreeItem extends vscode.TreeItem {
 	fieldName: string;
 	constructor(
 		public readonly name: string,
-		field: TableNode
+		field: TableSchemaField
 	) {
 		super(name, vscode.TreeItemCollapsibleState.None);
-		this.fieldName = field.name;
+		this.fieldName = field.as!;
 		if (field.is_by) {
 			this.contextValue = 'field-identifier';
 		}

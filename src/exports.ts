@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { Account } from "./models";
+import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
 
 export interface AccountsExportHandler {
-    export(getAccounts: () => Promise<Account[]>, progress: vscode.Progress<{
+    export(getAccounts: () => Promise<LyticsAccount[]>, progress: vscode.Progress<{
         message?: string | undefined;
         increment?: number | undefined;
     }>): Promise<void>;

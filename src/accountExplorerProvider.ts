@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { LyticsClient } from './lyticsClient';
-import { Account } from './models';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
 import { AccountsExportFilezilla } from './accountsExportFilezilla';
 import { AccountsExportHandler } from './exports';
+import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js");
 
-export class AccountExplorerProvider implements vscode.TreeDataProvider<Account> {
+export class AccountExplorerProvider implements vscode.TreeDataProvider<LyticsAccount> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
@@ -25,23 +25,26 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		});
 	}
 
-	getTreeItem(element: Account): vscode.TreeItem {
-		let item = new AccountTreeItem(element.name, element.aid, vscode.TreeItemCollapsibleState.None);
-		if (element.isNotValid) {
+	getTreeItem(account: LyticsAccount): vscode.TreeItem {
+		const name = account && account.name ? account.name : '';
+		let item = new AccountTreeItem(name, account.aid, vscode.TreeItemCollapsibleState.None);
+		if (!account) {
 			item.tooltip = "A connection to the account cannot be made with the specified API key.";
 		}
-		item.iconPath = this.getIcon(element);
+		item.iconPath = this.getIcon(account);
 		return item;
 	}
 
-	private getIcon(account: Account): any {
+	private getIcon(account: LyticsAccount): any {
 		var icon = 'cloud.svg';
-		if (account.isNotValid) {
+		if (!account) {
 			icon = 'sync-problem.svg';
 		}
-		const currentAccount = StateManager.account;
-		if (currentAccount && currentAccount.aid === account.aid) {
-			icon = 'cloud-active.svg';
+		else {
+			const currentAccount = StateManager.account;
+			if (currentAccount && currentAccount.aid === account.aid) {
+				icon = 'cloud-active.svg';
+			}	
 		}
 		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', icon)),
@@ -49,7 +52,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		};
 	}
 
-	async getChildren(element?: Account): Promise<Account[]> {
+	async getChildren(element?: LyticsAccount): Promise<LyticsAccount[]> {
 		if (!element) {
 			const accounts = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -73,7 +76,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			title: 'Verifying API key.',
 			cancellable: true
 		}, async (progress, token) => {
-			const client = new LyticsClient(apikey!);
+			const client = lytics.getClient(apikey!);
 			try {
 				let accounts = await client.getAccounts();
 				if (!accounts || accounts.length === 0) {
@@ -140,7 +143,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		}
 	}
 
-	async commandConnectAccount(accountItem: AccountTreeItem): Promise<Account | undefined> {
+	async commandConnectAccount(accountItem: AccountTreeItem): Promise<LyticsAccount | undefined> {
 		try {
 			if (!accountItem) {
 				const value = await vscode.window.showInputBox({ prompt: 'Enter the id for the account you want to connect to.' });
@@ -178,7 +181,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 		}
 	}
 
-	async commandDisconnectAccount(accountItem: AccountTreeItem): Promise<Account | undefined> {
+	async commandDisconnectAccount(accountItem: AccountTreeItem): Promise<LyticsAccount | undefined> {
 		const account = StateManager.account;
 		if (!account) {
 			vscode.window.showErrorMessage('No account is connected.');
@@ -244,7 +247,7 @@ export class AccountExplorerProvider implements vscode.TreeDataProvider<Account>
 			cancellable: true
 		}, async (progress, token) => {
 			const getAccounts = async () => {
-				const accounts:Account[] = await SettingsManager.getAccounts();
+				const accounts:LyticsAccount[] = await SettingsManager.getAccounts();
 				return Promise.resolve(accounts);
 			};
 			return await exportHandler!.export(getAccounts, progress);

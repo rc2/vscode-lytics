@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { LyticsClient } from './lyticsClient';
-import { QueryNode } from './models';
 import { StateManager } from './stateManager';
+import lytics = require("lytics-js");
+import { Query } from '../node_modules/lytics-js/dist/types';
 
-export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode> {
+export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
@@ -29,57 +29,67 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		}
 	}
 
-	getTreeItem(element: QueryNode): vscode.TreeItem {
-		if (element.kind === 'table') {
-			return new QueryTableTreeItem(element.table, element);
-		}
-		if (element.kind === 'query') {
+	getTreeItem(element: any): vscode.TreeItem {
+		if (element.alias) {
 			let item = new QueryTreeItem(element.alias, element);
 			item.iconPath = this.getIcon(element);
 			return item;
 		}
-		throw new Error(`QueryNode type is not supported: ${element.kind} `);
+		if (element) {
+			return new QueryTableTreeItem(element);
+		}
+		throw new Error(`The specified element is not supported by the stream explorer provider.`);
 	}
 
-	private getIcon(node: QueryNode): any {
+	private getIcon(node: Query): any {
 		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', 'arrows')),
 			dark: this.context.asAbsolutePath(path.join('resources', 'icons', 'dark', 'arrows'))
 		};
 	}
-	async getChildren(element?: QueryNode): Promise<QueryNode[]> {
+
+	private mapOfQueriesForTable:Map<string, Query[]> = new Map<string, Query[]>();
+
+	async getChildren(element?: any): Promise<any[]> {
 		const account = StateManager.account;
 		if (!account) {
 			return Promise.resolve([]);
 		}
 		if (!element) {
-			let tables = await vscode.window.withProgress({
+			let map = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Loading queries for account: ${account.aid}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const client = new LyticsClient(account.apikey!);
+				const client = lytics.getClient(account.apikey!);
 				try {
-					let tables = await client.getQueriesGroupedByTable();
-					return Promise.resolve(tables);
+					let map = await client.getQueriesGroupedByTable();
+					return Promise.resolve(map);
 				}
 				catch (err) {
 					vscode.window.showErrorMessage(`Loading tables failed for account ${account.aid}: ${err.message}`);
 					return Promise.resolve();
 				}
 			});
-			if (!tables) {
-				tables = [];
+			if (!map) {
+				return Promise.resolve([]);
 			}
-			return Promise.resolve(tables);
+			this.mapOfQueriesForTable = map;
+			const names:string[] = [];
+			map.forEach((value: Query[], key: string) => {
+				names.push(key);
+			});
+			return Promise.resolve(names);
 		}
-		if (element.kind === 'table') {
-			return Promise.resolve(element.queries);
+		if (element) {
+			if (this.mapOfQueriesForTable.has(element)) {
+				return Promise.resolve(this.mapOfQueriesForTable.get(element)!);
+			}
 		}
 		return Promise.resolve([]);
 	}
 
-	async commandShowQuery(query: QueryNode) {
+	async commandShowQuery(query: Query) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
@@ -112,7 +122,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		return Promise.resolve(paths[0].fsPath);
 	}
 
-	async commandDownloadQuery(query: QueryNode) {
+	async commandDownloadQuery(query: Query) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
@@ -127,7 +137,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 				title: `Downloading query: ${query.alias}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const query2 = await this.getQuery(query.alias);
+				const query2 = await this.getQuery(query.alias!);
 				if (!query2) {
 					return Promise.resolve();
 				}
@@ -143,7 +153,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 			return Promise.resolve();
 		}
 	}
-	async commandDownloadQueries(selectedTable: QueryNode) {
+	async commandDownloadQueries(selectedTableName: string) {
 		try {
 			const account = StateManager.account;
 			if (!account) {
@@ -155,10 +165,10 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: `Downloading queries for table: ${selectedTable.table}`,
+				title: `Downloading queries for table: ${selectedTableName}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const queries = await this.getQueries(selectedTable.table);
+				const queries = await this.getQueries(selectedTableName);
 				if (!queries) {
 					return Promise.resolve();
 				}
@@ -168,7 +178,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 					try {
 						const filePath = await this.saveQueryToFolder(query, downloadPath);
 						if (filePath) {
-							saved.push(query.alias);
+							saved.push(query.alias!);
 						}
 					}
 					catch (err) {
@@ -187,36 +197,33 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 		}
 
 	}
-	async getQueries(tableName: string): Promise<QueryNode[] | undefined> {
+	async getQueries(tableName: string): Promise<Query[] | undefined> {
 		const account = StateManager.account;
 		if (!account) {
 			return Promise.resolve(undefined);
 		}
-		const client = new LyticsClient(account.apikey!);
+		const client = lytics.getClient(account.apikey!);
 		const tables = await client.getQueriesGroupedByTable();
 		if (!tables) {
 			return Promise.resolve(undefined);
 		}
-		const table = tables.find(t => t.table === tableName);
-		if (!table) {
-			return Promise.resolve(undefined);
-		}
-		return Promise.resolve(table.queries);
+		const queries = tables.get(tableName);
+		return Promise.resolve(queries);
 	}
 
-	async getQuery(alias: string): Promise<QueryNode | undefined> {
+	async getQuery(alias: string): Promise<Query | undefined> {
 		const account = StateManager.account;
 		if (!account) {
 			return Promise.resolve(undefined);
 		}
-		const client = new LyticsClient(account.apikey!);
+		const client = lytics.getClient(account.apikey!);
 		const query = await client.getQuery(alias);
 		if (!query) {
 			throw new Error(`The query ${alias} does not exist in the Lytics account.`);
 		}
 		return Promise.resolve(query);
 	}
-	async saveQueryToFolder(query: QueryNode, downloadPath: string): Promise<string | undefined> {
+	async saveQueryToFolder(query: Query, downloadPath: string): Promise<string | undefined> {
 		const filePath = path.join(downloadPath, `${query.alias}.lql`);
 		if (fs.existsSync(filePath)) {
 			const confirmation = await vscode.window.showQuickPick(['Ignore', 'Overwrite'], {
@@ -234,8 +241,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<QueryNode>
 
 class QueryTableTreeItem extends vscode.TreeItem {
 	constructor(
-		public readonly name: string,
-		element: QueryNode
+		public readonly name: string
 	) {
 		super(name, vscode.TreeItemCollapsibleState.Collapsed);
 	}
@@ -245,7 +251,7 @@ class QueryTableTreeItem extends vscode.TreeItem {
 class QueryTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-		public readonly element: QueryNode
+		public readonly element: Query
 	) {
 		super(name, vscode.TreeItemCollapsibleState.None);
 		this.tooltip = element.description;
