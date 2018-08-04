@@ -32,6 +32,10 @@ None.
 
 For more details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).
 
+#### 0.0.13
+* Added support for new _tolql_ API.
+* Added syntax highlighting support for _cap()_ function.
+
 #### 0.0.12
 * Export accounts to FileZilla.
 * Native support for *lytics watch*.

@@ -1,6 +1,7 @@
-## [0.0.13] - 2018-??-??
+## [0.0.13] - 2018-08-04
 - (issue 33) Changed _lytics watch_ menu option text to be more descriptive.
-- (issue 35) Added support for new _tolql_ API.
+- (issue 35) Added support for new _tolql_ API. You can select a _csv_ file and generate LQL from it.
+- (issue 37) Added syntax highlighting support for _cap()_ function.
 
 ## [0.0.12] - 2018-08-03
 - (issue 24) Added ability to export accounts to FileZilla. This creates a file that can be imported into FileZilla. For each account, an sFTP site is created.
