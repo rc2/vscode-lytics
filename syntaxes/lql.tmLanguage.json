@@ -53,7 +53,7 @@
         },
         {
             "name": "support.function.aggregate.lql",
-            "match": "(?<=[\\s]|^)(count|set|min|max|sum|valuect)(?=\\()"
+            "match": "(?<=[\\s]|^)(count|set|min|max|sum|valuect|cap)(?=\\()"
         },
         {
             "name": "support.function.logical.lql",
