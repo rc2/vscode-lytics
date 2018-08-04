@@ -500,7 +500,22 @@
             }
           },
           "default": [],
-          "description": "my test configurations"
+          "description": "Accounts displayed in Lytics account explorer"
+        },
+        "lytics.watch": {
+          "type": "object",
+          "properties": {
+            "max": {
+              "type":"integer",
+              "description": "Maximum number of records read from the data file"
+            },
+            "colorize": {
+              "type":"boolean",
+              "description": "Enable colorized JSON output"
+            }
+          },
+          "default": {},
+          "description": "Lytics watch settings"
         }
       }
     }
@@ -522,7 +537,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "lytics-js": "0.0.7",
+    "lytics-js": "latest",
     "path": "^0.12.7"
   }
 }

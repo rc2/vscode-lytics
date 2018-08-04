@@ -132,10 +132,16 @@ export class SettingsManager {
         }
         return Promise.resolve();
     }
-
+    static getWatchSettings(): LyticsWatchSettings {
+        return vscode.workspace.getConfiguration().get('lytics.watch') as LyticsWatchSettings;
+    }
 }
 interface AccountSetting {
     apikey: string;
     aid: number;
     tables: string[];
+}
+interface LyticsWatchSettings {
+    colorize: boolean;
+    max: number;
 }
