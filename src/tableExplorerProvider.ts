@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
-import { LyticsAccount, TableSchemaField, TableSchema } from '../node_modules/lytics-js/dist/types';
-import lytics = require("lytics-js");
+import { LyticsAccount, TableSchemaField, TableSchema } from 'lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
 
 export class TableExplorerProvider implements vscode.TreeDataProvider<TableSchema | TableSchemaField> {
 

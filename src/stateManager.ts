@@ -1,4 +1,4 @@
-import { LyticsAccount } from "../node_modules/lytics-js/dist/types";
+import { LyticsAccount } from "lytics-js/dist/types";
 
 export class StateManager {
 

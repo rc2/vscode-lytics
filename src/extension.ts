@@ -62,7 +62,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
 
     disposable = vscode.commands.registerCommand('lytics.accounts.export', accountExplorerProvider.commandExportAccounts);
     context.subscriptions.push(disposable);
-    
+
     disposable = vscode.commands.registerCommand('lytics.accounts.disconnect', async (account) => {
         if (!StateManager.account) {
             return;
@@ -81,6 +81,9 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(status);
 
     const queryEditorProvider = new QueryEditorProvider(context);
+    disposable = vscode.commands.registerCommand('lytics.lql.generate', async uri => queryEditorProvider.commandGenerateLql(uri));
+    context.subscriptions.push(disposable);
+
     disposable = vscode.commands.registerCommand('lytics.queries.upload', async uri => queryEditorProvider.commandUploadQuery(uri));
     context.subscriptions.push(disposable);
 

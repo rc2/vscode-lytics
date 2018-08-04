@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
-import lytics = require("lytics-js");
-import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
+import { LyticsAccount } from 'lytics-js/dist/types';
 
 export default class LyticsContentProvider implements vscode.TextDocumentContentProvider {
 

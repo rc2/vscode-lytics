@@ -24,6 +24,7 @@
   ],
   "activationEvents": [
     "onCommand:lytics.watch.folder",
+    "onCommand:lytics.lql.generate",
     "onCommand:lytics.accounts.add",
     "onCommand:lytics.accounts.connect",
     "onCommand:lytics.accounts.export",
@@ -92,6 +93,11 @@
       {
         "command": "lytics.watch.folder",
         "title": "Lytics: Watch Folder for Changes",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.lql.generate",
+        "title": "Lytics: Generate LQL",
         "category": "Lytics"
       },
       {
@@ -187,7 +193,7 @@
       },
       {
         "command": "lytics.queries.upload",
-        "title": "Lytics: Upload query",
+        "title": "Lytics: Upload Query",
         "icon": {
           "light": "resources/icons/light/cloud-upload.svg",
           "dark": "resources/icons/dark/cloud-upload.svg"
@@ -271,6 +277,10 @@
           "when": "explorerResourceIsFolder"
         },
         {
+          "command": "lytics.lql.generate",
+          "when": "false"
+        },
+        {
           "command": "lytics.accounts.disconnect",
           "when": "false"
         },
@@ -342,15 +352,25 @@
       "editor/context": [
         {
           "command": "lytics.queries.upload",
-          "group": "lytics",
+          "group": "Lytics",
           "when": "editorLangId == lql && editorReadOnly == false"
+        },
+        {
+          "command": "lytics.lql.generate",
+          "group": "Lytics",
+          "when": "editorLangId == CSV"
         }
       ],
       "explorer/context": [
         {
           "command": "lytics.queries.upload",
-          "group": "7_modification",
+          "group": "Lytics",
           "when": "resourceLangId == lql"
+        },
+        {
+          "command": "lytics.lql.generate",
+          "group": "Lytics",
+          "when": "resourceLangId == CSV"
         },
         {
           "command": "lytics.watch.folder",

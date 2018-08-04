@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import lytics = require("lytics-js");
-import { LyticsAccount, TableSchema } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
+import { LyticsAccount, TableSchema } from 'lytics-js/dist/types';
 
 export class SettingsManager {
 
