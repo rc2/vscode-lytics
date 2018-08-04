@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
+import { LyticsAccount } from 'lytics-js/dist/types';
 
 export interface AccountsExportHandler {
     export(getAccounts: () => Promise<LyticsAccount[]>, progress: vscode.Progress<{

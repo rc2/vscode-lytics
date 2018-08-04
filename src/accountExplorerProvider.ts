@@ -4,8 +4,8 @@ import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
 import { AccountsExportFilezilla } from './accountsExportFilezilla';
 import { AccountsExportHandler } from './exports';
-import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
-import lytics = require("lytics-js");
+import { LyticsAccount } from 'lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
 
 export class AccountExplorerProvider implements vscode.TreeDataProvider<LyticsAccount> {
 
