@@ -32,6 +32,19 @@ None.
 
 For more details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).
 
+#### 0.0.12
+* Export accounts to FileZilla.
+* Native support for *lytics watch*.
+
+#### 0.0.11
+Bug fixes.
+
+#### 0.0.10
+Added ability to search by identifier to table explorer.
+
+#### 0.0.9
+Enhanced support for Windows operating systems.
+
 #### 0.0.7
 Added ability to download queries as LQL files.
 

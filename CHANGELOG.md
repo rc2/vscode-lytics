@@ -1,6 +1,8 @@
-## [0.0.12] - 2018-??-??
+## [0.0.12] - 2018-08-03
 - (issue 24) Added ability to export accounts to FileZilla. This creates a file that can be imported into FileZilla. For each account, an sFTP site is created.
 - (issue 26) Added ability to upload LQL file from file explorer.
+- (issue 28) Added ability to start Lytics watch from file explorer.
+- (issue 30) Refactored to use [lytics-js](https://www.npmjs.com/package/lytics-js) module.
 
 ## [0.0.11] - 2018-07-26
 - (issue 22) Fixed bug where download/open query was showing JSON instead of the query text.
