@@ -1,3 +1,6 @@
+## [0.0.13] - 2018-??-??
+- (issue 33) Changed _lytics watch_ menu option text to be more descriptive.
+
 ## [0.0.12] - 2018-08-03
 - (issue 24) Added ability to export accounts to FileZilla. This creates a file that can be imported into FileZilla. For each account, an sFTP site is created.
 - (issue 26) Added ability to upload LQL file from file explorer.

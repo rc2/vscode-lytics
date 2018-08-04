@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -91,7 +91,7 @@
     "commands": [
       {
         "command": "lytics.watch.folder",
-        "title": "Lytics Watch",
+        "title": "Lytics: Watch Folder for Changes",
         "category": "Lytics"
       },
       {
@@ -355,7 +355,7 @@
         {
           "command": "lytics.watch.folder",
           "when": "explorerResourceIsFolder",
-          "group": "2_workspace"
+          "group": "Lytics"
         }
       ],
       "view/title": [
