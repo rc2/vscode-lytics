@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { StateManager } from './stateManager';
-import { LyticsAccount, DataStream, DataStreamField } from '../node_modules/lytics-js/dist/types';
-import lytics = require("lytics-js");
+import { LyticsAccount, DataStream, DataStreamField } from 'lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
 
 export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStream | DataStreamField> {
 

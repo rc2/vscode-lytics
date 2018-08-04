@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
-import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
+import { LyticsAccount } from 'lytics-js/dist/types';
 import { SettingsManager } from './settingsManager';
 import { isUndefined } from 'util';
 const path = require('path');

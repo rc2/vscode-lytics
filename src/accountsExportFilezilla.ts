@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { AccountsExportHandler } from './exports';
-import { LyticsAccount } from '../node_modules/lytics-js/dist/types';
-import lytics = require("lytics-js");
+import { LyticsAccount } from 'lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
 
 export class AccountsExportFilezilla implements AccountsExportHandler {
     async export(getAccounts: () => Promise<LyticsAccount[]>, progress: vscode.Progress<{

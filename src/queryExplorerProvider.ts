@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { StateManager } from './stateManager';
-import lytics = require("lytics-js");
-import { Query } from '../node_modules/lytics-js/dist/types';
+import lytics = require("lytics-js/dist/lytics");
+import { Query } from 'lytics-js/dist/types';
 
 export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
 
