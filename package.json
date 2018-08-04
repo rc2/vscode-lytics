@@ -506,11 +506,11 @@
           "type": "object",
           "properties": {
             "max": {
-              "type":"integer",
+              "type": "integer",
               "description": "Maximum number of records read from the data file"
             },
             "colorize": {
-              "type":"boolean",
+              "type": "boolean",
               "description": "Enable colorized JSON output"
             }
           },
