@@ -24,6 +24,7 @@
   ],
   "activationEvents": [
     "onCommand:lytics.watch.folder",
+    "onCommand:lytics.classify.active.editor",
     "onCommand:lytics.lql.generate",
     "onCommand:lytics.accounts.add",
     "onCommand:lytics.accounts.connect",
@@ -97,6 +98,16 @@
       {
         "command": "lytics.watch.folder",
         "title": "Lytics: Watch Folder for Changes",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.classify.file",
+        "title": "Lytics: Run Content Classification",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.classify.active.editor",
+        "title": "Lytics: Run Content Classification on Active Editor",
         "category": "Lytics"
       },
       {
@@ -308,6 +319,15 @@
           "when": "explorerResourceIsFolder"
         },
         {
+          "command": "lytics.classify.file",
+          "when": "false"
+        },
+        {
+          "command": "lytics.classify.active.editor",
+          "group": "Lytics",
+          "when": "resourceIsFile"
+        },
+        {
           "command": "lytics.lql.generate",
           "when": "false"
         },
@@ -414,6 +434,11 @@
         {
           "command": "lytics.watch.folder",
           "when": "explorerResourceIsFolder",
+          "group": "Lytics"
+        },
+        {
+          "command": "lytics.classify.file",
+          "when": "resourceIsFile",
           "group": "Lytics"
         }
       ],
@@ -605,6 +630,7 @@
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
     "@types/node": "^7.0.69",
+    "@types/query-string": "^6.1.0",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
     "vscode": "^1.1.6"

@@ -6,9 +6,17 @@ import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
 import lytics = require("lytics-js/dist/lytics");
 import { LyticsAccount } from 'lytics-js/dist/types';
+import fs = require('fs');
+import { ContentReader } from './contentReader';
 
-export default class LyticsContentProvider implements vscode.TextDocumentContentProvider {
-
+export default class LyticsContentProvider implements vscode.TextDocumentContentProvider, ContentReader {
+    removeFromCache(uri: vscode.Uri): void {
+        this._onDidChange.fire(uri);
+    }
+    private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
+    get onDidChange(): vscode.Event<vscode.Uri> {
+        return this._onDidChange.event;
+    }
     public async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
         try {
             //
@@ -48,10 +56,18 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             else if (luri.isCampaignVariationUri && luri.campaignVariationId) {
                 return await this.provideTextDocumentContentForCampaignVariation(luri.campaignVariationId, account);
             }
+            else if (luri.isContentClassificationUri) {
+                if (luri.contentClassificationFilePath) {
+                    return await this.provideTextDocumentContentForContentClassificationForFile(luri.contentClassificationFilePath, account);
+                }
+                else if (luri.useTextFromActiveEditor) {
+                    return await this.provideTextDocumentContentForContentClassificationForActiveEditor(account);
+                }
+            }
             throw new Error(`Invalid uri: ${uri.toString()}`);
         }
         catch (err) {
-            vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
+            vscode.window.showErrorMessage(`Loading data failed: ${err.message}`);
         }
         return Promise.reject();
     }
@@ -93,10 +109,10 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);
         //let info = await client.getTableFieldInfo(tableName, fieldName);
-        const info = await client.getTableSchemaFieldInfo(tableName, fieldName); 
+        const info = await client.getTableSchemaFieldInfo(tableName, fieldName);
         return Promise.resolve(JSON.stringify(info ? info : {}, null, 4));
     }
-    private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value:string, account: LyticsAccount): Promise<string> {
+    private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);
         let entity = await client.getEntity(tableName, fieldName, value, true);
         if (!entity) {
@@ -113,5 +129,29 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const client = lytics.getClient(account.apikey!);
         const campaign = await client.getCampaignVariation(campaignVariationId);
         return Promise.resolve(JSON.stringify(campaign, null, 4));
+    }
+    private async provideTextDocumentContentForContentClassificationForActiveEditor(account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return Promise.reject('No active text editor is available.');
+        }
+        const text = editor.document.getText();
+        const classification = await client.classifyUsingText(text);
+        return Promise.resolve(JSON.stringify(classification, null, 4));
+    }
+    private async provideTextDocumentContentForContentClassificationForFile(filePath: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const text = await this.readFileToString(filePath);
+        const classification = await client.classifyUsingText(text);
+        var str = JSON.stringify(classification, null, 4);
+        return Promise.resolve(str);
+    }
+    private readFileToString(filePath: string): Promise<string> {
+        return new Promise(function (resolve, reject) {
+            fs.readFile(filePath, (err, data) => {
+                err ? reject(err) : resolve(data.toString());
+            });
+        });
     }
 }
