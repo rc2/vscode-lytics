@@ -1,3 +1,6 @@
+## [0.0.14] - 2018-??-??
+- (issue 38) Added explorer for campaign details. It lists available campaigns and variations, and allows you to display details for each.
+
 ## [0.0.13] - 2018-08-04
 - (issue 33) Changed _lytics watch_ menu option text to be more descriptive.
 - (issue 35) Added support for new _tolql_ API. You can select a _csv_ file and generate LQL from it.
