@@ -86,6 +86,10 @@
         {
           "id": "lytics.tables.explorer",
           "name": "Tables"
+        },
+        {
+          "id": "lytics.campaigns.explorer",
+          "name": "Campaigns"
         }
       ]
     },
@@ -267,6 +271,33 @@
           "dark": "resources/icons/dark/info.svg"
         },
         "category": "Lytics"
+      },
+      {
+        "command": "lytics.campaigns.refresh",
+        "title": "Refresh Campaign List",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.campaign.info",
+        "title": "Show Campaign Info",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.campaign.variation.info",
+        "title": "Show Campaign Variation Info",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        },
+        "category": "Lytics"
       }
     ],
     "menus": {
@@ -347,6 +378,14 @@
         {
           "command": "lytics.table.field.info",
           "when": "false"
+        },
+        {
+          "command": "lytics.campaign.info",
+          "when": "false"
+        },
+        {
+          "command": "lytics.campaign.variation.info",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -407,6 +446,11 @@
         {
           "command": "lytics.tables.refresh",
           "when": "view == lytics.tables.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "lytics.campaigns.refresh",
+          "when": "view == lytics.campaigns.explorer",
           "group": "navigation"
         }
       ],
@@ -497,6 +541,16 @@
         {
           "command": "lytics.tables.remove",
           "when": "view == lytics.tables.explorer && viewItem == 'table'"
+        },
+        {
+          "command": "lytics.campaign.info",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaign'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.campaign.variation.info",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'",
+          "group": "inline"
         }
       ]
     },
@@ -550,7 +604,7 @@
   "devDependencies": {
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.68",
+    "@types/node": "^7.0.69",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
     "vscode": "^1.1.6"

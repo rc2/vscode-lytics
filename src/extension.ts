@@ -5,6 +5,7 @@ import { AccountExplorerProvider } from './accountExplorerProvider';
 import { QueryEditorProvider } from './queryEditorProvider';
 import { QueryExplorerProvider } from './queryExplorerProvider';
 import { StreamExplorerProvider } from './streamExplorerProvider';
+import { CampaignExplorerProvider } from './campaignExplorerProvider';
 import { TableExplorerProvider } from './tableExplorerProvider';
 import { TerminalManager } from './terminalManager';
 import { StateManager } from './stateManager';
@@ -51,6 +52,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
         await Promise.all([
             queryExplorerProvider.refresh(),
             streamExplorerProvider.refresh(),
+            campaignExplorerProvider.refresh(),
             tableExplorerProvider.refresh()
         ]);
         //
@@ -73,6 +75,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
         queryExplorerProvider.refresh();
         streamExplorerProvider.refresh();
         tableExplorerProvider.refresh();
+        campaignExplorerProvider.refresh();
     });
     context.subscriptions.push(disposable);
 
@@ -115,6 +118,16 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => tableExplorerProvider.commandShowEntitySearch(field));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
+    context.subscriptions.push(disposable);
+
+    const campaignExplorerProvider = new CampaignExplorerProvider(context);
+    disposable = vscode.window.registerTreeDataProvider('lytics.campaigns.explorer', campaignExplorerProvider);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.campaigns.refresh', () => campaignExplorerProvider.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.campaign.info', (campaign) => campaignExplorerProvider.commandShowCampaignInfo(campaign));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.campaign.variation.info', (variation) => campaignExplorerProvider.commandShowCampaignVariationInfo(variation));
     context.subscriptions.push(disposable);
 
     const termManager = new TerminalManager();
