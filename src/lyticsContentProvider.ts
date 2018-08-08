@@ -42,6 +42,12 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
                 }
                 return Promise.resolve(entity);
             }
+            else if (luri.isCampaignUri && luri.campaignId) {
+                return await this.provideTextDocumentContentForCampaign(luri.campaignId, account);
+            }
+            else if (luri.isCampaignVariationUri && luri.campaignVariationId) {
+                return await this.provideTextDocumentContentForCampaignVariation(luri.campaignVariationId, account);
+            }
             throw new Error(`Invalid uri: ${uri.toString()}`);
         }
         catch (err) {
@@ -97,5 +103,15 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             entity = {};
         }
         return Promise.resolve(JSON.stringify(entity, null, 4));
+    }
+    private async provideTextDocumentContentForCampaign(campaignId: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const campaign = await client.getCampaign(campaignId);
+        return Promise.resolve(JSON.stringify(campaign, null, 4));
+    }
+    private async provideTextDocumentContentForCampaignVariation(campaignVariationId: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const campaign = await client.getCampaignVariation(campaignVariationId);
+        return Promise.resolve(JSON.stringify(campaign, null, 4));
     }
 }

@@ -9,6 +9,8 @@ export class LyticsUri {
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
+    public isCampaignUri: boolean = false;
+    public isCampaignVariationUri: boolean = false;
     public isEntityUri: boolean = false;
     public accountId: number = 0;
     public queryAlias: (string | undefined);
@@ -17,6 +19,8 @@ export class LyticsUri {
     public tableName: (string | undefined);
     public tableFieldName: (string | undefined);
     public tableFieldValue: (string | undefined);
+    public campaignId: (string | undefined);
+    public campaignVariationId: (string | undefined);
 
     constructor(uri: vscode.Uri) {
         this._uri = uri;
@@ -39,6 +43,14 @@ export class LyticsUri {
                     break;
                 case 'tables':
                     this.handleTablesUri();
+                    return;
+                    break;
+                case 'campaigns':
+                    this.handleCampaignsUri();
+                    return;
+                    break;
+                case 'variations':
+                    this.handleCampaignVariationUri();
                     return;
                     break;
             }
@@ -152,6 +164,37 @@ export class LyticsUri {
                     this.tableName = tableName;
                     this.tableFieldName = fieldName;
                     this.tableFieldValue = value;
+                    return;
+                }
+            }
+            return;
+        }
+    }
+
+    private handleCampaignsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/campaigns/1234567890.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const campaignId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (campaignId.length > 0) {
+                    this.isCampaignUri = true;
+                    this.campaignId = campaignId;
+                    return;
+                }
+            }
+            return;
+        }
+    }
+    private handleCampaignVariationUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/variation/1234567890.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const campaignId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (campaignId.length > 0) {
+                    this.isCampaignVariationUri = true;
+                    this.campaignVariationId = campaignId;
                     return;
                 }
             }
