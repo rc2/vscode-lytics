@@ -637,7 +637,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "lytics-js": "latest",
+    "lytics-js": "0.0.13",
     "path": "^0.12.7"
   }
 }
