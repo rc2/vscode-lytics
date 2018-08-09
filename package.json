@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -637,7 +637,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "lytics-js": "0.0.13",
+    "lytics-js": "latest",
     "path": "^0.12.7"
   }
 }

@@ -1,4 +1,4 @@
-## [0.0.14] - 2018-??-??
+## [0.0.14] - 2018-08-09
 - (issue 38) Added explorer for campaign details. It lists available campaigns and variations, and allows you to display details for each.
 - (issue 39) Added ability to run content classification on files and the active editor window.
 
