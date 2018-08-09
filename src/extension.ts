@@ -10,6 +10,7 @@ import { TableExplorerProvider } from './tableExplorerProvider';
 import { TerminalManager } from './terminalManager';
 import { StateManager } from './stateManager';
 import LyticsContentProvider from './lyticsContentProvider';
+import { ContentClassificationManager } from './ContentClassificationManager';
 
 export function activate(context: vscode.ExtensionContext) {
     activateAccounts(context);
@@ -131,14 +132,20 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 
     const termManager = new TerminalManager();
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(termManager);
     disposable = vscode.commands.registerCommand('lytics.watch.folder', (uri) => termManager.watch(uri));
     context.subscriptions.push(disposable);
 }
-
+ 
 function activateContentProviders(context: vscode.ExtensionContext) {
     const lyticsProvider = new LyticsContentProvider();
     let disposable = vscode.workspace.registerTextDocumentContentProvider('lytics', lyticsProvider);
+    context.subscriptions.push(disposable);
+    const classificationManager = new ContentClassificationManager(lyticsProvider);
+    context.subscriptions.push(classificationManager);
+    disposable = vscode.commands.registerCommand('lytics.classify.file', (uri) => classificationManager.commandClassifyFileContents(uri));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.classify.active.editor', (uri) => classificationManager.commandClassifyEditorContents());
     context.subscriptions.push(disposable);
 }
 

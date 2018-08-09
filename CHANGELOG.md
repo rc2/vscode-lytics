@@ -1,5 +1,6 @@
 ## [0.0.14] - 2018-??-??
 - (issue 38) Added explorer for campaign details. It lists available campaigns and variations, and allows you to display details for each.
+- (issue 39) Added ability to run content classification on files and the active editor window.
 
 ## [0.0.13] - 2018-08-04
 - (issue 33) Changed _lytics watch_ menu option text to be more descriptive.

@@ -30,33 +30,4 @@ None.
 
 ## Release Notes
 
-For more details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).
-
-#### 0.0.13
-* Added support for new _tolql_ API.
-* Added syntax highlighting support for _cap()_ function.
-
-#### 0.0.12
-* Export accounts to FileZilla.
-* Native support for *lytics watch*.
-
-#### 0.0.11
-Bug fixes.
-
-#### 0.0.10
-Added ability to search by identifier to table explorer.
-
-#### 0.0.9
-Enhanced support for Windows operating systems.
-
-#### 0.0.7
-Added ability to download queries as LQL files.
-
-#### 0.0.6
-Added back explorer view commands accidentally removed.
-
-#### 0.0.5
-- **Upload LQL to Lytics** - After you have saved an LQL file locally, you can right-click in the editor and select an option to upload the LQL to Lytics.
-
-#### 0.0.4
-Initial release.
+For details, see the [change log](https://github.com/lytics/vscode-lytics/blob/master/CHANGELOG.md).

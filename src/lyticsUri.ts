@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-
+import qs = require('query-string');
 export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
@@ -11,6 +11,7 @@ export class LyticsUri {
     public isTableFieldUri: boolean = false;
     public isCampaignUri: boolean = false;
     public isCampaignVariationUri: boolean = false;
+    public isContentClassificationUri: boolean = false;
     public isEntityUri: boolean = false;
     public accountId: number = 0;
     public queryAlias: (string | undefined);
@@ -21,6 +22,8 @@ export class LyticsUri {
     public tableFieldValue: (string | undefined);
     public campaignId: (string | undefined);
     public campaignVariationId: (string | undefined);
+    public contentClassificationFilePath: (string | undefined);
+    public useTextFromActiveEditor: boolean = false;
 
     constructor(uri: vscode.Uri) {
         this._uri = uri;
@@ -36,22 +39,23 @@ export class LyticsUri {
                 case 'queries':
                     this.handleQueriesUri();
                     return;
-                    break;
                 case 'streams':
                     this.handleStreamsUri();
                     return;
-                    break;
                 case 'tables':
                     this.handleTablesUri();
                     return;
-                    break;
                 case 'campaigns':
                     this.handleCampaignsUri();
                     return;
-                    break;
                 case 'variations':
                     this.handleCampaignVariationUri();
                     return;
+                case 'content':
+                    if (parts[1] === 'classification') {
+                        this.handleContentClassificationUri();
+                        return;
+                    }
                     break;
             }
         }
@@ -199,6 +203,19 @@ export class LyticsUri {
                 }
             }
             return;
+        }
+    }
+    private handleContentClassificationUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/content/classification/draft/{file name}.json?path={full file path}&active=false
+        if (parts.length === 4) {
+            if (parts[3].endsWith('.json')) {
+                const parsed = qs.parse(this._uri.query);
+                this.contentClassificationFilePath = parsed.path;
+                this.useTextFromActiveEditor = parsed.active;
+                this.isContentClassificationUri = true;
+                return;
+            }
         }
     }
 }
