@@ -48,7 +48,7 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
 		};
 	}
 
-	private mapOfQueriesForTable:Map<string, Query[]> = new Map<string, Query[]>();
+	private mapOfQueriesForTable: Map<string, Query[]> = new Map<string, Query[]>();
 
 	async getChildren(element?: any): Promise<any[]> {
 		const account = StateManager.account;
@@ -75,15 +75,24 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
 				return Promise.resolve([]);
 			}
 			this.mapOfQueriesForTable = map;
-			const names:string[] = [];
+			const names: string[] = [];
 			map.forEach((value: Query[], key: string) => {
 				names.push(key);
 			});
+			names.sort();
 			return Promise.resolve(names);
 		}
 		if (element) {
 			if (this.mapOfQueriesForTable.has(element)) {
-				return Promise.resolve(this.mapOfQueriesForTable.get(element)!);
+				const queries = this.mapOfQueriesForTable.get(element)! as Query[];
+				queries.sort((a, b) => {
+					if (a.alias < b.alias)
+						return -1;
+					if (a.alias > b.alias)
+						return 1;
+					return 0;
+				});
+				return Promise.resolve(queries);
 			}
 		}
 		return Promise.resolve([]);
