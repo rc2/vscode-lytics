@@ -1,4 +1,4 @@
-## [0.0.15] - 2018-??-????
+## [0.0.15] - 2018-08-20
 - (issue 43) Fixed error that was displayed when loading a Lytics account with no campaigns.
 - (issue 44) Queries are sorted alphabetically.
 - (issue 45) Added support for `urlmain` and `hash` functions.
