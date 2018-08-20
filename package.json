@@ -23,7 +23,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:lytics.watch.folder",
+    "onCommand:lytics.watch.folder.palette",
     "onCommand:lytics.classify.active.editor",
     "onCommand:lytics.lql.generate",
     "onCommand:lytics.accounts.add",
@@ -95,6 +95,11 @@
       ]
     },
     "commands": [
+      {
+        "command": "lytics.watch.folder.palette",
+        "title": "Watch Folder for Changes",
+        "category": "Lytics"
+      },
       {
         "command": "lytics.watch.folder",
         "title": "Lytics: Watch Folder for Changes",
@@ -314,9 +319,14 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "lytics.watch.folder",
+          "command": "lytics.watch.folder.palette",
           "group": "Lytics",
           "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "lytics.watch.folder",
+          "group": "Lytics",
+          "when": "false"
         },
         {
           "command": "lytics.classify.file",

@@ -2,6 +2,7 @@
 - (issue 44) Queries are sorted alphabetically.
 - (issue 45) Added support for `urlmain` and `hash` functions.
 - (issue 46) Added support for spaces in the name of a field from the target system. For example, a column in a CSV may be _member id_.
+- (issue 47) Added the ability to select the folder to watch when running the watch command from the Visual Studio Code command palette.
 
 ## [0.0.14] - 2018-08-09
 - (issue 38) Added explorer for campaign details. It lists available campaigns and variations, and allows you to display details for each.
