@@ -643,7 +643,7 @@
     "@types/query-string": "^6.1.0",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
-    "vscode": "^1.1.6"
+    "vscode": "^1.1.21"
   },
   "dependencies": {
     "axios": "^0.18.0",

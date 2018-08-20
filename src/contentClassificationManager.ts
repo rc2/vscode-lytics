@@ -21,7 +21,6 @@ export class ContentClassificationManager implements vscode.Disposable {
 		const parsed = path.parse(fullPath);
 		const fileName = `${parsed.name}${parsed.ext}`;
 		const params = {
-			path: undefined,
 			active: true
 		};
 		return this.showClassification(fileName, params);
