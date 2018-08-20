@@ -65,7 +65,7 @@
         },
         {
             "name": "support.function.hash-and-encoding.lql",
-            "match": "(?<=[\\s]|^)(hash.sip|hash.md5|hash.sha1|hash.sha256|hash.sha512|encoding.b64encode|encoding.b64decode)(?=\\()"
+            "match": "(?<=[\\s]|^)(hash|hash.sip|hash.md5|hash.sha1|hash.sha256|hash.sha512|encoding.b64encode|encoding.b64decode)(?=\\()"
         },
         {
             "name": "support.function.cast-and-convert.lql",
@@ -77,7 +77,7 @@
         },
         {
             "name": "support.function.url-and-email.lql",
-            "match": "(?<=[\\s]|^)(email|emailname|emaildomain|domain|host|path|qs|urldecode|urlminusqa|useragent|useragent.map)(?=\\()"
+            "match": "(?<=[\\s]|^)(email|emailname|emaildomain|domain|host|path|qs|urldecode|urlminusqa|useragent|useragent.map|urlmain)(?=\\()"
         },
         {
             "name": "support.function.date-and-time.lql",
