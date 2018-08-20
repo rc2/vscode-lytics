@@ -135,6 +135,8 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(termManager);
     disposable = vscode.commands.registerCommand('lytics.watch.folder', (uri) => termManager.watch(uri));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.watch.folder.palette', () => termManager.selectAndWatch());
+    context.subscriptions.push(disposable);
 }
  
 function activateContentProviders(context: vscode.ExtensionContext) {

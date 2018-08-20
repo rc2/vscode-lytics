@@ -23,7 +23,7 @@ export class TerminalManager implements vscode.Disposable {
         if (!ext) {
             return undefined;
         }
-        const pth = path.join(ext.extensionPath, 'node_modules', 'lytics-js', "dist", 'lytics-watch.js');
+        const pth = path.join(ext.extensionPath, 'node_modules', 'lytics-js', "dist", 'lytics-js-watch.js');
         const params:string[] = ["-k", account.apikey!];
         //
         //
@@ -42,6 +42,30 @@ export class TerminalManager implements vscode.Disposable {
         //
         const cmd = `node ${pth} ${params.join(' ')} '${uri.fsPath}'`;
         return cmd;
+    }
+
+    async getFolderPathForWatch(): Promise<string | undefined> {
+		const paths = await vscode.window.showOpenDialog({
+			canSelectFiles: false,
+			canSelectFolders: true,
+			canSelectMany: false,
+		});
+		if (!paths || paths.length !== 1) {
+			return Promise.resolve(undefined);
+		}
+		return Promise.resolve(paths[0].fsPath);
+	}
+    async selectAndWatch() {
+        const account = StateManager.account;
+        if (!account) {
+            vscode.window.showErrorMessage('Connect a Lytics account before running this command.');
+            return;
+        }
+        const path = await this.getFolderPathForWatch();
+        if (!path || path.trim().length == 0) {
+            return;
+        }
+        this.watch(vscode.Uri.parse(path));
     }
     watch(uri: vscode.Uri) {
         const account = StateManager.account;
