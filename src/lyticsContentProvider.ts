@@ -111,7 +111,6 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     }
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);
-        //let info = await client.getTableFieldInfo(tableName, fieldName);
         const info = await client.getTableSchemaFieldInfo(tableName, fieldName);
         return Promise.resolve(JSON.stringify(info ? info : {}, null, 4));
     }

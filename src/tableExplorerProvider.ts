@@ -4,29 +4,13 @@ import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
 import { LyticsAccount, TableSchemaField, TableSchema } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+import { ContentReader } from './contentReader';
 
-export class TableExplorerProvider implements vscode.TreeDataProvider<TableSchema | TableSchemaField> {
+export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | TableSchemaField> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-
-	constructor(private context: vscode.ExtensionContext) {
-	}
-
-	async refresh() {
-		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: 'Refreshing table list.',
-				cancellable: true
-			}, async (progress, token) => {
-				this._onDidChangeTreeData.fire();
-			});
-		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Refreshing tables failed: ${err.message}`);
-			return Promise.resolve();
-		}
+	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
+		super('table list', contentReader, context);
 	}
 
 	private mapOfFieldToTable: Map<TableSchemaField, TableSchema> = new Map<TableSchemaField, TableSchema>();

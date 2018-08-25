@@ -4,29 +4,13 @@ import * as fs from 'fs';
 import { StateManager } from './stateManager';
 import { LyticsAccount, Campaign, CampaignVariation, CampaignVariationDetailOverride } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
-import { LyticsUri } from './lyticsUri';
+import { ContentReader } from './contentReader';
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
-export class CampaignExplorerProvider implements vscode.TreeDataProvider<Campaign | CampaignVariation> {
+export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | CampaignVariation> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-	constructor(private context: vscode.ExtensionContext) {
-	}
-
-	async refresh() {
-		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: 'Refreshing campaign list.',
-				cancellable: true
-			}, async (progress, token) => {
-				this._onDidChangeTreeData.fire();
-			});
-		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Refreshing campaigns failed: ${err.message}`);
-			return Promise.resolve();
-		}
+	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
+		super('campaign list', contentReader, context);
 	}
 
 	async getChildren(element?: Campaign): Promise<any[]> {
@@ -52,7 +36,7 @@ export class CampaignExplorerProvider implements vscode.TreeDataProvider<Campaig
 		}
 		throw new Error(`The specified element is not supported by the campaign explorer provider.`);
 	}
-
+	
 	async getCampaigns(account: LyticsAccount): Promise<Campaign[]> {
 		let campaigns = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -145,8 +129,9 @@ export class CampaignExplorerProvider implements vscode.TreeDataProvider<Campaig
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/campaigns/${campaign.id}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				// const doc = await vscode.workspace.openTextDocument(uri);
+				// await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
@@ -166,8 +151,9 @@ export class CampaignExplorerProvider implements vscode.TreeDataProvider<Campaig
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/variations/${variation.id}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				// const doc = await vscode.workspace.openTextDocument(uri);
+				// await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
@@ -211,9 +197,9 @@ export class CampaignExplorerProvider implements vscode.TreeDataProvider<Campaig
 				const filePath = await this.saveCampaignVariationDetailOverrideToFolder(variation2, downloadPath);
 				if (filePath) {
 					const uri = vscode.Uri.file(filePath);
-					const doc = await vscode.workspace.openTextDocument(uri);
-					await vscode.window.showTextDocument(doc, { preview: false });
-
+					// const doc = await vscode.workspace.openTextDocument(uri);
+					// await vscode.window.showTextDocument(doc, { preview: false });
+					await this.displayAsReadOnly(uri);
 					vscode.window.showInformationMessage(`campaign variation downloaded: ${filePath}`);
 					return;
 				}

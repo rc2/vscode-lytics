@@ -3,28 +3,13 @@ import * as path from 'path';
 import { StateManager } from './stateManager';
 import { LyticsAccount, DataStream, DataStreamField } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+import { ContentReader } from './contentReader';
 
-export class StreamExplorerProvider implements vscode.TreeDataProvider<DataStream | DataStreamField> {
+export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | DataStreamField> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-	constructor(private context: vscode.ExtensionContext) {
-	}
-
-	async refresh() {
-		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: 'Refreshing stream list.',
-				cancellable: true
-			}, async (progress, token) => {
-				this._onDidChangeTreeData.fire();
-			});
-		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Refreshing streams failed: ${err.message}`);
-			return Promise.resolve();
-		}
+	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
+		super('stream list', contentReader, context);
 	}
 
 	private mapOfFieldToStream: Map<DataStreamField, DataStream> = new Map<DataStreamField, DataStream>();

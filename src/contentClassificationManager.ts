@@ -1,15 +1,23 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
 import { ContentReader } from './contentReader';
+import { ContentDisplayer } from './contentDisplayer';
 const path = require('path');
 const qs = require('query-string');
 
-export class ContentClassificationManager implements vscode.Disposable {
+export class ContentClassificationManager implements vscode.Disposable, ContentDisplayer {
 	_contentReader:ContentReader;
 	constructor(reader:ContentReader) {
 		this._contentReader = reader;
 	}
 	dispose() {
+	}
+	async displayAsReadOnly(uri:vscode.Uri, readFromCache?:boolean): Promise<vscode.TextEditor> {
+		if (this._contentReader) {
+			this._contentReader.removeFromCache(uri);
+		}
+		const doc = await vscode.workspace.openTextDocument(uri);
+		return vscode.window.showTextDocument(doc, { preview: false });
 	}
 	async commandClassifyEditorContents() {
 		const editor = vscode.window.activeTextEditor;
@@ -37,11 +45,12 @@ export class ContentClassificationManager implements vscode.Disposable {
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/content/classification/draft/${fileName}_classification.json?${qs.stringify(params)}`);
-				if (this._contentReader) {
-					this._contentReader.removeFromCache(uri);
-				}
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				// if (this._contentReader) {
+				// 	this._contentReader.removeFromCache(uri);
+				// }
+				// const doc = await vscode.workspace.openTextDocument(uri);
+				// await vscode.window.showTextDocument(doc, { preview: false });
+				return this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
@@ -58,31 +67,5 @@ export class ContentClassificationManager implements vscode.Disposable {
 			active: false
 		};
 		return this.showClassification(fileName, params);
-		// try {
-		// 	//TODO: get file contents
-		// 	const fullPath = uri.fsPath;
-		// 	await vscode.window.withProgress({
-		// 		location: vscode.ProgressLocation.Notification,
-		// 		title: `Loading content from file: ${fullPath}`,
-		// 		cancellable: true
-		// 	}, async (progress, token) => {
-		// 		const params = {
-		// 			path: fullPath ? fullPath : undefined,
-		// 			active: fullPath ? false : true
-		// 		};
-		// 		const fileName = this.getFileName(fullPath);
-		// 		const uri = vscode.Uri.parse(`lytics://${account.aid}/content/classification/draft/${fileName}_classification.json?${qs.stringify(params)}`);
-		// 		if (this._contentReader) {
-		// 			this._contentReader.removeFromCache(uri);
-		// 		}
-		// 		const doc = await vscode.workspace.openTextDocument(uri);
-		// 		await vscode.window.showTextDocument(doc, { preview: false });
-		// 	});
-		// }
-		// catch (err) {
-		// 	vscode.window.showErrorMessage(`Attempt to classify content failed: ${err.message}`);
-		// 	return Promise.resolve();
-		// }
-		// return Promise.resolve();
 	}
 }

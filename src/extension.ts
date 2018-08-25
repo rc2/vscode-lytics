@@ -13,12 +13,13 @@ import LyticsContentProvider from './lyticsContentProvider';
 import { ContentClassificationManager } from './ContentClassificationManager';
 
 export function activate(context: vscode.ExtensionContext) {
-    activateAccounts(context);
-    activateContentProviders(context);
+    const lyticsProvider = new LyticsContentProvider();
+    activateAccounts(lyticsProvider, context);
+    activateContentProviders(lyticsProvider, context);
 }
 
-function activateAccounts(context: vscode.ExtensionContext) {
-    const accountExplorerProvider = new AccountExplorerProvider(context);
+function activateAccounts(lyticsProvider:LyticsContentProvider, context: vscode.ExtensionContext) {
+    const accountExplorerProvider = new AccountExplorerProvider(lyticsProvider, context);
     let disposable = vscode.window.registerTreeDataProvider('lytics.accounts.explorer', accountExplorerProvider);
     context.subscriptions.push(disposable);
 
@@ -91,7 +92,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.queries.upload', async uri => queryEditorProvider.commandUploadQuery(uri));
     context.subscriptions.push(disposable);
 
-    const queryExplorerProvider = new QueryExplorerProvider(context);
+    const queryExplorerProvider = new QueryExplorerProvider(lyticsProvider, context);
     disposable = vscode.window.registerTreeDataProvider('lytics.queries.explorer', queryExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.queries.refresh', () => queryExplorerProvider.refresh());
@@ -103,7 +104,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.query.download', (query) => queryExplorerProvider.commandDownloadQuery(query));
     context.subscriptions.push(disposable);
 
-    const streamExplorerProvider = new StreamExplorerProvider(context);
+    const streamExplorerProvider = new StreamExplorerProvider(lyticsProvider, context);
     disposable = vscode.window.registerTreeDataProvider('lytics.streams.explorer', streamExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.streams.refresh', () => streamExplorerProvider.refresh());
@@ -113,7 +114,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => streamExplorerProvider.commandShowField(field));
     context.subscriptions.push(disposable);
 
-    const tableExplorerProvider = new TableExplorerProvider(context);
+    const tableExplorerProvider = new TableExplorerProvider(lyticsProvider, context);
     disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => tableExplorerProvider.commandShowEntitySearch(field));
@@ -121,7 +122,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
 
-    const campaignExplorerProvider = new CampaignExplorerProvider(context);
+    const campaignExplorerProvider = new CampaignExplorerProvider(lyticsProvider, context);
     disposable = vscode.window.registerTreeDataProvider('lytics.campaigns.explorer', campaignExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.campaigns.refresh', () => campaignExplorerProvider.refresh());
@@ -143,8 +144,7 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
  
-function activateContentProviders(context: vscode.ExtensionContext) {
-    const lyticsProvider = new LyticsContentProvider();
+function activateContentProviders(lyticsProvider:LyticsContentProvider, context: vscode.ExtensionContext) {
     let disposable = vscode.workspace.registerTextDocumentContentProvider('lytics', lyticsProvider);
     context.subscriptions.push(disposable);
     const classificationManager = new ContentClassificationManager(lyticsProvider);
