@@ -11,6 +11,7 @@ export class LyticsUri {
     public isTableFieldUri: boolean = false;
     public isCampaignUri: boolean = false;
     public isCampaignVariationUri: boolean = false;
+    public isCampaignVariationOverrideUri: boolean = false;
     public isContentClassificationUri: boolean = false;
     public isEntityUri: boolean = false;
     public accountId: number = 0;
@@ -193,14 +194,23 @@ export class LyticsUri {
     private handleCampaignVariationUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/variation/1234567890.json
+        // lytics://{aid}/variation/1234567890.campaign.override
         if (parts.length === 2) {
+            var campaignId = '';
             if (parts[1].endsWith('.json')) {
-                const campaignId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
-                if (campaignId.length > 0) {
-                    this.isCampaignVariationUri = true;
-                    this.campaignVariationId = campaignId;
-                    return;
-                }
+                campaignId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                this.isCampaignVariationUri = true;
+            }
+            else if (parts[1].endsWith('.campaign.override')) {
+                campaignId = parts[1].substring(0, parts[1].indexOf('.campaign.override')).trim();
+                this.isCampaignVariationOverrideUri = true;
+            }
+            else {
+                return;
+            }
+            if (campaignId.length > 0) {
+                this.campaignVariationId = campaignId;
+                return;
             }
             return;
         }

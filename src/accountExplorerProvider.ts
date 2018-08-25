@@ -6,23 +6,13 @@ import { AccountsExportFilezilla } from './accountsExportFilezilla';
 import { AccountsExportHandler } from './exports';
 import { LyticsAccount } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
+import { ContentReader } from './contentReader';
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
-export class AccountExplorerProvider implements vscode.TreeDataProvider<LyticsAccount> {
+export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccount> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-
-	constructor(private context: vscode.ExtensionContext) {
-	}
-
-	async refresh() {
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: 'Refreshing account list.',
-			cancellable: true
-		}, async (progress, token) => {
-			this._onDidChangeTreeData.fire();
-		});
+	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
+		super('account list', contentReader, context);
 	}
 
 	getTreeItem(account: LyticsAccount): vscode.TreeItem {

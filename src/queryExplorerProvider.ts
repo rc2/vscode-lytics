@@ -4,29 +4,13 @@ import * as fs from 'fs';
 import { StateManager } from './stateManager';
 import lytics = require("lytics-js/dist/lytics");
 import { Query } from 'lytics-js/dist/types';
+import { ContentReader } from './contentReader';
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
-export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
+export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-	tableNames: (string[] | undefined);
-	constructor(private context: vscode.ExtensionContext) {
-	}
-
-	async refresh() {
-		try {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Refreshing query list.`,
-				cancellable: true
-			}, async (progress, token) => {
-				this._onDidChangeTreeData.fire();
-			});
-		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Refreshing queries failed: ${err.message}`);
-			return Promise.resolve();
-		}
+	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
+		super('query list', contentReader, context);
 	}
 
 	getTreeItem(element: any): vscode.TreeItem {
@@ -86,10 +70,12 @@ export class QueryExplorerProvider implements vscode.TreeDataProvider<Query> {
 			if (this.mapOfQueriesForTable.has(element)) {
 				const queries = this.mapOfQueriesForTable.get(element)! as Query[];
 				queries.sort((a, b) => {
-					if (a.alias < b.alias)
+					if (a.alias < b.alias) {
 						return -1;
-					if (a.alias > b.alias)
+					}
+					if (a.alias > b.alias) {
 						return 1;
+					}
 					return 0;
 				});
 				return Promise.resolve(queries);
