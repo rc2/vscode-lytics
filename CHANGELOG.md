@@ -1,3 +1,6 @@
+## [0.0.17] - 2018-??-??
+- (issue 56) Added dash as a valid character for data stream field name in LQL
+
 ## [0.0.16] - 2018-08-25
 - (issue 53) Added support for campaign overrides.
 - (issue 54) Lytics content provider read directly from Lytics every time (instead of using the content provider cache).
