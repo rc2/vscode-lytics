@@ -45,7 +45,19 @@
           ".lql"
         ],
         "firstLine": "^SELECT\\s.*",
-        "configuration": "./language-configuration.json"
+        "configuration": "./lql-language-configuration.json"
+      },
+      {
+        "id": "json",
+        "extensions": [
+          ".campaign_override"
+        ]
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "*.campaign_override",
+        "url": "./schemas/campaign_override.schema.json"
       }
     ],
     "grammars": [
@@ -314,6 +326,24 @@
           "dark": "resources/icons/dark/info.svg"
         },
         "category": "Lytics"
+      },
+      {
+        "command": "lytics.campaign.variation.override.download",
+        "title": "Download Campaign Variation Override",
+        "icon": {
+          "light": "resources/icons/light/get-app.svg",
+          "dark": "resources/icons/dark/get-app.svg"
+        },
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.campaign.variation.override.upload",
+        "title": "Lytics: Upload Campaign Variation Override",
+        "icon": {
+          "light": "resources/icons/light/cloud-upload.svg",
+          "dark": "resources/icons/dark/cloud-upload.svg"
+        },
+        "category": "Lytics"
       }
     ],
     "menus": {
@@ -416,6 +446,14 @@
         {
           "command": "lytics.campaign.variation.info",
           "when": "false"
+        },
+        {
+          "command": "lytics.campaign.variation.override.download",
+          "when": "false"
+        },
+        {
+          "command": "lytics.campaign.variation.override.upload",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -428,6 +466,11 @@
           "command": "lytics.lql.generate",
           "group": "Lytics",
           "when": "editorLangId == CSV"
+        },
+        {
+          "command": "lytics.campaign.variation.override.upload",
+          "group": "Lytics",
+          "when": "resourceExtname == .campaign_override"
         }
       ],
       "explorer/context": [
@@ -435,6 +478,11 @@
           "command": "lytics.queries.upload",
           "group": "Lytics",
           "when": "resourceLangId == lql"
+        },
+        {
+          "command": "lytics.campaign.variation.override.upload",
+          "group": "Lytics",
+          "when": "resourceExtname == .campaign_override"
         },
         {
           "command": "lytics.lql.generate",
@@ -584,6 +632,11 @@
         },
         {
           "command": "lytics.campaign.variation.info",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'",
+          "group": "inline"
+        },
+        {
+          "command": "lytics.campaign.variation.override.download",
           "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'",
           "group": "inline"
         }

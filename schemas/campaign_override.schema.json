@@ -1,0 +1,273 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Lytics Campaign Override Schema",
+    "definitions": {
+        "confirmAction": {
+            "type": "object",
+            "description": "Set a tracking name and JavaScript callback for a 'confirm' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the confirm event to send to Lytics and Google Analytics."
+                },
+                "close": {
+                    "type": "boolean",
+                    "description": "If false, prevent the modal from closing after the callback is executed."
+                },
+                "callback": {
+                    "type": "string",
+                    "description": "JavaScript function (as a string) that is called for a 'confirm' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+                },
+                "waitForAsyncResponse": {
+                    "type": "boolean",
+                    "description": "If true, a third parameter is passed to the callback function.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+                }
+            }
+        },
+        "cancelAction": {
+            "type": "object",
+            "description": "Set a tracking name and JavaScript callback for a 'cancel' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the confirm event to send to Lytics and Google Analytics."
+                },
+                "close": {
+                    "type": "boolean",
+                    "description": "If false, prevent the modal from closing after the callback is executed."
+                },
+                "callback": {
+                    "type": "string",
+                    "description": "JavaScript function (as a string) that is called for a 'cancel' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+                }
+            }
+        },
+        "formState": {
+            "type": "object",
+            "description": "Object containing the settings for the form state.",
+            "additionalProperties": false,
+            "properties": {
+                "headline": {
+                    "type": "string",
+                    "description": "Header or title text for the form state."
+                },
+                "msg": {
+                    "type": "string",
+                    "description": "Text message content of the form state."
+                },
+                "delay": {
+                    "type": "integer",
+                    "description": "How long (in seconds) to show the form state before hiding the module. If 0, the module will not hide until the user closes it."
+                },
+                "okShow": {
+                    "type": "boolean",
+                    "description": "If true, shows the 'confirm' button; if false, hides.",
+                    "default": true
+                },
+                "cancelShow": {
+                    "type": "boolean",
+                    "description": "If true, shows the 'cancel' button; if false, hides.",
+                    "default": true
+                },
+                "okMessage": {
+                    "type": "string",
+                    "description": "Set the text for the 'confirm' button.",
+                    "default": "Confirm"
+                },
+                "cancelMessage": {
+                    "type": "string",
+                    "description": "Set the text for the 'cancel' button.",
+                    "default": "Cancel"
+                },
+                "confirmAction": {
+                    "$ref": "#/definitions/confirmAction"
+                },
+                "cancelAction": {
+                    "$ref": "#/definitions/cancelAction"
+                }
+            }
+        }
+    },
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "responsive": {
+            "type": "boolean",
+            "description": "If true, enables responsive styles for windows of certain dimensions; if false, disables.",
+            "default": true
+        },
+        "okShow": {
+            "type": "boolean",
+            "description": "If true, shows the 'confirm' button; if false, hides.",
+            "default": true
+        },
+        "cancelShow": {
+            "type": "boolean",
+            "description": "If true, shows the 'cancel' button; if false, hides.",
+            "default": true
+        },
+        "okMessage": {
+            "type": "string",
+            "description": "Set the text for the 'confirm' button.",
+            "default": "Confirm"
+        },
+        "cancelMessage": {
+            "type": "string",
+            "description": "Set the text for the 'cancel' button.",
+            "default": "Cancel"
+        },
+        "confirmAction": {
+            "$ref": "#/definitions/confirmAction"
+        },
+        "cancelAction": {
+            "$ref": "#/definitions/cancelAction"
+        },
+        "closeAction": {
+            "type": "object",
+            "description": "Set a tracking name and JavaScript callback for a 'close' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the confirm event to send to Lytics and Google Analytics."
+                },
+                "callback": {
+                    "type": "string",
+                    "description": "JavaScript function (as a string) that is called for a 'close' button click event.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+                }
+            }
+        },
+        "formFields": {
+            "type": "array",
+            "description": "deprecated"
+        },
+        "formElements": {
+            "type": "array",
+            "description": "Form elements to include in 'form' and 'gate' modules.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/",
+            "items": [
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "The type of form element.",
+                            "enum": [
+                                "checkbox-group",
+                                "radio-group",
+                                "select",
+                                "text",
+                                "email",
+                                "textarea"
+                            ]
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name attribute of the field, this is the primary identifier used in tracking."
+                        },
+                        "required": {
+                            "type": "boolean",
+                            "description": "If true, a value must be specified in this field before the form can be submitted; if false, the form can be submitted if this field is empty."
+                        },
+                        "label": {
+                            "type": "string",
+                            "description": "Label to give the field context to the user."
+                        },
+                        "placeholder": {
+                            "type": "string",
+                            "description": "Placeholder text for 'text', 'textarea', and 'select' fields."
+                        },
+                        "values": {
+                            "type": "array",
+                            "description": "List of options for 'checkbox', 'radio', or 'select' elements.",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "label": {
+                                        "type": "string",
+                                        "description": "The value of the option shown in the form to the user."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "The value attribute of the option or input element, used in tracking."
+                                    }
+                                },
+                                "required": [
+                                    "label",
+                                    "value"
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "name"
+                    ]
+                }
+            ]
+        },
+        "onInit": {
+            "type": "string",
+            "description": "JavaScript function (as a string) that is called just before the module is shown to the user.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+        },
+        "onLoad": {
+            "type": "string",
+            "description": "JavaScript function (as a string) that is called when the module is shown to the user.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+        },
+        "onModalClose": {
+            "type": "string",
+            "description": "JavaScript function (as a string) that is called when the user clicks the confirm, close, or cancel buttons.\n\nFor details, see https://lytics.github.io/pathforadocs/callbacks/"
+        },
+        "fields": {
+            "type": "object",
+            "description": "Configures legacy form elements.",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's full name; if false, hide."
+                },
+                "email": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's email address; if false, hide."
+                },
+                "title": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's job title; if false, hide."
+                },
+                "company": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's company name; if false, hide."
+                },
+                "phone": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's phone number; if false, hide."
+                },
+                "referralEmail": {
+                    "type": "boolean",
+                    "description": "If true, show input for the user's referral email; if false, hide."
+                },
+                "message": {
+                    "type": "boolean",
+                    "description": "If true, show textarea field for comments or a longer form message; if false, hide."
+                }
+            }
+        },
+        "formStates": {
+            "type": "object",
+            "description": "Set a custom success or error state message on confirmation to show after the user submits a form.",
+            "additionalProperties": false,
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/formState"
+                },
+                "success": {
+                    "$ref": "#/definitions/formState"
+                }
+            }
+        }
+    }
+}

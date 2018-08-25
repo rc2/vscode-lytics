@@ -56,6 +56,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             else if (luri.isCampaignVariationUri && luri.campaignVariationId) {
                 return await this.provideTextDocumentContentForCampaignVariation(luri.campaignVariationId, account);
             }
+            else if (luri.isCampaignVariationOverrideUri && luri.campaignVariationId) {
+                return await this.provideTextDocumentContentForCampaignVariationDetailOverride(luri.campaignVariationId, account);
+            }
             else if (luri.isContentClassificationUri) {
                 if (luri.contentClassificationFilePath) {
                     return await this.provideTextDocumentContentForContentClassificationForFile(luri.contentClassificationFilePath, account);
@@ -127,8 +130,13 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
     }
     private async provideTextDocumentContentForCampaignVariation(campaignVariationId: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);
-        const campaign = await client.getCampaignVariation(campaignVariationId);
-        return Promise.resolve(JSON.stringify(campaign, null, 4));
+        const variation = await client.getCampaignVariation(campaignVariationId);
+        return Promise.resolve(JSON.stringify(variation, null, 4));
+    }
+    private async provideTextDocumentContentForCampaignVariationDetailOverride(campaignVariationId: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const override = await client.getCampaignVariationDetailOverride(campaignVariationId);
+        return Promise.resolve(JSON.stringify(override, null, 4));
     }
     private async provideTextDocumentContentForContentClassificationForActiveEditor(account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);

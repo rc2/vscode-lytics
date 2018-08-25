@@ -130,6 +130,10 @@ function activateAccounts(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.campaign.variation.info', (variation) => campaignExplorerProvider.commandShowCampaignVariationInfo(variation));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.campaign.variation.override.download', (variation) => campaignExplorerProvider.commandDownloadCampaignVariationDetailOverride(variation));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.campaign.variation.override.upload', async (uri) => campaignExplorerProvider.commandUploadCampaignVariationDetailOverride(uri));
+    context.subscriptions.push(disposable);
 
     const termManager = new TerminalManager();
     context.subscriptions.push(termManager);
