@@ -1,5 +1,6 @@
 ## [0.0.17] - 2018-??-??
-- (issue 56) Added dash as a valid character for data stream field name in LQL
+- (issue 56) Added dash as a valid character for data stream field name in LQL.
+- (issue 58) Added ability to whitelist table fields from table explorer.
 
 ## [0.0.16] - 2018-08-25
 - (issue 53) Added support for campaign overrides.

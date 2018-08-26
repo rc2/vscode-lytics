@@ -301,6 +301,11 @@
         "category": "Lytics"
       },
       {
+        "command": "lytics.table.field.whitelist",
+        "title": "Toggle Whitelist for API",
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.campaigns.refresh",
         "title": "Refresh Campaign List",
         "icon": {
@@ -437,6 +442,10 @@
         },
         {
           "command": "lytics.table.field.info",
+          "when": "false"
+        },
+        {
+          "command": "lytics.table.field.whitelist",
           "when": "false"
         },
         {
@@ -620,6 +629,14 @@
           "command": "lytics.table.field.info",
           "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'",
           "group": "inline"
+        },
+        {
+          "command": "lytics.table.field.whitelist",
+          "when": "view == lytics.tables.explorer && viewItem == 'field'"
+        },
+        {
+          "command": "lytics.table.field.whitelist",
+          "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'"
         },
         {
           "command": "lytics.tables.remove",

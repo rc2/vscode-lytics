@@ -233,6 +233,48 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			return Promise.resolve();
 		}
 	}
+
+	async commandToggleWhitelist(field: TableSchemaField) {
+		try {
+			const account = StateManager.account;
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			var parent = await this.getParent(field) as TableSchema;
+			if (!parent || parent.name !== 'user') {
+				throw new Error(`Whitelisting currently is only supported for the 'user' table.`);
+			}
+			const fieldName = field.as;
+			if (!fieldName || fieldName.trim().length === 0) {
+				return Promise.resolve();
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Toggling whitelisted field: ${fieldName}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const client = lytics.getClient(account.apikey);
+				const fields = await client.getWhitelistFields(account.aid);
+				const add = (fields.indexOf(fieldName) === -1);
+				var msg = add ? `add the field ${fieldName} to` : `remove the field ${fieldName} from`;
+				const confirmation = await vscode.window.showQuickPick(['Cancel', 'Yes'], {
+					canPickMany: false,
+					placeHolder: `Do you want to ${msg} the whitelist?`
+				});
+				if (confirmation !== 'Yes') {
+					return Promise.resolve();
+				}
+				await client.setWhitelistFieldStatus(account.aid, fieldName, add);
+				msg = add ? 'added to' : 'removed from';
+				vscode.window.showInformationMessage(`The field ${fieldName} was ${msg} the whitelist.`);
+				return Promise.resolve();
+			});
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Toggle whitelist failed: ${err.message}`);
+			return Promise.resolve();
+		}
+	}
 }
 
 class TableTreeItem extends vscode.TreeItem {
