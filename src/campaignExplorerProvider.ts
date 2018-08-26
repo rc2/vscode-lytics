@@ -129,8 +129,6 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/campaigns/${campaign.id}.json`);
-				// const doc = await vscode.workspace.openTextDocument(uri);
-				// await vscode.window.showTextDocument(doc, { preview: false });
 				await this.displayAsReadOnly(uri);
 			});
 		}
@@ -151,8 +149,6 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/variations/${variation.id}.json`);
-				// const doc = await vscode.workspace.openTextDocument(uri);
-				// await vscode.window.showTextDocument(doc, { preview: false });
 				await this.displayAsReadOnly(uri);
 			});
 		}
@@ -197,10 +193,8 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 				const filePath = await this.saveCampaignVariationDetailOverrideToFolder(variation2, downloadPath);
 				if (filePath) {
 					const uri = vscode.Uri.file(filePath);
-					// const doc = await vscode.workspace.openTextDocument(uri);
-					// await vscode.window.showTextDocument(doc, { preview: false });
 					await this.displayAsReadOnly(uri);
-					vscode.window.showInformationMessage(`campaign variation downloaded: ${filePath}`);
+					vscode.window.showInformationMessage(`Campaign variation downloaded: ${filePath}`);
 					return;
 				}
 			});

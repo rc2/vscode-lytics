@@ -141,8 +141,7 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/queries/${stream.stream}-queries.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
@@ -167,9 +166,7 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/${field.name}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				const editor = await vscode.window.showTextDocument(doc, { preview: false });
-				return Promise.resolve(editor);
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {

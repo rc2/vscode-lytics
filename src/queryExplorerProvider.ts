@@ -96,8 +96,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.lql`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
