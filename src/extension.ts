@@ -121,6 +121,8 @@ function activateAccounts(lyticsProvider:LyticsContentProvider, context: vscode.
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.whitelist', (field) => tableExplorerProvider.commandToggleWhitelist(field));
+    context.subscriptions.push(disposable);
 
     const campaignExplorerProvider = new CampaignExplorerProvider(lyticsProvider, context);
     disposable = vscode.window.registerTreeDataProvider('lytics.campaigns.explorer', campaignExplorerProvider);
