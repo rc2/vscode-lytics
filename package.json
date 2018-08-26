@@ -425,6 +425,10 @@
           "when": "false"
         },
         {
+          "command": "lytics.campaigns.refresh",
+          "when": "false"
+        },
+        {
           "command": "lytics.tables.add",
           "when": "false"
         },

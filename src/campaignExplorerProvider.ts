@@ -200,7 +200,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 					// const doc = await vscode.workspace.openTextDocument(uri);
 					// await vscode.window.showTextDocument(doc, { preview: false });
 					await this.displayAsReadOnly(uri);
-					vscode.window.showInformationMessage(`campaign variation downloaded: ${filePath}`);
+					vscode.window.showInformationMessage(`Campaign variation downloaded: ${filePath}`);
 					return;
 				}
 			});
