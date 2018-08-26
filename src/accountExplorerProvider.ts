@@ -209,8 +209,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {

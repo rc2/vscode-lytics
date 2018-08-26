@@ -193,8 +193,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${field.as}/${value}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 			return Promise.resolve();
 		}
@@ -224,8 +223,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${fieldName}.json`);
-				const doc = await vscode.workspace.openTextDocument(uri);
-				await vscode.window.showTextDocument(doc, { preview: false });
+				await this.displayAsReadOnly(uri);
 			});
 		}
 		catch (err) {
