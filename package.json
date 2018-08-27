@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -24,7 +24,6 @@
   ],
   "activationEvents": [
     "onCommand:lytics.watch.folder.palette",
-    "onCommand:lytics.classify.active.editor",
     "onCommand:lytics.lql.generate",
     "onCommand:lytics.accounts.add",
     "onCommand:lytics.accounts.connect",
@@ -369,8 +368,7 @@
         },
         {
           "command": "lytics.classify.active.editor",
-          "group": "Lytics",
-          "when": "resourceIsFile"
+          "when": "false"
         },
         {
           "command": "lytics.lql.generate",
@@ -471,9 +469,14 @@
       ],
       "editor/context": [
         {
+          "command": "lytics.classify.active.editor",
+          "group": "Lytics",
+          "when": "resourceScheme == file"
+        },
+        {
           "command": "lytics.queries.upload",
           "group": "Lytics",
-          "when": "editorLangId == lql && editorReadOnly == false"
+          "when": "editorLangId == lql && resourceScheme == file"
         },
         {
           "command": "lytics.lql.generate",
@@ -483,7 +486,7 @@
         {
           "command": "lytics.campaign.variation.override.upload",
           "group": "Lytics",
-          "when": "resourceExtname == .campaign_override"
+          "when": "resourceExtname == .campaign_override && editorReadOnly == false"
         }
       ],
       "explorer/context": [
@@ -509,7 +512,7 @@
         },
         {
           "command": "lytics.classify.file",
-          "when": "resourceIsFile",
+          "when": "explorerResourceIsFolder == false",
           "group": "Lytics"
         }
       ],
