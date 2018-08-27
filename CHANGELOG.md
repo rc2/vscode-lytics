@@ -1,3 +1,6 @@
+## [0.0.18] - 2018-08-27
+- (issue 63) Fixed commands so LQL upload and content classification features work.
+
 ## [0.0.17] - 2018-08-26
 - (issue 56) Added dash as a valid character for data stream field name in LQL.
 - (issue 58) Added ability to whitelist table fields from table explorer.

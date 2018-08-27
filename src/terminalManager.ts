@@ -62,7 +62,7 @@ export class TerminalManager implements vscode.Disposable {
             return;
         }
         const path = await this.getFolderPathForWatch();
-        if (!path || path.trim().length == 0) {
+        if (!path || path.trim().length === 0) {
             return;
         }
         this.watch(vscode.Uri.parse(path));
