@@ -12,6 +12,7 @@ import { StateManager } from './stateManager';
 import LyticsContentProvider from './lyticsContentProvider';
 import { ContentClassificationManager } from './ContentClassificationManager';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+import { SegmentExplorerProvider } from './segmentExplorerProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateAccountExplorer(contentProvider, context);
     activateCampaignExplorer(contentProvider, context);
     activateQueryEditor(contentProvider, context);
+    activateSegmentExplorer(contentProvider, context);
     activateQueryExplorer(contentProvider, context);
     activateStreamExplorer(contentProvider, context);
     activateTableExplorer(contentProvider, context);
@@ -129,6 +131,17 @@ function activateQueryEditor(lyticsProvider: LyticsContentProvider, context: vsc
     context.subscriptions.push(disposable);
 }
 
+function activateSegmentExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new SegmentExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.segments.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segments.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segment.info', (segment) => explorer.commandShowSegmentInfo(segment));
+    context.subscriptions.push(disposable);
+}
+
 function activateStreamExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const explorer = new StreamExplorerProvider(lyticsProvider, context);
     explorers.push(explorer);
@@ -143,6 +156,7 @@ function activateStreamExplorer(lyticsProvider: LyticsContentProvider, context: 
     disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => explorer.commandShowField(field));
     context.subscriptions.push(disposable);
 }
+
 function activateCampaignExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const campaignExplorerProvider = new CampaignExplorerProvider(lyticsProvider, context);
     explorers.push(campaignExplorerProvider);

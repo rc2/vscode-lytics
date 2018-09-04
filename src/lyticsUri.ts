@@ -4,6 +4,7 @@ export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
     public isQueryUri: boolean = false;
+    public isSegmentUri: boolean = false;
     public isStreamUri: boolean = false;
     public isStreamQueriesUri: boolean = false;
     public isStreamFieldUri: boolean = false;
@@ -16,6 +17,7 @@ export class LyticsUri {
     public isEntityUri: boolean = false;
     public accountId: number = 0;
     public queryAlias: (string | undefined);
+    public segmentSlugName: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
     public tableName: (string | undefined);
@@ -39,6 +41,9 @@ export class LyticsUri {
             switch (parts[0]) {
                 case 'queries':
                     this.handleQueriesUri();
+                    return;
+                case 'segments':
+                    this.handleSegmentsUri();
                     return;
                 case 'streams':
                     this.handleStreamsUri();
@@ -85,6 +90,22 @@ export class LyticsUri {
                 this.queryAlias = alias;
                 return;
             }
+        }
+    }
+
+    private handleSegmentsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/segments/id.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const segmentId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (segmentId.length > 0) {
+                    this.isSegmentUri = true;
+                    this.segmentSlugName = segmentId;
+                    return;
+                }
+            }
+            return;
         }
     }
 

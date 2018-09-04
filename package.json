@@ -103,6 +103,10 @@
         {
           "id": "lytics.campaigns.explorer",
           "name": "Campaigns"
+        },
+        {
+          "id": "lytics.segments.explorer",
+          "name": "Segments"
         }
       ]
     },
@@ -253,6 +257,25 @@
         "icon": {
           "light": "resources/icons/light/cloud-upload.svg",
           "dark": "resources/icons/dark/cloud-upload.svg"
+        }
+      },
+
+      {
+        "command": "lytics.segments.refresh",
+        "title": "Refresh Segment List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.segment.info",
+        "title": "Show Segment Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
         }
       },
 
@@ -420,6 +443,14 @@
           "when": "lyticsAccountConnected && resourceLangId == lql && editorReadOnly == false"
         },
         {
+          "command": "lytics.segments.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.segment.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.streams.refresh",
           "when": "lyticsAccountConnected"
         },
@@ -543,6 +574,11 @@
           "when": "view == lytics.queries.explorer"
         },
         {
+          "command": "lytics.segments.refresh",
+          "group": "navigation",
+          "when": "view == lytics.segments.explorer"
+        },
+        {
           "command": "lytics.streams.refresh",
           "group": "navigation",
           "when": "view == lytics.streams.explorer"
@@ -630,6 +666,11 @@
           "command": "lytics.query.download",
           "group": "inline",
           "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.segment.info",
+          "group": "inline",
+          "when": "view == lytics.segments.explorer && viewItem == 'segment'"
         },
         {
           "command": "lytics.stream.info",

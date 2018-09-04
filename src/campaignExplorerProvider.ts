@@ -462,15 +462,15 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 class CampaignTreeItem extends vscode.TreeItem {
 	constructor(element: Campaign) {
 		super(element.name!, vscode.TreeItemCollapsibleState.Collapsed);
-		this.id = element.id;
+		this.slugName = element.id;
 		this.contextValue = 'campaign';
 	}
-	readonly id: string;
+	readonly slugName: string;
 	get tooltip(): string {
-		if (!this.id) {
+		if (!this.slugName) {
 			return '';
 		}
-		return `${this.id}`;
+		return `${this.slugName}`;
 	}
 }
 
@@ -478,13 +478,13 @@ class CampaignVariationTreeItem extends vscode.TreeItem {
 	constructor(element: CampaignVariation) {
 		super(element.variation.toString(), vscode.TreeItemCollapsibleState.None);
 		this.contextValue = 'campaignVariation';
-		this.id = element.id;
+		this.slugName = element.id;
 	}
-	readonly id: string;
+	readonly slugName: string;
 	get tooltip(): string {
-		if (!this.id) {
+		if (!this.slugName) {
 			return '';
 		}
-		return `${this.id}`;
+		return `${this.slugName}`;
 	}
 }
