@@ -11,121 +11,142 @@ import { TerminalManager } from './terminalManager';
 import { StateManager } from './stateManager';
 import LyticsContentProvider from './lyticsContentProvider';
 import { ContentClassificationManager } from './ContentClassificationManager';
+import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+
+const explorers: LyticsExplorerProvider<any>[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
-    const lyticsProvider = new LyticsContentProvider();
-    activateAccounts(lyticsProvider, context);
-    activateContentProviders(lyticsProvider, context);
+    const contentProvider = new LyticsContentProvider();
+    let disposable = vscode.workspace.registerTextDocumentContentProvider('lytics', contentProvider);
+    context.subscriptions.push(disposable);
+    activateAccountExplorer(contentProvider, context);
+    activateCampaignExplorer(contentProvider, context);
+    activateQueryEditor(contentProvider, context);
+    activateQueryExplorer(contentProvider, context);
+    activateStreamExplorer(contentProvider, context);
+    activateTableExplorer(contentProvider, context);
+    activateTerminalManager(contentProvider, context);
+    activateClassificationManager(contentProvider, context);
 }
 
-function activateAccounts(lyticsProvider:LyticsContentProvider, context: vscode.ExtensionContext) {
-    const accountExplorerProvider = new AccountExplorerProvider(lyticsProvider, context);
-    let disposable = vscode.window.registerTreeDataProvider('lytics.accounts.explorer', accountExplorerProvider);
+function refreshExplorers(): Promise<any> {
+    const promises: Promise<any>[] = [];
+    explorers.forEach(explorer => promises.push(explorer.refresh()));
+    return Promise.all(promises);
+}
+
+function activateAccountExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new AccountExplorerProvider(lyticsProvider, context);
+    let disposable = vscode.window.registerTreeDataProvider('lytics.accounts.explorer', explorer);
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('lytics.accounts.refresh', () => accountExplorerProvider.refresh());
+    disposable = vscode.commands.registerCommand('lytics.accounts.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.account.add', () => explorer.commandAddAccount());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.account.remove', async (account) => await explorer.commandRemoveAccount(account));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.account.show', async (account) => await explorer.commandShowAccount(account));
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('lytics.accounts.add', () => accountExplorerProvider.commandAddAccount());
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.accounts.remove', account => accountExplorerProvider.commandRemoveAccount(account));
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.accounts.show', account => accountExplorerProvider.commandShowAccount(account));
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.tables.add', () => tableExplorerProvider.commandAddTable());
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.tables.remove', table => tableExplorerProvider.commandRemoveTable(table));
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.tables.refresh', table => tableExplorerProvider.refresh());
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.accounts.connect', async (account) => {
-        let connectedAccount = await accountExplorerProvider.commandConnectAccount(account);
-        if (!connectedAccount) {
+    disposable = vscode.commands.registerCommand('lytics.account.connect', async (account) => {
+        const wasConnected = await explorer.commandConnectAccount(account);
+        if (!wasConnected) {
             return;
         }
         //
-        //
-        await Promise.all([
-            queryExplorerProvider.refresh(),
-            streamExplorerProvider.refresh(),
-            campaignExplorerProvider.refresh(),
-            tableExplorerProvider.refresh()
-        ]);
+        //refresh the explorers that are populated with account info
+        await refreshExplorers();
         //
         //show the connection in the status bar
-        status.text = `Lytics account: ${connectedAccount.aid.toString()}`;
+        account = StateManager.getActiveAccount();
+        status.text = `Lytics account: ${account.aid}`;
         status.show();
     });
     context.subscriptions.push(disposable);
 
-    disposable = vscode.commands.registerCommand('lytics.accounts.export', accountExplorerProvider.commandExportAccounts);
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('lytics.accounts.disconnect', async (account) => {
-        if (!StateManager.account) {
+    disposable = vscode.commands.registerCommand('lytics.account.disconnect', async (account) => {
+        const wasDisconnected = await explorer.commandDisconnectAccount(account);
+        if (!wasDisconnected) {
             return;
         }
-        accountExplorerProvider.commandDisconnectAccount(account);
+        //
+        //hide the connection in the status bar
         status.text = '';
         status.hide();
-        queryExplorerProvider.refresh();
-        streamExplorerProvider.refresh();
-        tableExplorerProvider.refresh();
-        campaignExplorerProvider.refresh();
+        //
+        //refresh the explorers that are populated with account info
+        await refreshExplorers();
     });
     context.subscriptions.push(disposable);
 
+    disposable = vscode.commands.registerCommand('lytics.accounts.export', explorer.commandExportAccounts);
+    context.subscriptions.push(disposable);
+
     const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-    status.command = 'lytics.accounts.show';
+    status.command = 'lytics.account.show';
     context.subscriptions.push(status);
+}
+function activateTableExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new TableExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.tables.add', () => explorer.commandAddTable());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.tables.remove', (table) => explorer.commandRemoveTable(table));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.tables.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => explorer.commandShowEntitySearch(field));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => explorer.commandShowFieldInfo(field));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.whitelist', (field) => explorer.commandToggleWhitelist(field));
+    context.subscriptions.push(disposable);
+}
 
-    const queryEditorProvider = new QueryEditorProvider(context);
-    disposable = vscode.commands.registerCommand('lytics.lql.generate', async uri => queryEditorProvider.commandGenerateLql(uri));
+function activateQueryExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new QueryExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.queries.explorer', explorer);
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.queries.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.queries.download', (table) => explorer.commandDownloadQueries(table));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.query.open', (query) => explorer.commandShowQuery(query));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.query.download', (query) => explorer.commandDownloadQuery(query));
+    context.subscriptions.push(disposable);
+}
 
-    disposable = vscode.commands.registerCommand('lytics.queries.upload', async uri => queryEditorProvider.commandUploadQuery(uri));
+function activateQueryEditor(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const editor = new QueryEditorProvider(context);
+    var disposable = vscode.commands.registerCommand('lytics.lql.generate', async (uri) => editor.commandGenerateLql(uri));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.query.upload', async (uri) => editor.commandUploadQuery(uri));
+    context.subscriptions.push(disposable);
+}
 
-    const queryExplorerProvider = new QueryExplorerProvider(lyticsProvider, context);
-    disposable = vscode.window.registerTreeDataProvider('lytics.queries.explorer', queryExplorerProvider);
+function activateStreamExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new StreamExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.streams.explorer', explorer);
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.queries.refresh', () => queryExplorerProvider.refresh());
+    disposable = vscode.commands.registerCommand('lytics.streams.refresh', () => explorer.refresh());
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.queries.download', (table) => queryExplorerProvider.commandDownloadQueries(table));
+    disposable = vscode.commands.registerCommand('lytics.stream.info', (stream) => explorer.commandShowStreamInfo(stream));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.query.open', (query) => queryExplorerProvider.commandShowQuery(query));
+    disposable = vscode.commands.registerCommand('lytics.stream.queries', (stream) => explorer.commandShowQueryInfo(stream));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.query.download', (query) => queryExplorerProvider.commandDownloadQuery(query));
+    disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => explorer.commandShowField(field));
     context.subscriptions.push(disposable);
-
-    const streamExplorerProvider = new StreamExplorerProvider(lyticsProvider, context);
-    disposable = vscode.window.registerTreeDataProvider('lytics.streams.explorer', streamExplorerProvider);
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.streams.refresh', () => streamExplorerProvider.refresh());
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.stream.queries', (stream) => streamExplorerProvider.commandShowQueryInfo(stream));
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => streamExplorerProvider.commandShowField(field));
-    context.subscriptions.push(disposable);
-
-    const tableExplorerProvider = new TableExplorerProvider(lyticsProvider, context);
-    disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', tableExplorerProvider);
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => tableExplorerProvider.commandShowEntitySearch(field));
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => tableExplorerProvider.commandShowFieldInfo(field));
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.table.field.whitelist', (field) => tableExplorerProvider.commandToggleWhitelist(field));
-    context.subscriptions.push(disposable);
-
+}
+function activateCampaignExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const campaignExplorerProvider = new CampaignExplorerProvider(lyticsProvider, context);
-    disposable = vscode.window.registerTreeDataProvider('lytics.campaigns.explorer', campaignExplorerProvider);
+    explorers.push(campaignExplorerProvider);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.campaigns.explorer', campaignExplorerProvider);
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.campaigns.refresh', () => campaignExplorerProvider.refresh());
     context.subscriptions.push(disposable);
@@ -137,23 +158,21 @@ function activateAccounts(lyticsProvider:LyticsContentProvider, context: vscode.
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.campaign.variation.override.upload', async (uri) => campaignExplorerProvider.commandUploadCampaignVariationDetailOverride(uri));
     context.subscriptions.push(disposable);
+}
 
+function activateTerminalManager(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const termManager = new TerminalManager();
     context.subscriptions.push(termManager);
-    disposable = vscode.commands.registerCommand('lytics.watch.folder', (uri) => termManager.watch(uri));
+    var disposable = vscode.commands.registerCommand('lytics.folder.watch', (uri) => termManager.watch(uri));
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.watch.folder.palette', () => termManager.selectAndWatch());
+    disposable = vscode.commands.registerCommand('lytics.terminal.open', (account) => termManager.openTerminal(account));
     context.subscriptions.push(disposable);
 }
- 
-function activateContentProviders(lyticsProvider:LyticsContentProvider, context: vscode.ExtensionContext) {
-    let disposable = vscode.workspace.registerTextDocumentContentProvider('lytics', lyticsProvider);
-    context.subscriptions.push(disposable);
+
+function activateClassificationManager(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const classificationManager = new ContentClassificationManager(lyticsProvider);
     context.subscriptions.push(classificationManager);
-    disposable = vscode.commands.registerCommand('lytics.classify.file', (uri) => classificationManager.commandClassifyFileContents(uri));
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.classify.active.editor', (uri) => classificationManager.commandClassifyEditorContents());
+    var disposable = vscode.commands.registerCommand('lytics.file.classify', (uri) => classificationManager.commandClassifyFileContents(uri));
     context.subscriptions.push(disposable);
 }
 

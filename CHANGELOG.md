@@ -1,3 +1,8 @@
+## [0.0.19] - 2018-??-??
+- (issue 65) Added ability to open a terminal with LIOKEY environment variable pre-configured.
+- (issue 66) Better support for showing appropriate commands.
+- (issue 67) Improved support for command palette.
+
 ## [0.0.18] - 2018-08-27
 - (issue 63) Fixed commands so LQL upload and content classification features work.
 

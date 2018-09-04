@@ -25,7 +25,7 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             if (luri.isAccountUri && luri.accountId) {
                 return await this.provideTextDocumentContentForAccount(luri.accountId);
             }
-            const account = StateManager.account;
+            const account = StateManager.getActiveAccount();
             if (!account) {
                 throw new Error('No account is connected.');
             }
@@ -33,6 +33,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             //data that requires an account be connected
             if (luri.isQueryUri && luri.queryAlias) {
                 return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
+            }
+            else if (luri.isStreamUri && luri.streamName) {
+                return await this.provideTextDocumentContentForStreamInfo(luri.streamName, account);
             }
             else if (luri.isStreamQueriesUri && luri.streamName) {
                 return await this.provideTextDocumentContentForStreamQueries(luri.streamName, account);
@@ -92,6 +95,11 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const query = await client.getQuery(queryAlias);
         const text = query ? query.text : '';
         return Promise.resolve(text!);
+    }
+    private async provideTextDocumentContentForStreamInfo(streamName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        let stream = await client.getStream(streamName);
+        return Promise.resolve(JSON.stringify(stream, null, 4));
     }
     private async provideTextDocumentContentForStreamQueries(streamName: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);

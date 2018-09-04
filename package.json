@@ -23,10 +23,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:lytics.watch.folder.palette",
-    "onCommand:lytics.lql.generate",
-    "onCommand:lytics.accounts.add",
-    "onCommand:lytics.accounts.connect",
+    "onCommand:lytics.account.add",
+    "onCommand:lytics.account.remove",
+    "onCommand:lytics.account.show",
+    "onCommand:lytics.account.connect",
+    "onCommand:lytics.accounts.refresh",
     "onCommand:lytics.accounts.export",
     "onLanguage:lql",
     "onView:lytics.accounts.explorer"
@@ -107,165 +108,199 @@
     },
     "commands": [
       {
-        "command": "lytics.watch.folder.palette",
-        "title": "Watch Folder for Changes",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.watch.folder",
-        "title": "Lytics: Watch Folder for Changes",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.classify.file",
-        "title": "Lytics: Run Content Classification",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.classify.active.editor",
-        "title": "Lytics: Run Content Classification on Active Editor",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.lql.generate",
-        "title": "Lytics: Generate LQL",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.accounts.show",
-        "title": "Show Account",
-        "icon": {
-          "light": "resources/icons/light/info.svg",
-          "dark": "resources/icons/dark/info.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.accounts.connect",
-        "title": "Connect",
-        "icon": {
-          "light": "resources/icons/light/power.svg",
-          "dark": "resources/icons/dark/power.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.accounts.export",
-        "title": "Export Accounts",
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.accounts.disconnect",
-        "title": "Disconnect",
-        "icon": {
-          "light": "resources/icons/light/power-off.svg",
-          "dark": "resources/icons/dark/power-off.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.accounts.add",
+        "command": "lytics.account.add",
         "title": "Add Account",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/add.svg",
           "dark": "resources/icons/dark/add.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
-        "command": "lytics.accounts.remove",
+        "command": "lytics.account.remove",
         "title": "Remove Account",
         "category": "Lytics"
       },
       {
         "command": "lytics.accounts.refresh",
         "title": "Refresh Account List",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
           "dark": "resources/icons/dark/refresh.svg"
-        },
+        }
+      },
+      {
+        "command": "lytics.account.connect",
+        "title": "Connect",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/power.svg",
+          "dark": "resources/icons/dark/power.svg"
+        }
+      },
+      {
+        "command": "lytics.account.disconnect",
+        "title": "Disconnect",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/power-off.svg",
+          "dark": "resources/icons/dark/power-off.svg"
+        }
+      },
+      {
+        "command": "lytics.account.show",
+        "title": "Show Account",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.accounts.export",
+        "title": "Export Accounts",
         "category": "Lytics"
       },
+
+
+      {
+        "command": "lytics.campaigns.refresh",
+        "title": "Refresh Campaign List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.campaign.info",
+        "title": "Show Campaign Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.campaign.variation.info",
+        "title": "Show Campaign Variation Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.campaign.variation.override.download",
+        "title": "Download Campaign Variation Override",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/get-app.svg",
+          "dark": "resources/icons/dark/get-app.svg"
+        }
+      },
+      {
+        "command": "lytics.campaign.variation.override.upload",
+        "title": "Upload Campaign Variation Override",
+        "category": "Lytics",
+        "icon": { 
+          "light": "resources/icons/light/cloud-upload.svg",
+          "dark": "resources/icons/dark/cloud-upload.svg"
+        }
+      },
+
       {
         "command": "lytics.queries.refresh",
         "title": "Refresh Query List",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
           "dark": "resources/icons/dark/refresh.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.queries.download",
         "title": "Download Queries",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/get-app.svg",
           "dark": "resources/icons/dark/get-app.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.query.download",
         "title": "Download Query",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/get-app.svg",
           "dark": "resources/icons/dark/get-app.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.query.open",
         "title": "Open Query",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/open-in-new.svg",
           "dark": "resources/icons/dark/open-in-new.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
-        "command": "lytics.queries.upload",
-        "title": "Lytics: Upload Query",
+        "command": "lytics.query.upload",
+        "title": "Upload Query",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/cloud-upload.svg",
           "dark": "resources/icons/dark/cloud-upload.svg"
-        },
-        "category": "Lytics"
+        }
       },
+
       {
         "command": "lytics.streams.refresh",
-        "title": "Refresh Stream List",
+        "title": "Refresh Data Stream List",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
           "dark": "resources/icons/dark/refresh.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
-        "command": "lytics.stream.queries",
-        "title": "Show Query Info",
-        "icon": {
-          "light": "resources/icons/light/question.svg",
-          "dark": "resources/icons/dark/question.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.stream.field.info",
-        "title": "Show Stream Field Info",
+        "command": "lytics.stream.info",
+        "title": "Show Data Stream Info",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/info.svg",
           "dark": "resources/icons/dark/info.svg"
-        },
-        "category": "Lytics"
+        }
       },
+      {
+        "command": "lytics.stream.queries",
+        "title": "Show Query Info for Data Stream",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/question.svg",
+          "dark": "resources/icons/dark/question.svg"
+        }
+      },
+      {
+        "command": "lytics.stream.field.info",
+        "title": "Show Data Stream Field Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+
       {
         "command": "lytics.tables.add",
         "title": "Add Table",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/add.svg",
           "dark": "resources/icons/dark/add.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.tables.remove",
@@ -275,315 +310,299 @@
       {
         "command": "lytics.tables.refresh",
         "title": "Refresh Table List",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
           "dark": "resources/icons/dark/refresh.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.table.field.search",
-        "title": "Search",
+        "title": "Search Table by Identifier",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/search.svg",
           "dark": "resources/icons/dark/search.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.table.field.info",
         "title": "Show Table Field Info",
+        "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/info.svg",
           "dark": "resources/icons/dark/info.svg"
-        },
-        "category": "Lytics"
+        }
       },
       {
         "command": "lytics.table.field.whitelist",
-        "title": "Toggle Whitelist for API",
+        "title": "Toggle Whitelist Setting for Field",
+        "category": "Lytics"
+      },
+
+      {
+        "command": "lytics.terminal.open",
+        "title": "Open Terminal",
         "category": "Lytics"
       },
       {
-        "command": "lytics.campaigns.refresh",
-        "title": "Refresh Campaign List",
-        "icon": {
-          "light": "resources/icons/light/refresh.svg",
-          "dark": "resources/icons/dark/refresh.svg"
-        },
+        "command": "lytics.folder.watch",
+        "title": "Watch Folder for Changes",
         "category": "Lytics"
       },
       {
-        "command": "lytics.campaign.info",
-        "title": "Show Campaign Info",
-        "icon": {
-          "light": "resources/icons/light/info.svg",
-          "dark": "resources/icons/dark/info.svg"
-        },
+        "command": "lytics.file.classify",
+        "title": "Run Content Classification",
         "category": "Lytics"
       },
       {
-        "command": "lytics.campaign.variation.info",
-        "title": "Show Campaign Variation Info",
-        "icon": {
-          "light": "resources/icons/light/info.svg",
-          "dark": "resources/icons/dark/info.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.campaign.variation.override.download",
-        "title": "Download Campaign Variation Override",
-        "icon": {
-          "light": "resources/icons/light/get-app.svg",
-          "dark": "resources/icons/dark/get-app.svg"
-        },
-        "category": "Lytics"
-      },
-      {
-        "command": "lytics.campaign.variation.override.upload",
-        "title": "Lytics: Upload Campaign Variation Override",
-        "icon": {
-          "light": "resources/icons/light/cloud-upload.svg",
-          "dark": "resources/icons/dark/cloud-upload.svg"
-        },
+        "command": "lytics.lql.generate",
+        "title": "Generate LQL",
         "category": "Lytics"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "lytics.watch.folder.palette",
-          "group": "Lytics",
-          "when": "explorerResourceIsFolder"
+          "command": "lytics.account.connect"
         },
         {
-          "command": "lytics.watch.folder",
-          "group": "Lytics",
-          "when": "false"
+          "command": "lytics.account.disconnect",
+          "when": "lyticsAccountConnected"
         },
         {
-          "command": "lytics.classify.file",
-          "when": "false"
+          "command": "lytics.account.show"
         },
         {
-          "command": "lytics.classify.active.editor",
-          "when": "false"
+          "command": "lytics.accounts.refresh"
         },
         {
-          "command": "lytics.lql.generate",
-          "when": "false"
-        },
-        {
-          "command": "lytics.accounts.disconnect",
-          "when": "false"
-        },
-        {
-          "command": "lytics.accounts.show",
-          "when": "false"
-        },
-        {
-          "command": "lytics.accounts.refresh",
-          "when": "false"
-        },
-        {
-          "command": "lytics.accounts.remove",
-          "when": "false"
-        },
-        {
-          "command": "lytics.queries.refresh",
-          "when": "false"
-        },
-        {
-          "command": "lytics.queries.download",
-          "when": "false"
-        },
-        {
-          "command": "lytics.query.download",
-          "when": "false"
-        },
-        {
-          "command": "lytics.query.open",
-          "when": "false"
-        },
-        {
-          "command": "lytics.queries.upload",
-          "when": "false"
-        },
-        {
-          "command": "lytics.streams.refresh",
-          "when": "false"
-        },
-        {
-          "command": "lytics.stream.queries",
-          "when": "false"
-        },
-        {
-          "command": "lytics.stream.field.info",
-          "when": "false"
-        },
-        {
-          "command": "lytics.campaigns.refresh",
-          "when": "false"
-        },
-        {
-          "command": "lytics.tables.add",
-          "when": "false"
-        },
-        {
-          "command": "lytics.tables.remove",
-          "when": "false"
-        },
-        {
-          "command": "lytics.tables.refresh",
-          "when": "false"
-        },
-        {
-          "command": "lytics.table.field.search",
-          "when": "false"
-        },
-        {
-          "command": "lytics.table.field.info",
-          "when": "false"
-        },
-        {
-          "command": "lytics.table.field.whitelist",
-          "when": "false"
+          "command": "lytics.account.remove"
         },
         {
           "command": "lytics.campaign.info",
-          "when": "false"
+          "when": "lyticsAccountConnected"
         },
         {
           "command": "lytics.campaign.variation.info",
-          "when": "false"
+          "when": "lyticsAccountConnected"
         },
         {
           "command": "lytics.campaign.variation.override.download",
-          "when": "false"
+          "when": "lyticsAccountConnected"
         },
         {
           "command": "lytics.campaign.variation.override.upload",
-          "when": "false"
+          "when": "lyticsAccountConnected && resourceExtname == .campaign_override && editorReadOnly == false"
+        },
+        {
+          "command": "lytics.campaigns.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.queries.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.queries.download",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.query.download",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.query.open",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.query.upload",
+          "when": "lyticsAccountConnected && resourceLangId == lql && editorReadOnly == false"
+        },
+        {
+          "command": "lytics.streams.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.stream.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.stream.queries",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.stream.field.info",
+          "when": "lyticsAccountConnected"
+        },
+
+        {
+          "command": "lytics.tables.add",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.tables.remove",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.tables.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.table.field.search",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.table.field.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.table.field.whitelist",
+          "when": "lyticsAccountConnected"
+        },
+
+        {
+          "command": "lytics.terminal.open"
+        },
+        {
+          "command": "lytics.folder.watch",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.file.classify",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.lql.generate",
+          "when": "lyticsAccountConnected && resourceLangId == csv"
         }
       ],
       "editor/context": [
         {
-          "command": "lytics.classify.active.editor",
+          "command": "lytics.file.classify",
           "group": "Lytics",
-          "when": "resourceScheme == file"
+          "when": "lyticsAccountConnected && resourceScheme == file"
         },
         {
-          "command": "lytics.queries.upload",
+          "command": "lytics.query.upload",
           "group": "Lytics",
-          "when": "editorLangId == lql && resourceScheme == file"
+          "when": "lyticsAccountConnected && editorLangId == lql && resourceScheme == file"
         },
         {
           "command": "lytics.lql.generate",
           "group": "Lytics",
-          "when": "editorLangId == CSV"
+          "when": "lyticsAccountConnected && resourceLangId == csv"
         },
         {
           "command": "lytics.campaign.variation.override.upload",
           "group": "Lytics",
-          "when": "resourceExtname == .campaign_override && editorReadOnly == false"
+          "when": "lyticsAccountConnected && resourceExtname == .campaign_override && editorReadOnly == false"
         }
       ],
       "explorer/context": [
         {
-          "command": "lytics.queries.upload",
+          "command": "lytics.query.upload",
           "group": "Lytics",
-          "when": "resourceLangId == lql"
+          "when": "lyticsAccountConnected && resourceLangId == lql"
         },
         {
           "command": "lytics.campaign.variation.override.upload",
           "group": "Lytics",
-          "when": "resourceExtname == .campaign_override"
+          "when": "lyticsAccountConnected && resourceExtname == .campaign_override"
         },
         {
           "command": "lytics.lql.generate",
           "group": "Lytics",
-          "when": "resourceLangId == CSV"
+          "when": "lyticsAccountConnected && resourceLangId == csv"
         },
         {
-          "command": "lytics.watch.folder",
-          "when": "explorerResourceIsFolder",
-          "group": "Lytics"
+          "command": "lytics.folder.watch",
+          "group": "Lytics",
+          "when": "lyticsAccountConnected && explorerResourceIsFolder"
         },
         {
-          "command": "lytics.classify.file",
-          "when": "explorerResourceIsFolder == false",
-          "group": "Lytics"
+          "command": "lytics.file.classify",
+          "group": "Lytics",
+          "when": "lyticsAccountConnected && explorerResourceIsFolder"
         }
       ],
       "view/title": [
         {
-          "command": "lytics.accounts.add",
-          "when": "view == lytics.accounts.explorer",
-          "group": "navigation"
+          "command": "lytics.account.add",
+          "group": "navigation",
+          "when": "view == lytics.accounts.explorer"
         },
         {
           "command": "lytics.accounts.refresh",
-          "when": "view == lytics.accounts.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.accounts.explorer"
         },
         {
           "command": "lytics.queries.refresh",
-          "when": "view == lytics.queries.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.queries.explorer"
         },
         {
           "command": "lytics.streams.refresh",
-          "when": "view == lytics.streams.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.streams.explorer"
+        },
+        {
+          "command": "lytics.terminal.open",
+          "group": "navigation",
+          "when": "view == lytics.tables.explorer"
         },
         {
           "command": "lytics.tables.add",
-          "when": "view == lytics.tables.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.tables.explorer"
         },
         {
           "command": "lytics.tables.refresh",
-          "when": "view == lytics.tables.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.tables.explorer"
         },
         {
           "command": "lytics.campaigns.refresh",
-          "when": "view == lytics.campaigns.explorer",
-          "group": "navigation"
+          "group": "navigation",
+          "when": "view == lytics.campaigns.explorer"
         }
       ],
       "view/item/context": [
         {
-          "command": "lytics.accounts.connect",
+          "command": "lytics.terminal.open",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
-          "command": "lytics.accounts.connect",
-          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-          "group": "inline"
-        },
-        {
-          "command": "lytics.accounts.disconnect",
+          "command": "lytics.account.connect",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
-          "command": "lytics.accounts.disconnect",
-          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-          "group": "inline"
-        },
-        {
-          "command": "lytics.accounts.remove",
+          "command": "lytics.account.connect",
+          "group": "inline",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
-          "command": "lytics.accounts.show",
+          "command": "lytics.account.disconnect",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
-          "command": "lytics.accounts.show",
-          "when": "view == lytics.accounts.explorer && viewItem == 'account'",
-          "group": "inline"
+          "command": "lytics.account.disconnect",
+          "group": "inline",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.account.remove",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.account.show",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.account.show",
+          "group": "inline",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
           "command": "lytics.queries.download",
@@ -591,8 +610,8 @@
         },
         {
           "command": "lytics.queries.download",
-          "when": "view == lytics.queries.explorer && viewItem == 'table'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.queries.explorer && viewItem == 'table'"
         },
         {
           "command": "lytics.query.open",
@@ -600,8 +619,8 @@
         },
         {
           "command": "lytics.query.open",
-          "when": "view == lytics.queries.explorer && viewItem == 'query'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
         },
         {
           "command": "lytics.query.download",
@@ -609,33 +628,38 @@
         },
         {
           "command": "lytics.query.download",
-          "when": "view == lytics.queries.explorer && viewItem == 'query'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.stream.info",
+          "group": "inline",
+          "when": "view == lytics.streams.explorer && viewItem == 'stream'"
         },
         {
           "command": "lytics.stream.queries",
-          "when": "view == lytics.streams.explorer && viewItem == 'stream'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.streams.explorer && viewItem == 'stream'"
         },
         {
           "command": "lytics.stream.field.info",
-          "when": "view == lytics.streams.explorer && viewItem == 'field'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.streams.explorer && viewItem == 'field'"
         },
         {
           "command": "lytics.table.field.search",
-          "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'"
         },
         {
           "command": "lytics.table.field.info",
-          "when": "view == lytics.tables.explorer && viewItem == 'field'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.tables.explorer && viewItem == 'field'"
         },
         {
           "command": "lytics.table.field.info",
-          "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'"
         },
         {
           "command": "lytics.table.field.whitelist",
@@ -651,18 +675,18 @@
         },
         {
           "command": "lytics.campaign.info",
-          "when": "view == lytics.campaigns.explorer && viewItem == 'campaign'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaign'"
         },
         {
           "command": "lytics.campaign.variation.info",
-          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'"
         },
         {
           "command": "lytics.campaign.variation.override.download",
-          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'",
-          "group": "inline"
+          "group": "inline",
+          "when": "view == lytics.campaigns.explorer && viewItem == 'campaignVariation'"
         }
       ]
     },
