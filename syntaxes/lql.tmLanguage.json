@@ -60,6 +60,10 @@
             "match": "(?<=[\\s]|^)(all|any|exists|in|eq|ne|lt|le|gt|ge|not|or)(?=\\()"
         },
         {
+            "name": "support.function.content.lql",
+            "match": "(?<=[\\s]|^)(content_filter)(?=\\()"
+        },
+        {
             "name": "support.function.string.lql",
             "match": "(?<=[\\s]|^)(join|len|oneof|replace|split|strip|string.uppercase|string.lowercase|string.titlecase|contains|hasprefix|hassuffix)(?=\\()"
         },

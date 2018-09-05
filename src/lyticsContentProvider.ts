@@ -5,7 +5,7 @@ import { StateManager } from './stateManager';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
 import lytics = require("lytics-js/dist/lytics");
-import { LyticsAccount } from 'lytics-js/dist/types';
+import { LyticsAccount, TopicUrl, TopicUrlCollection } from 'lytics-js/dist/types';
 import fs = require('fs');
 import { ContentReader } from './contentReader';
 
@@ -25,7 +25,7 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             if (luri.isAccountUri && luri.accountId) {
                 return await this.provideTextDocumentContentForAccount(luri.accountId);
             }
-            const account = StateManager.account;
+            const account = StateManager.getActiveAccount();
             if (!account) {
                 throw new Error('No account is connected.');
             }
@@ -33,6 +33,12 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             //data that requires an account be connected
             if (luri.isQueryUri && luri.queryAlias) {
                 return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
+            }
+            else if (luri.isSegmentUri && luri.segmentSlugName) {
+                return await this.provideTextDocumentContentForSegmentInfo(luri.segmentSlugName, account);
+            }
+            else if (luri.isStreamUri && luri.streamName) {
+                return await this.provideTextDocumentContentForStreamInfo(luri.streamName, account);
             }
             else if (luri.isStreamQueriesUri && luri.streamName) {
                 return await this.provideTextDocumentContentForStreamQueries(luri.streamName, account);
@@ -42,6 +48,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             }
             else if (luri.isTableFieldUri && luri.tableName && luri.tableFieldName) {
                 return await this.provideTextDocumentContentForTableFieldInfo(luri.tableName, luri.tableFieldName, account);
+            }
+            else if (luri.isTopicUri && luri.topicLabel) {
+                return await this.provideTextDocumentContentForTopicInfo(luri.topicLabel, account);
             }
             else if (luri.isEntityUri && luri.tableName && luri.tableFieldName && luri.tableFieldValue) {
                 let entity = await this.provideTextDocumentContentForEntity(luri.tableName, luri.tableFieldName, luri.tableFieldValue, account);
@@ -93,6 +102,16 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const text = query ? query.text : '';
         return Promise.resolve(text!);
     }
+    private async provideTextDocumentContentForSegmentInfo(segmentSlugName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        let segment = await client.getSegment(segmentSlugName);
+        return Promise.resolve(JSON.stringify(segment, null, 4));
+    }
+    private async provideTextDocumentContentForStreamInfo(streamName: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        let stream = await client.getStream(streamName);
+        return Promise.resolve(JSON.stringify(stream, null, 4));
+    }
     private async provideTextDocumentContentForStreamQueries(streamName: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);
         let queries = await client.getQueries();
@@ -113,6 +132,18 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const client = lytics.getClient(account.apikey!);
         const info = await client.getTableSchemaFieldInfo(tableName, fieldName);
         return Promise.resolve(JSON.stringify(info ? info : {}, null, 4));
+    }
+    private async provideTextDocumentContentForTopicInfo(topicLabel: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const settings = SettingsManager.getLyticsApiSettings();
+        let collection:(TopicUrlCollection | undefined) = undefined;
+        if (settings.maxTopicUrls > 0) {
+            collection = await client.getTopicUrls(topicLabel, settings.maxTopicUrls);
+        }
+        else {
+            collection = await client.getTopicUrls(topicLabel);
+        }
+        return Promise.resolve(JSON.stringify(collection ? collection : {}, null, 4));
     }
     private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);

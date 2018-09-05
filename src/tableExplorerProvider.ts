@@ -15,8 +15,12 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 
 	private mapOfFieldToTable: Map<TableSchemaField, TableSchema> = new Map<TableSchemaField, TableSchema>();
 
+	/**
+	 * Inherited from TreeDataProvider.
+	 * @param element 
+	 */
 	async getChildren(element?: any): Promise<any[]> {
-		const account = StateManager.account;
+		const account = StateManager.getActiveAccount();
 		if (!account) {
 			return Promise.resolve([]);
 		}
@@ -29,16 +33,10 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 		return Promise.resolve([]);
 	}
 
-	async getParent(element?: any): Promise<any> {
-		if (!element) {
-			return Promise.resolve(undefined);
-		}
-		if (element.as) {
-			return Promise.resolve(this.mapOfFieldToTable.get(element));
-		}
-		return Promise.resolve(undefined);
-	}
-
+	/**
+	 * Inherited from TreeDataProvider.
+	 * @param element 
+	 */
 	getTreeItem(element: any): vscode.TreeItem {
 		if (element.name) {
 			return new TableTreeItem(element.name, element);
@@ -49,12 +47,31 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				name = `* ${name}`;
 			}
 			let item = new TableFieldTreeItem(name, element);
-			item.iconPath = this.getIcon(element);
+			item.iconPath = this.getTableFieldIcon(element);
 			return item;
 		}
 		throw new Error(`The specified element is not supported by the table explorer provider.`);
 	}
-	private getIcon(node: any): any {
+
+	/**
+	 * Gets the parent for the node.
+	 * @param node 
+	 */
+	async getParent(node?: any): Promise<any> {
+		if (!node) {
+			return Promise.resolve(undefined);
+		}
+		if (node.as) {
+			return Promise.resolve(this.mapOfFieldToTable.get(node));
+		}
+		return Promise.resolve(undefined);
+	}
+
+	/**
+	 * Gets the icon for a table field node.
+	 * @param node 
+	 */
+	private getTableFieldIcon(node: any): any {
 		var icon: (string | undefined) = undefined;
 		if (node.as) {
 			if (node.type.startsWith('[]')) {
@@ -76,11 +93,90 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 		};
 	}
 
+	/**
+	 * Displays a quick pick from which the user can select a table.
+	 * @param account 
+	 * @param message 
+	 * @returns The selected table, or undefined if none was selected.
+	 */
+	private async promptForTable(account: LyticsAccount, message?: string): Promise<TableSchema | undefined> {
+		if (!message) {
+			message = `Select a table.`;
+		}
+		const tables = await this.getTables(account);
+		const values = tables.map(t => t.name);
+		let value = await vscode.window.showQuickPick(values, {
+			canPickMany: false,
+			placeHolder: message
+		});
+		if (!value) {
+			return Promise.resolve(undefined);
+		}
+		const table = tables.find(t => t.name === value);
+		return Promise.resolve(table);
+	}
+
+	/**
+	 * Displays a quick pick from which the user can select a field from a table.
+	 * @param table
+	 * @param identifiersOnly
+	 * @param account 
+	 * @param message 
+	 * @returns The selected field, or undefined if none was selected.
+	 */
+	private async promptForField(table: TableSchema, identifiersOnly:boolean, account: LyticsAccount, message?: string): Promise<TableSchemaField | undefined> {
+		if (!message) {
+			message = `Select a table.`;
+		}
+		const fields = await this.getFields(table, account);
+		const values:string[] = [];
+		fields.forEach(f => {
+			if (!identifiersOnly || f.is_by) {
+				values.push(f.as);
+			}
+		});
+		if (values.length === 0) {
+			const msg = identifiersOnly ? `table ${table.name} has no identifier fields` : `table ${table.name} has no fields`;
+			return Promise.reject({message: msg});
+		}
+		let value = await vscode.window.showQuickPick(values, {
+			canPickMany: false,
+			placeHolder: message
+		});
+		if (!value) {
+			return Promise.resolve(undefined);
+		}
+		const field = fields.find(f => f.as === value);
+		return Promise.resolve(field);
+	}
+
+	/**
+	 * Wrapper around the API call to get the Lytics 
+	 * tables that have been added to the account. 
+	 * This function provides user feedback while
+	 * data is read from Lytics.
+	 * @param account 
+	 * @returns Array of tables.
+	 */
 	private async getTables(account: LyticsAccount): Promise<TableSchema[]> {
-		const tables = await SettingsManager.getTables(account.aid);
+		let tables = await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Loading tables.`,
+			cancellable: true
+		}, async (progress, token) => {
+			const tables = await SettingsManager.getTables(account.aid);
+			return Promise.resolve(tables);
+		});
 		return Promise.resolve(tables);
 	}
 
+	/**
+	 * Wrapper around the API call to get Lytics table fields. 
+	 * This function provides user feedback while data is 
+	 * read from Lytics.
+	 * @param account 
+	 * @returns Array of table fields.
+	 */
 	private async getFields(element: TableSchema, account: LyticsAccount): Promise<TableSchemaField[]> {
 		//
 		//Schema is loaded because the element parameter is 
@@ -98,18 +194,9 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				if (!table) {
 					return Promise.resolve([]);
 				}
-				let columns = table.columns;
+				const columns = table.columns;
 				columns.forEach(col => {
 					this.mapOfFieldToTable.set(col, element);
-				});
-				columns = columns.sort((a, b) => {
-					if (a.as! < b.as!) {
-						return -1;
-					}
-					if (a.as! > b.as!) {
-						return 1;
-					}
-					return 0;
 				});
 				return Promise.resolve(columns);
 			}
@@ -121,71 +208,95 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 		if (!fields) {
 			fields = [];
 		}
-		return Promise.resolve(fields);
+		const sortedFields = fields.sort((a, b) => {
+			const a2 = a.name.toLowerCase();
+			const b2 = b.name.toLowerCase();
+			if (a2 < b2) {
+				return -1;
+			}
+			if (a2 > b2) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(sortedFields);
 	}
 
-	async commandAddTable() {
+	async commandAddTable(): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
 			const name = await vscode.window.showInputBox({ prompt: 'Enter the name of the table you want to add.' });
 			if (!name || name.trim().length === 0) {
-				return Promise.resolve();
+				return Promise.resolve(false);
 			}
 			await SettingsManager.addTable(name, account.aid);
 			await this.refresh();
 			vscode.window.showInformationMessage(`Table was added: ${name}`);
-			return Promise.resolve();
+			return Promise.resolve(true);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Add table failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 
-	async commandRemoveTable(table: TableTreeItem) {
+	async commandRemoveTable(table: TableSchema): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
 			if (!table) {
-				var name = await vscode.window.showInputBox({ prompt: 'Enter the name of the table you want to remove.' });
-				if (!name || name.trim().length === 0) {
-					return Promise.resolve();
-				}
+				table = await this.promptForTable(account, 'Select the table you want to remove.');
 			}
-			else {
-				name = table.name;
+			if (!table) {
+				return Promise.resolve(false);
 			}
-			await SettingsManager.removeTable(name, account.aid);
+			const confirmed = await this.confirm(`Are you sure you want to remove the table ${table.name}?`);
+			if (!confirmed) {
+				return Promise.resolve(false);
+			}
+			await SettingsManager.removeTable(table.name, account.aid);
 			await this.refresh();
-			vscode.window.showInformationMessage(`Table was removed: ${name}`);
-			return Promise.resolve();
+			vscode.window.showInformationMessage(`Table was removed: ${table.name}`);
+			return Promise.resolve(true);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Remove table failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 
-	async commandShowEntitySearch(field: TableSchemaField) {
+	async commandShowEntitySearch(field: TableSchemaField): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const table = await this.getParent(field) as TableSchema;
+			var table: (TableSchema | undefined) = undefined;
+			if (!field) {
+				table = await this.promptForTable(account, 'Select the table whose field you want to search on.');
+				if (table !== undefined) {
+					field = await this.promptForField(table, true, account, 'Select the field you want to search on.');
+				}
+			}
+			if (!field) {
+				return Promise.resolve(false);
+			}
 			if (!table) {
-				throw new Error(`No parent was found for field ${field.as}`);
+				table = await this.getParent(field) as TableSchema;
+				if (!table) {
+					throw new Error(`No parent was found for field ${field.as}`);
+				}
 			}
 			const value = await vscode.window.showInputBox({
 				prompt: `Enter the search value for ${field.as}.`
 			});
 			if (!value || value.trim().length === 0) {
-				return;
+				return Promise.resolve(false);
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -195,27 +306,40 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${field.as}/${value}.json`);
 				await this.displayAsReadOnly(uri);
 			});
-			return Promise.resolve();
+			return Promise.resolve(true);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 
-	async commandShowFieldInfo(field: TableSchemaField) {
+	async commandShowFieldInfo(field: TableSchemaField): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const table = await this.getParent(field) as TableSchema;
-			if (!table) {
-				throw new Error(`No parent was found for field ${field.as}`);
+			var table: (TableSchema | undefined) = undefined;
+			if (!field) {
+				table = await this.promptForTable(account, 'Select the table whose field you want to show.');
+				if (table !== undefined) {
+					field = await this.promptForField(table, false, account, 'Select the field you want to show.');
+				}
 			}
+			if (!field) {
+				return Promise.resolve(false);
+			}
+			if (!table) {
+				table = await this.getParent(field) as TableSchema;
+				if (!table) {
+					throw new Error(`No parent was found for field ${field.as}`);
+				}
+			}
+
 			const fieldName = field.as;
 			if (!fieldName || fieldName.trim().length === 0) {
-				return Promise.resolve();
+				return Promise.resolve(false);
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -225,26 +349,46 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/tables/${table.name}/${fieldName}.json`);
 				await this.displayAsReadOnly(uri);
 			});
+			return Promise.resolve(true);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Show table field info failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 
-	async commandToggleWhitelist(field: TableSchemaField) {
+	async commandToggleWhitelist(field: TableSchemaField): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			var parent = await this.getParent(field) as TableSchema;
-			if (!parent || parent.name !== 'user') {
+			var table: (TableSchema | undefined) = undefined;
+			if (!field) {
+				const tables = await this.getTables(account);
+				table = tables.find(t => t.name === 'user');
+				if (!table) {
+					//This should not happen.
+					throw new Error('The user table was not found.');
+				}
+				field = await this.promptForField(table, false, account, 'Select the field you want to whitelist.');
+			}
+			if (!field) {
+				return Promise.resolve(false);
+			}
+			if (!table) {
+				table = await this.getParent(field) as TableSchema;
+				if (!table) {
+					throw new Error(`No parent was found for field ${field.as}`);
+				}
+			}
+			if (table.name !== 'user') {
 				throw new Error(`Whitelisting currently is only supported for the 'user' table.`);
 			}
+
 			const fieldName = field.as;
 			if (!fieldName || fieldName.trim().length === 0) {
-				return Promise.resolve();
+				return Promise.resolve(false);
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -265,12 +409,12 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				await client.setWhitelistFieldStatus(account.aid, fieldName, add);
 				msg = add ? 'added to' : 'removed from';
 				vscode.window.showInformationMessage(`The field ${fieldName} was ${msg} the whitelist.`);
-				return Promise.resolve();
+				return Promise.resolve(true);
 			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Toggle whitelist failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 }

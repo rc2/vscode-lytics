@@ -3,73 +3,93 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { StateManager } from './stateManager';
 import lytics = require("lytics-js/dist/lytics");
-import { Query } from 'lytics-js/dist/types';
+import { Query, TableSchema, LyticsAccount } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
 export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 
+	/**
+	 * Constructor.
+	 * @param contentReader 
+	 * @param context 
+	 */
 	constructor(contentReader: ContentReader, context: vscode.ExtensionContext) {
 		super('query list', contentReader, context);
 	}
 
+	/**
+	 * Inherited from TreeDataProvider.
+	 * @param element 
+	 */
 	getTreeItem(element: any): vscode.TreeItem {
-		if (element.alias) {
-			let item = new QueryTreeItem(element.alias, element);
-			item.iconPath = this.getIcon(element);
-			return item;
+		if (element instanceof QueryGrouping) {
+			return new QueryTableTreeItem(element.name);
 		}
-		if (element) {
-			return new QueryTableTreeItem(element);
+		if (element.query_type) {
+			let item = new QueryTreeItem(element.alias, element);
+			item.iconPath = this.getQueryIcon(element);
+			return item;
 		}
 		throw new Error(`The specified element is not supported by the stream explorer provider.`);
 	}
 
-	private getIcon(node: Query): any {
+	/**
+	 * Inherited from TreeDataProvider.
+	 * @param element 
+	 */
+	async getChildren(element?: any): Promise<any[]> {
+		const account = StateManager.getActiveAccount();
+		if (!account) {
+			return Promise.resolve([]);
+		}
+		if (!element) {
+			return this.getQueriesGroupedByTable(account);
+		}
+		if (element instanceof QueryGrouping) {
+			return Promise.resolve(element.queries);
+		}
+	}
+
+	/**
+	 * Gets the icon for a query node.
+	 * @param node 
+	 */
+	private getQueryIcon(node: any): any {
 		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', 'arrows')),
 			dark: this.context.asAbsolutePath(path.join('resources', 'icons', 'dark', 'arrows'))
 		};
 	}
 
-	private mapOfQueriesForTable: Map<string, Query[]> = new Map<string, Query[]>();
-
-	async getChildren(element?: any): Promise<any[]> {
-		const account = StateManager.account;
-		if (!account) {
+	/**
+	 * Wrapper around the API call to get Lytics queries
+	 * grouped by table name. This function provides 
+	 * user feedback while data is read from Lytics.
+	 * @param account 
+	 * @returns Array of query groupings.
+	 */
+	private async getQueriesGroupedByTable(account: LyticsAccount): Promise<QueryGrouping[]> {
+		const map = await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Loading queries for account: ${account.aid}`,
+			cancellable: true
+		}, async (progress, token) => {
+			const client = lytics.getClient(account.apikey!);
+			return client.getQueriesGroupedByTable();
+		});
+		if (!map) {
 			return Promise.resolve([]);
 		}
-		if (!element) {
-			let map = await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Loading queries for account: ${account.aid}`,
-				cancellable: true
-			}, async (progress, token) => {
-				const client = lytics.getClient(account.apikey!);
-				try {
-					let map = await client.getQueriesGroupedByTable();
-					return Promise.resolve(map);
+		const groupings: QueryGrouping[] = [];
+		for (let key of map.keys()) {
+			let queries = map.get(key);
+			if (queries && queries.length > 0) {
+				let grouping = new QueryGrouping(key);
+				for (var i = 0; i < queries.length; i++) {
+					grouping.queries.push(queries[i]);
 				}
-				catch (err) {
-					vscode.window.showErrorMessage(`Loading tables failed for account ${account.aid}: ${err.message}`);
-					return Promise.resolve();
-				}
-			});
-			if (!map) {
-				return Promise.resolve([]);
-			}
-			this.mapOfQueriesForTable = map;
-			const names: string[] = [];
-			map.forEach((value: Query[], key: string) => {
-				names.push(key);
-			});
-			names.sort();
-			return Promise.resolve(names);
-		}
-		if (element) {
-			if (this.mapOfQueriesForTable.has(element)) {
-				const queries = this.mapOfQueriesForTable.get(element)! as Query[];
-				queries.sort((a, b) => {
+				grouping.queries.sort((a, b) => {
 					if (a.alias < b.alias) {
 						return -1;
 					}
@@ -78,33 +98,88 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 					}
 					return 0;
 				});
-				return Promise.resolve(queries);
+				groupings.push(grouping);
 			}
 		}
-		return Promise.resolve([]);
+		groupings.sort((a,b) => {
+			if (a.name < b.name) {
+				return -1;
+			}
+			if (a.name > b.name) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(groupings);
 	}
 
-	async commandShowQuery(query: Query) {
-		try {
-			const account = StateManager.account;
-			if (!account) {
-				throw new Error('No account is connected.');
+	/**
+	 * Wrapper around the API call to get Lytics queries. 
+	 * This function provides user feedback while data is 
+	 * read from Lytics.
+	 * @param account 
+	 * @returns Array of queries.
+	 */
+	private async getQueries(account: LyticsAccount): Promise<Query[]> {
+		const queries = await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Loading queries for account: ${account.aid}`,
+			cancellable: true
+		}, async (progress, token) => {
+			const client = lytics.getClient(account.apikey!);
+			return client.getQueries();
+		});
+		if (!queries) {
+			return Promise.resolve([]);
+		}
+		queries.sort((a, b) => {
+			if (a.alias < b.alias) {
+				return -1;
 			}
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Opening query: ${query.alias}`,
-				cancellable: true
-			}, async (progress, token) => {
-				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.lql`);
-				await this.displayAsReadOnly(uri);
-			});
-		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
-			return Promise.resolve();
-		}
+			if (a.alias > b.alias) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(queries);
 	}
-	async getFolderPathForDownload(): Promise<string | undefined> {
+
+	/**
+	 * Wrapper around the API call to get a Lytics query. 
+	 * This function provides user feedback while data is 
+	 * read from Lytics.
+	 * @param account 
+	 * @returns Array of queries.
+	 */
+	private async getQuery(alias: string): Promise<Query | undefined> {
+		const account = StateManager.getActiveAccount();
+		if (!account) {
+			return Promise.resolve(undefined);
+		}
+		const client = lytics.getClient(account.apikey!);
+		const query = await client.getQuery(alias);
+		if (!query) {
+			throw new Error(`The query ${alias} does not exist in the Lytics account.`);
+		}
+		return Promise.resolve(query);
+	}
+
+	private async saveQueryToFolder(query: Query, downloadPath: string, rejectIfNotAllowedToOverwrite: boolean = true): Promise<string | undefined> {
+		const filePath = path.join(downloadPath, `${query.alias}.lql`);
+		if (fs.existsSync(filePath)) {
+			const confirmed = await this.confirm(`Do you want to overwrite the file ${query.alias}.lql?`);
+			if (!confirmed) {
+				if (rejectIfNotAllowedToOverwrite) {
+					return Promise.reject({ message: 'file already exists and will not be overwritten' });
+				}
+				return Promise.resolve(undefined);
+			}
+		}
+		await fs.writeFile(filePath, query.text, err => { });
+		return Promise.resolve(filePath);
+	}
+
+	private async getFolderPathForDownload(): Promise<string | undefined> {
 		const paths = await vscode.window.showOpenDialog({
 			canSelectFiles: false,
 			canSelectFolders: true,
@@ -116,123 +191,150 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 		return Promise.resolve(paths[0].fsPath);
 	}
 
-	async commandDownloadQuery(query: Query) {
+	/**
+	 * Displays a quick pick from which the user can select a query.
+	 * @param account 
+	 * @param message 
+	 * @returns The selected query, or undefined if none was selected.
+	 */
+	private async promptForQuery(account: LyticsAccount, message?: string): Promise<Query | undefined> {
+		if (!message) {
+			message = `Select a query.`;
+		}
+		const queries = await this.getQueries(account);
+		const values = queries.map(q => q.alias);
+		let value = await vscode.window.showQuickPick(values, {
+			canPickMany: false,
+			placeHolder: message
+		});
+		if (!value) {
+			return Promise.resolve(undefined);
+		}
+		const query = queries.find(q => q.alias === value);
+		return Promise.resolve(query);
+	}
+
+	async commandShowQuery(query: Query): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			const downloadPath = await this.getFolderPathForDownload();
-			if (!downloadPath || downloadPath.trim().length === 0) {
-				return Promise.resolve();
+			if (!query) {
+				query = await this.promptForQuery(account, `Select the query you want to show.`);
+			}
+			if (!query) {
+				return Promise.resolve(false);
 			}
 			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Opening query: ${query.alias}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.lql`);
+				await this.displayAsReadOnly(uri);
+			});
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Open query failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+
+	async commandDownloadQuery(query: Query): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			if (!query) {
+				query = await this.promptForQuery(account, 'Select the query you want to download.');
+			}
+			if (!query) {
+				return Promise.resolve(false);
+			}
+			const downloadPath = await this.getFolderPathForDownload();
+			if (!downloadPath || downloadPath.trim().length === 0) {
+				return Promise.resolve(false);
+			}
+			const wasDownloaded = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Downloading query: ${query.alias}`,
 				cancellable: true
-			}, async (progress, token) => {
+			}, async (progress, token): Promise<boolean> => {
 				const query2 = await this.getQuery(query.alias!);
 				if (!query2) {
-					return Promise.resolve();
+					return Promise.resolve(false);
 				}
 				const filePath = await this.saveQueryToFolder(query2, downloadPath);
-				if (filePath) {
-					vscode.window.showInformationMessage(`Query downloaded: ${filePath}`);
-					return;
+				if (!filePath) {
+					return Promise.resolve(false);
 				}
+				vscode.window.showInformationMessage(`Query downloaded: ${filePath}`);
+				return Promise.resolve(true);
 			});
+			return Promise.resolve(wasDownloaded);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Downloading query failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
-	async commandDownloadQueries(selectedTableName: string) {
+
+	async commandDownloadQueries(selectedTableName: string): Promise<boolean> {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
 			const downloadPath = await this.getFolderPathForDownload();
 			if (!downloadPath || downloadPath.trim().length === 0) {
-				return Promise.resolve();
+				return Promise.resolve(false);
 			}
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: `Downloading queries for table: ${selectedTableName}`,
-				cancellable: true
-			}, async (progress, token) => {
-				const queries = await this.getQueries(selectedTableName);
-				if (!queries) {
-					return Promise.resolve();
+			let queries: Query[] = [];
+			if (!selectedTableName) {
+				queries = await this.getQueries(account);
+			}
+			else {
+				const groupings = await this.getQueriesGroupedByTable(account);
+				const grouping = groupings.find(g => g.name === selectedTableName);
+				if (!grouping) {
+					return Promise.resolve(false);
 				}
-				const saved: string[] = [];
-				for (let i = 0; i < queries.length; i++) {
-					const query = queries[i];
-					try {
-						const filePath = await this.saveQueryToFolder(query, downloadPath);
-						if (filePath) {
-							saved.push(query.alias!);
-						}
-					}
-					catch (err) {
-						vscode.window.showErrorMessage(`Unable to save query ${query.alias}: ${err.message}`);
-					}
+				queries = grouping.queries;
+			}
+			var downloadedCount: number = 0;
+			var notDownloadedCount: number = 0;
+			for (var i = 0; i < queries.length; i++) {
+				let query = queries[i];
+				let path = await this.saveQueryToFolder(query, downloadPath, false);
+				if (!path) {
+					notDownloadedCount++;
 				}
-				if (saved.length > 0) {
-					const msg = saved.length === 1 ? 'query was' : 'queries were';
-					vscode.window.showInformationMessage(`${saved.length} ${msg} saved to: ${downloadPath}`);
+				else {
+					downloadedCount++;
 				}
-			});
+			}
+			let message = `${downloadedCount} queries downloaded.`;
+			if (notDownloadedCount > 0) {
+				message += ` ${notDownloadedCount} queries were not downloaded.`;
+			}
+			vscode.window.showInformationMessage(message);
+			return Promise.resolve(true);
 		}
 		catch (err) {
-			vscode.window.showErrorMessage(`Downloading query failed: ${err.message}`);
-			return Promise.resolve();
+			vscode.window.showErrorMessage(`Downloading queries failed: ${err.message}`);
+			return Promise.resolve(false);
 		}
-
-	}
-	async getQueries(tableName: string): Promise<Query[] | undefined> {
-		const account = StateManager.account;
-		if (!account) {
-			return Promise.resolve(undefined);
-		}
-		const client = lytics.getClient(account.apikey!);
-		const tables = await client.getQueriesGroupedByTable();
-		if (!tables) {
-			return Promise.resolve(undefined);
-		}
-		const queries = tables.get(tableName);
-		return Promise.resolve(queries);
-	}
-
-	async getQuery(alias: string): Promise<Query | undefined> {
-		const account = StateManager.account;
-		if (!account) {
-			return Promise.resolve(undefined);
-		}
-		const client = lytics.getClient(account.apikey!);
-		const query = await client.getQuery(alias);
-		if (!query) {
-			throw new Error(`The query ${alias} does not exist in the Lytics account.`);
-		}
-		return Promise.resolve(query);
-	}
-	async saveQueryToFolder(query: Query, downloadPath: string): Promise<string | undefined> {
-		const filePath = path.join(downloadPath, `${query.alias}.lql`);
-		if (fs.existsSync(filePath)) {
-			const confirmation = await vscode.window.showQuickPick(['Ignore', 'Overwrite'], {
-				canPickMany: false,
-				placeHolder: `Do you want to overwrite the file ${query.alias}.lql?`
-			});
-			if (confirmation !== 'Overwrite') {
-				return Promise.reject({ message: 'file already exists' });
-			}
-		}
-		await fs.writeFile(filePath, query.text, err => { });
-		return Promise.resolve(filePath);
 	}
 }
 
+class QueryGrouping {
+	constructor(public readonly name: string) {
+	}
+	readonly queries: Query[] = [];
+}
 class QueryTableTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string

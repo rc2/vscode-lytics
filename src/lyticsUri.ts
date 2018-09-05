@@ -4,11 +4,13 @@ export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
     public isQueryUri: boolean = false;
+    public isSegmentUri: boolean = false;
     public isStreamUri: boolean = false;
     public isStreamQueriesUri: boolean = false;
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
+    public isTopicUri: boolean = false;
     public isCampaignUri: boolean = false;
     public isCampaignVariationUri: boolean = false;
     public isCampaignVariationOverrideUri: boolean = false;
@@ -16,11 +18,13 @@ export class LyticsUri {
     public isEntityUri: boolean = false;
     public accountId: number = 0;
     public queryAlias: (string | undefined);
+    public segmentSlugName: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
     public tableName: (string | undefined);
     public tableFieldName: (string | undefined);
     public tableFieldValue: (string | undefined);
+    public topicLabel: (string | undefined);
     public campaignId: (string | undefined);
     public campaignVariationId: (string | undefined);
     public contentClassificationFilePath: (string | undefined);
@@ -40,11 +44,17 @@ export class LyticsUri {
                 case 'queries':
                     this.handleQueriesUri();
                     return;
+                case 'segments':
+                    this.handleSegmentsUri();
+                    return;
                 case 'streams':
                     this.handleStreamsUri();
                     return;
                 case 'tables':
                     this.handleTablesUri();
+                    return;
+                case 'topics':
+                    this.handleTopicsUri();
                     return;
                 case 'campaigns':
                     this.handleCampaignsUri();
@@ -85,6 +95,22 @@ export class LyticsUri {
                 this.queryAlias = alias;
                 return;
             }
+        }
+    }
+
+    private handleSegmentsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/segments/id.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const segmentId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (segmentId.length > 0) {
+                    this.isSegmentUri = true;
+                    this.segmentSlugName = segmentId;
+                    return;
+                }
+            }
+            return;
         }
     }
 
@@ -176,6 +202,21 @@ export class LyticsUri {
         }
     }
 
+    private handleTopicsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/topics/label.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const topicLabel = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (topicLabel.length > 0) {
+                    this.isTopicUri = true;
+                    this.topicLabel = topicLabel;
+                    return;
+                }
+            }
+            return;
+        }
+    }
     private handleCampaignsUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/campaigns/1234567890.json

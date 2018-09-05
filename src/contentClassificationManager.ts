@@ -35,7 +35,7 @@ export class ContentClassificationManager implements vscode.Disposable, ContentD
 	}
 	private async showClassification(fileName: string, params:any) {
 		try {
-			const account = StateManager.account;
+			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
@@ -45,11 +45,6 @@ export class ContentClassificationManager implements vscode.Disposable, ContentD
 				cancellable: true
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/content/classification/draft/${fileName}_classification.json?${qs.stringify(params)}`);
-				// if (this._contentReader) {
-				// 	this._contentReader.removeFromCache(uri);
-				// }
-				// const doc = await vscode.workspace.openTextDocument(uri);
-				// await vscode.window.showTextDocument(doc, { preview: false });
 				return this.displayAsReadOnly(uri);
 			});
 		}

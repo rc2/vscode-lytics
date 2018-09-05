@@ -31,10 +31,9 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			icon = 'sync-problem.svg';
 		}
 		else {
-			const currentAccount = StateManager.account;
-			if (currentAccount && currentAccount.aid === account.aid) {
+			if (StateManager.isActiveAccount(account.aid)) {
 				icon = 'cloud-active.svg';
-			}	
+			}
 		}
 		return {
 			light: this.context.asAbsolutePath(path.join('resources', 'icons', 'light', icon)),
@@ -56,10 +55,10 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		return Promise.resolve([]);
 	}
 
-	async commandAddAccount() {
+	async commandAddAccount(): Promise<boolean> {
 		const apikey = await vscode.window.showInputBox({ prompt: 'Enter the API key for the account you want to add.' });
 		if (!apikey) {
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -71,19 +70,19 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 				let accounts = await client.getAccounts();
 				if (!accounts || accounts.length === 0) {
 					vscode.window.showErrorMessage('No accounts were found for the specified API key.');
-					return Promise.resolve();
+					return Promise.resolve(false);
 				}
 				const accountOptions = accounts.map(a => `${a.aid} : ${a.name}`);
 				const selectedAccount = await vscode.window.showQuickPick(accountOptions);
 				if (!selectedAccount || selectedAccount.trim().length === 0) {
-					return Promise.resolve();
+					return Promise.resolve(false);
 				}
 				const aid = parseInt(selectedAccount.split(':')[0]);
 				if (!isNaN(aid)) {
 					await SettingsManager.addAccount(aid, apikey);
 					await this.refresh();
 					vscode.window.showInformationMessage(`Account ${aid} was added.`);
-					return Promise.resolve();
+					return Promise.resolve(true);
 				}
 			}
 			catch (err) {
@@ -97,111 +96,156 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 					message = `Add account failed: ${err.message}`;
 				}
 				vscode.window.showErrorMessage(message);
-				return Promise.resolve();
+				return Promise.resolve(false);
 			}
 		});
-		return Promise.resolve();
+		return Promise.resolve(false);
 	}
 
-	async commandRemoveAccount(account: AccountTreeItem) {
-		try {
-			if (!account) {
-				const value = await vscode.window.showInputBox({ prompt: 'Enter the id for the account you want to remove.' });
-				if (!value) {
-					return Promise.resolve();
-				}
-				var aid = Number(value);
-				if (isNaN(aid)) {
-					throw new Error('An invalid account id was entered.');
-				}
-			}
-			else {
-				aid = account.aid;
-			}
-			if (StateManager.account && StateManager.account.aid === aid) {
-				throw new Error(`You must disconnect the account before you can remove it.`);
-				return Promise.resolve();
-			}
-			await SettingsManager.removeAccount(aid);
-			await this.refresh();
-			vscode.window.showInformationMessage(`Account ${aid} was removed.`);
-			return Promise.resolve();
+	private async promptForAid(message?: string): Promise<number> {
+		if (!message) {
+			message = `Select an account.`;
 		}
-		catch (err) {
-			vscode.window.showErrorMessage(`Remove account failed: ${err.message}`);
-			return Promise.resolve();
+		const values: string[] = [];
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: 'Loading accounts.',
+			cancellable: true
+		}, async (progress, token) => {
+			const accounts = await SettingsManager.getAccounts();
+			accounts.forEach(account => values.push(`${account.aid}: ${account.name}`));
+		});
+
+		let value = await vscode.window.showQuickPick(values, {
+			canPickMany: false,
+			placeHolder: message
+		});
+		if (!value) {
+			return Promise.resolve(undefined);
 		}
+		const position = value.indexOf(':');
+		if (position !== -1) {
+			value = value.split(':')[0].trim();
+		}
+		const aid = Number(value);
+		if (isNaN(aid)) {
+			throw new Error('An invalid account id was entered.');
+		}
+		return Promise.resolve(aid);
 	}
 
-	async commandConnectAccount(accountItem: AccountTreeItem): Promise<LyticsAccount | undefined> {
+	async commandRemoveAccount(accountItem: AccountTreeItem): Promise<boolean> {
 		try {
+			let aid = 0;
 			if (!accountItem) {
-				const value = await vscode.window.showInputBox({ prompt: 'Enter the id for the account you want to connect to.' });
-				if (!value) {
-					return Promise.resolve(undefined);
-				}
-				var aid = Number(value);
-				if (isNaN(aid)) {
-					throw new Error('An invalid account id was entered.');
-				}
+				aid = await this.promptForAid('Select the account you want to remove.');
 			}
 			else {
 				aid = accountItem.aid;
 			}
+			if (!aid || aid === 0) {
+				return Promise.resolve(false);
+			}
 
+			if (StateManager.isActiveAccount(aid)) {
+				throw new Error(`You must disconnect the account before you can remove it.`);
+			}
+			const confirm = await this.confirm(`Are you sure you want to remove account ${aid}?`);
+			if (!confirm) {
+				return Promise.resolve(false);
+			}
+			await SettingsManager.removeAccount(aid);
+			await this.refresh();
+			vscode.window.showInformationMessage(`Account ${aid} was removed.`);
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Remove account failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+
+	async commandConnectAccount(accountItem: AccountTreeItem): Promise<boolean> {
+		try {
+			let aid = 0;
+			if (!accountItem) {
+				aid = await this.promptForAid('Select the account you want to connect to.');
+			}
+			else {
+				aid = accountItem.aid;
+			}
+			if (!aid || aid === 0) {
+				return Promise.resolve(false);
+			}
 			const account = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: 'Getting account details.',
 				cancellable: true
 			}, async (progress, token) => {
+				const activeAccount = await StateManager.getActiveAccount();
+				if (activeAccount) {
+					if (activeAccount.aid === aid) {
+						return Promise.resolve(undefined);
+					}
+					else {
+						const confirmed = await this.confirm(`Disconnect from account ${activeAccount.aid} and connect to ${aid}?`);
+						if (!confirmed) {
+							return Promise.resolve(undefined);
+						}
+					}
+				} 
 				const account = await SettingsManager.getAccount(aid);
 				if (account) {
-					StateManager.account = account;
+					StateManager.setActiveAccount(account);
 					await this.refresh();
 					vscode.window.showInformationMessage(`Account is connected: ${account.aid}`);
 					return Promise.resolve(account);
 				}
 			});
-
-			return Promise.resolve(account);
+			return Promise.resolve(account !== undefined);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Connect account failed: ${err.message}`);
-			return Promise.resolve(undefined);
+			return Promise.resolve(false);
 		}
 	}
 
-	async commandDisconnectAccount(accountItem: AccountTreeItem): Promise<LyticsAccount | undefined> {
-		const account = StateManager.account;
-		if (!account) {
-			vscode.window.showErrorMessage('No account is connected.');
-			return Promise.resolve(undefined);
+	async commandDisconnectAccount(accountItem: AccountTreeItem): Promise<boolean> {
+		let aid = 0;
+		if (!accountItem) {
+			const account = StateManager.getActiveAccount();
+			if (account) {
+				aid = account.aid;
+			}
 		}
-
-		if (accountItem && accountItem.aid !== account.aid) {
-			vscode.window.showErrorMessage(`The selected account is not connected: ${account.aid}`);
-			return Promise.resolve(undefined);
+		if (accountItem) {
+			if (!StateManager.isActiveAccount(accountItem.aid)) {
+				vscode.window.showErrorMessage(`The selected account is not connected: ${accountItem.aid}`);
+				return Promise.resolve(false);
+			}
+			aid = accountItem.aid;
 		}
-		StateManager.account = undefined;
+		const confirm = await this.confirm(`Are you sure you want to disconnect account ${aid}?`);
+		if (!confirm) {
+			return Promise.resolve(false);
+		}
+		StateManager.setActiveAccount(undefined);
 		await this.refresh();
-		vscode.window.showInformationMessage(`The account is disconnected: ${account.aid}`);
-		return Promise.resolve(account);
+		vscode.window.showInformationMessage(`The account is disconnected: ${aid}`);
+		return Promise.resolve(true);
 	}
 
-	async commandShowAccount(accountItem: AccountTreeItem) {
+	async commandShowAccount(accountItem: AccountTreeItem): Promise<boolean> {
 		try {
 			let aid = 0;
-			if (accountItem) {
-				aid = accountItem.aid;
+			if (!accountItem) {
+				aid = await this.promptForAid('Select the account whose information you want to show.');
 			}
 			else {
-				const account = StateManager.account;
-				if (account) {
-					aid = account.aid;
-				}
+				aid = accountItem.aid;
 			}
-			if (aid === 0) {
-				throw new Error('Unable to determine account id.');
+			if (!aid || aid === 0) {
+				return Promise.resolve(false);
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -210,25 +254,30 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			}, async (progress, token) => {
 				const uri = vscode.Uri.parse(`lytics://accounts/${aid}.json`);
 				await this.displayAsReadOnly(uri);
+				return Promise.resolve(true);
 			});
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Show account failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
-	async commandExportAccounts() {
-		let exportHandler:(AccountsExportHandler|undefined);
-		const handlerName = await vscode.window.showQuickPick(['Export to FileZilla']);
+
+	async commandExportAccounts(): Promise<boolean> {
+		let exportHandler: (AccountsExportHandler | undefined);
+		const handlerName = await vscode.window.showQuickPick(['Export to FileZilla'], {
+			canPickMany: false,
+			placeHolder: 'Select the format for the account exports.'
+		});
 		if (!handlerName || handlerName.trim().length === 0) {
-			return;
+			return Promise.resolve(false);
 		}
 		if (handlerName === 'Export to FileZilla') {
 			exportHandler = new AccountsExportFilezilla();
 		}
 		if (!exportHandler) {
 			vscode.window.showErrorMessage(`Export handler could not be resolved: ${handlerName}`);
-			return;
+			return Promise.resolve(false);
 		}
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -236,16 +285,16 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			cancellable: true
 		}, async (progress, token) => {
 			const getAccounts = async () => {
-				const accounts:LyticsAccount[] = await SettingsManager.getAccounts();
+				const accounts: LyticsAccount[] = await SettingsManager.getAccounts();
 				return Promise.resolve(accounts);
 			};
 			return await exportHandler!.export(getAccounts, progress);
 		});
+		return Promise.resolve(true);
 	}
 }
 
 class AccountTreeItem extends vscode.TreeItem {
-
 	constructor(
 		public readonly name: string,
 		public readonly aid: number,
@@ -254,10 +303,5 @@ class AccountTreeItem extends vscode.TreeItem {
 	) {
 		super(`[${aid}] ${name}`, collapsibleState);
 	}
-
-	//get tooltip(): string {
-	//	return `${this.name} [${this.aid}]`;
-	//}
-
 	contextValue = 'account';
 }
