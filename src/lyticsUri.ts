@@ -10,6 +10,7 @@ export class LyticsUri {
     public isStreamFieldUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
+    public isTopicUri: boolean = false;
     public isCampaignUri: boolean = false;
     public isCampaignVariationUri: boolean = false;
     public isCampaignVariationOverrideUri: boolean = false;
@@ -23,6 +24,7 @@ export class LyticsUri {
     public tableName: (string | undefined);
     public tableFieldName: (string | undefined);
     public tableFieldValue: (string | undefined);
+    public topicLabel: (string | undefined);
     public campaignId: (string | undefined);
     public campaignVariationId: (string | undefined);
     public contentClassificationFilePath: (string | undefined);
@@ -50,6 +52,9 @@ export class LyticsUri {
                     return;
                 case 'tables':
                     this.handleTablesUri();
+                    return;
+                case 'topics':
+                    this.handleTopicsUri();
                     return;
                 case 'campaigns':
                     this.handleCampaignsUri();
@@ -197,6 +202,21 @@ export class LyticsUri {
         }
     }
 
+    private handleTopicsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/topics/label.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const topicLabel = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (topicLabel.length > 0) {
+                    this.isTopicUri = true;
+                    this.topicLabel = topicLabel;
+                    return;
+                }
+            }
+            return;
+        }
+    }
     private handleCampaignsUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/campaigns/1234567890.json

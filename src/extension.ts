@@ -13,6 +13,7 @@ import LyticsContentProvider from './lyticsContentProvider';
 import { ContentClassificationManager } from './ContentClassificationManager';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentExplorerProvider } from './segmentExplorerProvider';
+import { TopicExplorerProvider } from './topicExplorerProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -27,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateQueryExplorer(contentProvider, context);
     activateStreamExplorer(contentProvider, context);
     activateTableExplorer(contentProvider, context);
+    activateTopicExplorer(contentProvider, context);
     activateTerminalManager(contentProvider, context);
     activateClassificationManager(contentProvider, context);
 }
@@ -94,7 +96,7 @@ function activateTableExplorer(lyticsProvider: LyticsContentProvider, context: v
     explorers.push(explorer);
     var disposable = vscode.window.registerTreeDataProvider('lytics.tables.explorer', explorer);
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.tables.add', () => explorer.commandAddTable());
+    disposable = vscode.commands.registerCommand('lytics.table.add', () => explorer.commandAddTable());
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.tables.remove', (table) => explorer.commandRemoveTable(table));
     context.subscriptions.push(disposable);
@@ -171,6 +173,17 @@ function activateCampaignExplorer(lyticsProvider: LyticsContentProvider, context
     disposable = vscode.commands.registerCommand('lytics.campaign.variation.override.download', (variation) => campaignExplorerProvider.commandDownloadCampaignVariationDetailOverride(variation));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.campaign.variation.override.upload', async (uri) => campaignExplorerProvider.commandUploadCampaignVariationDetailOverride(uri));
+    context.subscriptions.push(disposable);
+}
+
+function activateTopicExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new TopicExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.topics.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.topics.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.topic.info', (topic) => explorer.commandShowTopicInfo(topic));
     context.subscriptions.push(disposable);
 }
 

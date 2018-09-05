@@ -101,6 +101,15 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 				groupings.push(grouping);
 			}
 		}
+		groupings.sort((a,b) => {
+			if (a.name < b.name) {
+				return -1;
+			}
+			if (a.name > b.name) {
+				return 1;
+			}
+			return 0;
+		});
 		return Promise.resolve(groupings);
 	}
 

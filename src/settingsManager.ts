@@ -132,6 +132,9 @@ export class SettingsManager {
         }
         return Promise.resolve();
     }
+    static getLyticsApiSettings() : LyticsApiSettings {
+        return vscode.workspace.getConfiguration().get('lytics.api') as LyticsApiSettings;
+    }
     static getWatchSettings(): LyticsWatchSettings {
         return vscode.workspace.getConfiguration().get('lytics.watch') as LyticsWatchSettings;
     }
@@ -140,6 +143,10 @@ interface AccountSetting {
     apikey: string;
     aid: number;
     tables: string[];
+}
+interface LyticsApiSettings {
+    maxTopics: number;
+    maxTopicUrls: number;
 }
 interface LyticsWatchSettings {
     colorize: boolean;

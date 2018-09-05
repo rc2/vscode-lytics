@@ -127,17 +127,7 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 		}, async (progress, token) => {
 			const client = lytics.getClient(account.apikey!);
 			try {
-				const streams = await client.getStreams();
-				var sortedStreams = streams.sort((a, b) => {
-					if (a.stream! < b.stream!) {
-						return -1;
-					}
-					if (a.stream! > b.stream!) {
-						return 1;
-					}
-					return 0;
-				});
-				return Promise.resolve(sortedStreams);
+				return client.getStreams();
 			}
 			catch (err) {
 				let message: (string | undefined);
@@ -156,7 +146,16 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 		if (!streams) {
 			streams = [];
 		}
-		return Promise.resolve(streams);
+		var sortedStreams = streams.sort((a, b) => {
+			if (a.stream! < b.stream!) {
+				return -1;
+			}
+			if (a.stream! > b.stream!) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(sortedStreams);
 	}
 
 	async getFields(stream: DataStream, account: LyticsAccount): Promise<DataStreamField[]> {
@@ -164,10 +163,12 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 			return Promise.resolve([]);
 		}
 		const fields: DataStreamField[] = stream.fields.sort((a, b) => {
-			if (a.name! < b.name!) {
+			const a2 = a.name.toLowerCase();
+			const b2 = b.name.toLowerCase();
+			if (a2 < b2) {
 				return -1;
 			}
-			if (a.name! > b.name!) {
+			if (a2 > b2) {
 				return 1;
 			}
 			return 0;

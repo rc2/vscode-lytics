@@ -129,7 +129,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			message = `Select a table.`;
 		}
 		const fields = await this.getFields(table, account);
-		const values:string[] = []
+		const values:string[] = [];
 		fields.forEach(f => {
 			if (!identifiersOnly || f.is_by) {
 				values.push(f.as);
@@ -194,18 +194,9 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				if (!table) {
 					return Promise.resolve([]);
 				}
-				let columns = table.columns;
+				const columns = table.columns;
 				columns.forEach(col => {
 					this.mapOfFieldToTable.set(col, element);
-				});
-				columns = columns.sort((a, b) => {
-					if (a.as! < b.as!) {
-						return -1;
-					}
-					if (a.as! > b.as!) {
-						return 1;
-					}
-					return 0;
 				});
 				return Promise.resolve(columns);
 			}
@@ -217,7 +208,18 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 		if (!fields) {
 			fields = [];
 		}
-		return Promise.resolve(fields);
+		const sortedFields = fields.sort((a, b) => {
+			const a2 = a.name.toLowerCase();
+			const b2 = b.name.toLowerCase();
+			if (a2 < b2) {
+				return -1;
+			}
+			if (a2 > b2) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(sortedFields);
 	}
 
 	async commandAddTable(): Promise<boolean> {

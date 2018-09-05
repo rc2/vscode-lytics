@@ -63,16 +63,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 			const client = lytics.getClient(account.apikey!);
 			try {
 				const campaigns = await client.getCampaigns();
-				var sortedCampaigns = campaigns.sort((a, b) => {
-					if (a.name! < b.name!) {
-						return -1;
-					}
-					if (a.name! > b.name!) {
-						return 1;
-					}
-					return 0;
-				});
-				return Promise.resolve(sortedCampaigns);
+				return Promise.resolve(campaigns);
 			}
 			catch (err) {
 				let message: (string | undefined);
@@ -91,7 +82,18 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 		if (!campaigns) {
 			campaigns = [];
 		}
-		return Promise.resolve(campaigns);
+		var sortedCampaigns = campaigns.sort((a, b) => {
+			const a2 = a.name.toLowerCase();
+			const b2 = b.name.toLowerCase();
+			if (a2 < b2) {
+				return -1;
+			}
+			if (a2 > b2) {
+				return 1;
+			}
+			return 0;
+		});
+		return Promise.resolve(sortedCampaigns);
 	}
 
 	/**

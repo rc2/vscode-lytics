@@ -3,6 +3,8 @@
 - (issue 66) Better support for showing appropriate commands.
 - (issue 67) Improved support for command palette.
 - (issue 68) Added segment explorer.
+- (issue 69) Added topic explorer.
+- (issue 71) Added sorting due to change in lytics-js v0.24.
 
 ## [0.0.18] - 2018-08-27
 - (issue 63) Fixed commands so LQL upload and content classification features work.

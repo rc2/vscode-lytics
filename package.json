@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -107,6 +107,10 @@
         {
           "id": "lytics.segments.explorer",
           "name": "Segments"
+        },
+        {
+          "id": "lytics.topics.explorer",
+          "name": "Topics"
         }
       ]
     },
@@ -166,8 +170,6 @@
         "title": "Export Accounts",
         "category": "Lytics"
       },
-
-
       {
         "command": "lytics.campaigns.refresh",
         "title": "Refresh Campaign List",
@@ -208,12 +210,11 @@
         "command": "lytics.campaign.variation.override.upload",
         "title": "Upload Campaign Variation Override",
         "category": "Lytics",
-        "icon": { 
+        "icon": {
           "light": "resources/icons/light/cloud-upload.svg",
           "dark": "resources/icons/dark/cloud-upload.svg"
         }
       },
-
       {
         "command": "lytics.queries.refresh",
         "title": "Refresh Query List",
@@ -259,7 +260,6 @@
           "dark": "resources/icons/dark/cloud-upload.svg"
         }
       },
-
       {
         "command": "lytics.segments.refresh",
         "title": "Refresh Segment List",
@@ -278,7 +278,6 @@
           "dark": "resources/icons/dark/info.svg"
         }
       },
-
       {
         "command": "lytics.streams.refresh",
         "title": "Refresh Data Stream List",
@@ -315,9 +314,8 @@
           "dark": "resources/icons/dark/info.svg"
         }
       },
-
       {
-        "command": "lytics.tables.add",
+        "command": "lytics.table.add",
         "title": "Add Table",
         "category": "Lytics",
         "icon": {
@@ -362,7 +360,24 @@
         "title": "Toggle Whitelist Setting for Field",
         "category": "Lytics"
       },
-
+      {
+        "command": "lytics.topics.refresh",
+        "title": "Refresh Topic List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.topic.info",
+        "title": "Show Topic Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
       {
         "command": "lytics.terminal.open",
         "title": "Open Terminal",
@@ -466,9 +481,8 @@
           "command": "lytics.stream.field.info",
           "when": "lyticsAccountConnected"
         },
-
         {
-          "command": "lytics.tables.add",
+          "command": "lytics.table.add",
           "when": "lyticsAccountConnected"
         },
         {
@@ -491,7 +505,14 @@
           "command": "lytics.table.field.whitelist",
           "when": "lyticsAccountConnected"
         },
-
+        {
+          "command": "lytics.topics.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.topic.info",
+          "when": "lyticsAccountConnected"
+        },
         {
           "command": "lytics.terminal.open"
         },
@@ -584,12 +605,12 @@
           "when": "view == lytics.streams.explorer"
         },
         {
-          "command": "lytics.terminal.open",
+          "command": "lytics.topics.refresh",
           "group": "navigation",
-          "when": "view == lytics.tables.explorer"
+          "when": "view == lytics.topics.explorer"
         },
         {
-          "command": "lytics.tables.add",
+          "command": "lytics.table.add",
           "group": "navigation",
           "when": "view == lytics.tables.explorer"
         },
@@ -715,6 +736,11 @@
           "when": "view == lytics.tables.explorer && viewItem == 'table'"
         },
         {
+          "command": "lytics.topic.info",
+          "group": "inline",
+          "when": "view == lytics.topics.explorer && viewItem == 'topic'"
+        },
+        {
           "command": "lytics.campaign.info",
           "group": "inline",
           "when": "view == lytics.campaigns.explorer && viewItem == 'campaign'"
@@ -732,7 +758,7 @@
       ]
     },
     "configuration": {
-      "title": "Lytics configuration",
+      "title": "Lytics",
       "properties": {
         "lytics.accounts": {
           "type": "array",
@@ -752,6 +778,19 @@
           },
           "default": [],
           "description": "Accounts displayed in Lytics account explorer"
+        },
+        "lytics.api": {
+          "type": "object",
+          "properties": {
+            "maxTopics": {
+              "type": "integer",
+              "description": "Maximum number of topics to read (default is 500)"
+            },
+            "maxTopicsUrls": {
+              "type": "integer",
+              "description": "Maximum number of URLs read for a topic (default is 10)"
+            }
+          }
         },
         "lytics.watch": {
           "type": "object",
@@ -783,7 +822,7 @@
   "devDependencies": {
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.69",
+    "@types/node": "^7.0.70",
     "@types/query-string": "^6.1.0",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
