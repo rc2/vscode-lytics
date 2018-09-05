@@ -1,4 +1,7 @@
-## [0.0.19] - 2018-??-??
+## [0.0.20] - 2018-09-05
+- (issue 72) Fixed bug with table sort.
+
+## [0.0.19] - 2018-09-05
 - (issue 65) Added ability to open a terminal with LIOKEY environment variable pre-configured.
 - (issue 66) Better support for showing appropriate commands.
 - (issue 67) Improved support for command palette.

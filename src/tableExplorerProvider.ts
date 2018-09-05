@@ -209,8 +209,8 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			fields = [];
 		}
 		const sortedFields = fields.sort((a, b) => {
-			const a2 = a.name.toLowerCase();
-			const b2 = b.name.toLowerCase();
+			const a2 = a.as.toLowerCase();
+			const b2 = b.as.toLowerCase();
 			if (a2 < b2) {
 				return -1;
 			}
