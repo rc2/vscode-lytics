@@ -1,3 +1,6 @@
+## [0.0.22] - 2018-??-??
+- (issue 75) Explorers in the Lytics view are now sorted in alphabetical order.
+
 ## [0.0.21] - 2018-09-05
 - (issue 73) Fixed bug with selecting data stream fields using the command.
 
