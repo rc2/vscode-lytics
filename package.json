@@ -89,24 +89,24 @@
           "name": "Accounts"
         },
         {
-          "id": "lytics.queries.explorer",
-          "name": "Queries"
+          "id": "lytics.campaigns.explorer",
+          "name": "Campaigns"
         },
         {
           "id": "lytics.streams.explorer",
           "name": "Data Streams"
         },
         {
-          "id": "lytics.tables.explorer",
-          "name": "Tables"
-        },
-        {
-          "id": "lytics.campaigns.explorer",
-          "name": "Campaigns"
+          "id": "lytics.queries.explorer",
+          "name": "Queries"
         },
         {
           "id": "lytics.segments.explorer",
           "name": "Segments"
+        },
+        {
+          "id": "lytics.tables.explorer",
+          "name": "Tables"
         },
         {
           "id": "lytics.topics.explorer",
@@ -158,7 +158,7 @@
       },
       {
         "command": "lytics.account.show",
-        "title": "Show Account",
+        "title": "Show Account Info",
         "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/info.svg",
