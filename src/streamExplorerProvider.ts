@@ -113,6 +113,30 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 	}
 
 	/**
+	 * Displays a quick pick from which the user can select a field.
+	 * @param stream
+	 * @param account 
+	 * @param message 
+	 * @returns The selected field, or undefined if none was selected.
+	 */
+	private async promptForField(stream:DataStream, account: LyticsAccount, message?: string): Promise<DataStreamField | undefined> {
+		if (!message) {
+			message = `Select a field.`;
+		}
+		const fields = await this.getFields(stream, account);
+		const values = fields.map(field => field.name);
+		let value = await vscode.window.showQuickPick(values, {
+			canPickMany: false,
+			placeHolder: message
+		});
+		if (!value) {
+			return Promise.resolve(undefined);
+		}
+		const field = fields.find(f => f.name === value);
+		return Promise.resolve(field);
+	}
+	
+	/**
 	 * Wrapper around the API call to get Lytics data streams. 
 	 * This function provides user feedback while data is 
 	 * read from Lytics.
@@ -231,16 +255,28 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 		}
 	}
 
-	async commandShowField(field: DataStreamField) {
+	async commandShowField(field: DataStreamField): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-			//TODO: if field is udefined...
-			const stream = await this.getParent(field) as DataStream;
-			if (!stream) {
-				throw new Error(`No parent was found for field ${field.name}`);
+			var stream: (DataStream | undefined) = undefined;
+			if (!field) {
+				stream = await this.promptForStream(account, 'Select the data stream with the field you want to show.');
+				if (!stream) {
+					return Promise.resolve(false);
+				}
+				field = await this.promptForField(stream, account, 'Select the field you want to show.');
+				if (!field) {
+					return Promise.resolve(false);
+				}
+			}
+			else {
+				stream = await this.getParent(field) as DataStream;
+				if (!stream) {
+					throw new Error(`No parent was found for field ${field.name}`);
+				}
 			}
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
@@ -250,10 +286,11 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 				const uri = vscode.Uri.parse(`lytics://${account.aid}/streams/${stream.stream}/${field.name}.json`);
 				await this.displayAsReadOnly(uri);
 			});
+			return Promise.resolve(true);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Show stream field failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
 	}
 }
