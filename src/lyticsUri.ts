@@ -8,6 +8,7 @@ export class LyticsUri {
     public isStreamUri: boolean = false;
     public isStreamQueriesUri: boolean = false;
     public isStreamFieldUri: boolean = false;
+    public isSubscriptionUri: boolean = false;
     public isTableUri: boolean = false;
     public isTableFieldUri: boolean = false;
     public isTopicUri: boolean = false;
@@ -21,6 +22,7 @@ export class LyticsUri {
     public segmentSlugName: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
+    public subscriptionSlug: (string | undefined);
     public tableName: (string | undefined);
     public tableFieldName: (string | undefined);
     public tableFieldValue: (string | undefined);
@@ -46,6 +48,9 @@ export class LyticsUri {
                     return;
                 case 'segments':
                     this.handleSegmentsUri();
+                    return;
+                case 'subscriptions':
+                    this.handleSubscriptionsUri();
                     return;
                 case 'streams':
                     this.handleStreamsUri();
@@ -156,6 +161,23 @@ export class LyticsUri {
             return;
         }
     }
+
+    private handleSubscriptionsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/subscriptions/slug.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const slug = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (slug.length > 0) {
+                    this.isSubscriptionUri = true;
+                    this.subscriptionSlug = slug;
+                    return;
+                }
+            }
+            return;
+        }
+    }
+
     private handleTablesUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/tables/user.json

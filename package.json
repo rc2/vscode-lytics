@@ -105,6 +105,10 @@
           "name": "Segments"
         },
         {
+          "id": "lytics.subscriptions.explorer",
+          "name": "Subscriptions"
+        },
+        {
           "id": "lytics.tables.explorer",
           "name": "Tables"
         },
@@ -315,6 +319,38 @@
         }
       },
       {
+        "command": "lytics.subscriptions.refresh",
+        "title": "Refresh Subscription List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.subscription.add",
+        "title": "Add Subscription",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
+        }
+      },
+      {
+        "command": "lytics.subscription.info",
+        "title": "Show Subscription Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.subscription.remove",
+        "title": "Remove Subscription",
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.table.add",
         "title": "Add Table",
         "category": "Lytics",
@@ -324,7 +360,7 @@
         }
       },
       {
-        "command": "lytics.tables.remove",
+        "command": "lytics.table.remove",
         "title": "Remove Table",
         "category": "Lytics"
       },
@@ -482,11 +518,27 @@
           "when": "lyticsAccountConnected"
         },
         {
+          "command": "lytics.subscriptions.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.subscription.add",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.subscription.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.subscription.remove",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.table.add",
           "when": "lyticsAccountConnected"
         },
         {
-          "command": "lytics.tables.remove",
+          "command": "lytics.table.remove",
           "when": "lyticsAccountConnected"
         },
         {
@@ -605,6 +657,16 @@
           "when": "view == lytics.streams.explorer"
         },
         {
+          "command": "lytics.subscriptions.refresh",
+          "group": "navigation",
+          "when": "view == lytics.subscriptions.explorer"
+        },
+        {
+          "command": "lytics.subscription.add",
+          "group": "navigation",
+          "when": "view == lytics.subscriptions.explorer"
+        },
+        {
           "command": "lytics.topics.refresh",
           "group": "navigation",
           "when": "view == lytics.topics.explorer"
@@ -709,6 +771,11 @@
           "when": "view == lytics.streams.explorer && viewItem == 'field'"
         },
         {
+          "command": "lytics.subscription.info",
+          "group": "inline",
+          "when": "view == lytics.subscriptions.explorer && viewItem == 'subscription'"
+        },
+        {
           "command": "lytics.table.field.search",
           "group": "inline",
           "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'"
@@ -732,7 +799,7 @@
           "when": "view == lytics.tables.explorer && viewItem == 'field-identifier'"
         },
         {
-          "command": "lytics.tables.remove",
+          "command": "lytics.table.remove",
           "when": "view == lytics.tables.explorer && viewItem == 'table'"
         },
         {
