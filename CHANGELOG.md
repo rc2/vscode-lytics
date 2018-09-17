@@ -1,5 +1,6 @@
-## [0.0.22] - 2018-??-??
+## [0.0.22] - 2018-09-17
 - (issue 75) Explorers in the Lytics view are now sorted in alphabetical order.
+- (issue 77) Subscription explorer and CRUD support for webhook subscriptions.
 
 ## [0.0.21] - 2018-09-05
 - (issue 73) Fixed bug with selecting data stream fields using the command.

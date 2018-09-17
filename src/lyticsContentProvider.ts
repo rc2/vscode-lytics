@@ -5,7 +5,7 @@ import { StateManager } from './stateManager';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
 import lytics = require("lytics-js/dist/lytics");
-import { LyticsAccount, TopicUrl, TopicUrlCollection } from 'lytics-js/dist/types';
+import { LyticsAccount, TopicUrl, TopicUrlCollection, Subscription } from 'lytics-js/dist/types';
 import fs = require('fs');
 import { ContentReader } from './contentReader';
 
@@ -45,6 +45,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             }
             else if (luri.isStreamFieldUri && luri.streamName && luri.streamFieldName) {
                 return await this.provideTextDocumentContentForStreamField(luri.streamName, luri.streamFieldName, account);
+            }
+            else if (luri.isSubscriptionUri && luri.subscriptionSlug) {
+                return await this.provideTextDocumentContentForSubscription(luri.subscriptionSlug, account);
             }
             else if (luri.isTableFieldUri && luri.tableName && luri.tableFieldName) {
                 return await this.provideTextDocumentContentForTableFieldInfo(luri.tableName, luri.tableFieldName, account);
@@ -127,6 +130,15 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const client = lytics.getClient(account.apikey!);
         let field = await client.getStreamField(streamName, fieldName);
         return Promise.resolve(JSON.stringify(field ? field : {}, null, 4));
+    }
+    private async provideTextDocumentContentForSubscription(subscriptionSlug: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        let subscriptions = await client.getSubscriptions();
+        let subscription:(Subscription | undefined);
+        if (subscriptions) {
+            subscription = subscriptions.find(s => s.slug === subscriptionSlug);
+        }
+        return Promise.resolve(JSON.stringify(subscription ? subscription : {}, null, 4));
     }
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: LyticsAccount): Promise<string> {
         const client = lytics.getClient(account.apikey!);

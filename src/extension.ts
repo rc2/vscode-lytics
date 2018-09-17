@@ -14,6 +14,7 @@ import { ContentClassificationManager } from './ContentClassificationManager';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentExplorerProvider } from './segmentExplorerProvider';
 import { TopicExplorerProvider } from './topicExplorerProvider';
+import { SubscriptionExplorerProvider } from './subscriptionExplorerProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -27,6 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateSegmentExplorer(contentProvider, context);
     activateQueryExplorer(contentProvider, context);
     activateStreamExplorer(contentProvider, context);
+    activateSubscriptionExplorer(contentProvider, context);
     activateTableExplorer(contentProvider, context);
     activateTopicExplorer(contentProvider, context);
     activateTerminalManager(contentProvider, context);
@@ -98,7 +100,7 @@ function activateTableExplorer(lyticsProvider: LyticsContentProvider, context: v
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.add', () => explorer.commandAddTable());
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('lytics.tables.remove', (table) => explorer.commandRemoveTable(table));
+    disposable = vscode.commands.registerCommand('lytics.table.remove', (table) => explorer.commandRemoveTable(table));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.tables.refresh', () => explorer.refresh());
     context.subscriptions.push(disposable);
@@ -156,6 +158,23 @@ function activateStreamExplorer(lyticsProvider: LyticsContentProvider, context: 
     disposable = vscode.commands.registerCommand('lytics.stream.queries', (stream) => explorer.commandShowQueryInfo(stream));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.stream.field.info', (field) => explorer.commandShowField(field));
+    context.subscriptions.push(disposable);
+}
+
+function activateSubscriptionExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new SubscriptionExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.subscriptions.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscriptions.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscription.info', (subscription) => explorer.commandShowSubscriptionInfo(subscription));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscription.edit', (subscription) => explorer.commandEditSubscription(subscription));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscription.add', () => explorer.commandAddSubscription());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscription.remove', (subscription) => explorer.commandRemoveSubscription(subscription));
     context.subscriptions.push(disposable);
 }
 
