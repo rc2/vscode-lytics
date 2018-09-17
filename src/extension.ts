@@ -170,6 +170,8 @@ function activateSubscriptionExplorer(lyticsProvider: LyticsContentProvider, con
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.subscription.info', (subscription) => explorer.commandShowSubscriptionInfo(subscription));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.subscription.edit', (subscription) => explorer.commandEditSubscription(subscription));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.subscription.add', () => explorer.commandAddSubscription());
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.subscription.remove', (subscription) => explorer.commandRemoveSubscription(subscription));

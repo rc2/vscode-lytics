@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
-import { LyticsAccount, Subscription, WebhookConfig, Segment } from 'lytics-js/dist/types';
+import { LyticsAccount, Subscription, WebhookConfig, Segment, TableSchemaField } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
@@ -142,6 +142,50 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 		}
 	}
 
+	async commandEditSubscription(subscription: Subscription): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			if (!subscription) {
+				subscription = await this.promptForSubscription(account, 'Select the subscription you want to edit.');
+			}
+			if (!subscription) {
+				return Promise.resolve(false);
+			}
+			return this.upsertSubscription(account, subscription.channel, subscription);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Show subscription info failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+
+	private async promptForWebhookUrl(account: LyticsAccount, subscription?: Subscription, message?: string): Promise<URL | undefined> {
+		var currentUrlValue: (string | undefined);
+		if (subscription && subscription.webhook_url) {
+			currentUrlValue = subscription.webhook_url.toString();
+		}
+		var urlNotSet = true;
+		while(urlNotSet) {
+			currentUrlValue = await vscode.window.showInputBox({
+				prompt: 'Enter the URL for the webhook.',
+				value: currentUrlValue
+			});
+			if (!currentUrlValue || currentUrlValue.trim().length === 0) {
+				return Promise.resolve(undefined);
+			}
+			try {
+				const url = new URL(currentUrlValue);
+				return Promise.resolve(url);
+			}
+			catch(err) {
+				vscode.window.showErrorMessage(err.message);
+			}
+		}
+	}
+
 	/**
 	 * Displays a quick pick from which the user can select the subscription channel.
 	 * @param account 
@@ -162,10 +206,11 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 	/**
 	 * Displays a quick pick from which the user can select the segments to watch.
 	 * @param account 
+	 * @param subscription
 	 * @param message 
 	 * @returns The selected segments, or undefined if the user escapes out of the quick pick.
 	 */
-	private async promptForSegments(account: LyticsAccount, message?: string): Promise<Segment[] | undefined> {
+	private async promptForSegments(account: LyticsAccount, subscription?: Subscription, message?: string): Promise<Segment[] | undefined> {
 		if (!message) {
 			message = `Select the segments for the subscription.`;
 		}
@@ -185,70 +230,127 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			return 0;
 		});
 
-		const items = segments.map(segment => new SegmentQuickPickItem(segment));
+		const items = segments.map(segment => {
+			const item = new SegmentQuickPickItem(segment);
+			if (subscription && subscription.segment_ids.indexOf(segment.id) > -1) {
+				item.picked = true;
+			}
+			return item;
+		});
+		var itemNotSelected = true;
+		while(itemNotSelected) {
+			let selectedItems = await vscode.window.showQuickPick(items, {
+				canPickMany: true,
+				placeHolder: message
+			});
+			if (!selectedItems) {
+				return Promise.resolve(undefined);
+			}
+			if (selectedItems.length > 0) {
+				return Promise.resolve(selectedItems.map(item => item.segment));
+			}
+		}
+	}
+
+	private async promptForUserFields(account: LyticsAccount, subscription?: Subscription, message?: string): Promise<TableSchemaField[] | undefined> {
+		if (!message) {
+			message = `Select the user fields to include when triggered.`;
+		}
+		const client = lytics.getClient(account.apikey!);
+		const table = await client.getTableSchema('user');
+		if (!table) {
+			vscode.window.showErrorMessage('No user table was found for this Lytics account.');
+			return Promise.resolve(undefined);
+		}
+		const columns = table.columns.sort((a, b) => {
+			if (a.as! < b.as!) {
+				return -1;
+			}
+			if (a.as! > b.as!) {
+				return 1;
+			}
+			return 0;
+		});
+
+		const items = columns.map(column => {
+			const item = new TableSchemaFieldQuickPickItem(column);
+			if (subscription && subscription.user_fields && subscription.user_fields.indexOf(column.as) > -1) {
+				item.picked = true;
+			}
+			return item;
+		});
 		let selectedItems = await vscode.window.showQuickPick(items, {
 			canPickMany: true,
 			placeHolder: message
 		});
-		return Promise.resolve(selectedItems.map(item => item.segment));
+		return Promise.resolve(selectedItems.map(item => item.column));
 	}
-	private async addWebhook(account: LyticsAccount): Promise<boolean> {
+
+	private async upsertWebhook(account: LyticsAccount, subscription?: Subscription): Promise<boolean> {
+		//
+		//Renaming a subscription will not change the subscription slug.
 		const name = await vscode.window.showInputBox({
 			prompt: 'Enter a name for the webhook.',
+			value: subscription ? subscription.name : undefined,
 		});
 		if (!name || name.trim().length === 0) {
 			return Promise.resolve(false);
 		}
 		const description = await vscode.window.showInputBox({
 			prompt: 'Enter a description for the webhook.',
+			value: subscription ? subscription.description : undefined
 		});
 		if (isUndefined(description)) {
 			return Promise.resolve(false);
 		}
-		var url:(URL | undefined);
-		while(!url) {
-			const surl = await vscode.window.showInputBox({
-				prompt: 'Enter the URL for the webhook.',
-			});
-			if (!surl || surl.trim().length === 0) {
-				return Promise.resolve(false);
-			}
-			try {
-				url = new URL(surl);
-			}
-			catch(err) {
-				vscode.window.showErrorMessage(err.message);
-			}
+		const url = await this.promptForWebhookUrl(account, subscription, 'Enter the URL for the webhook.');
+		if (isUndefined(url)) {
+			return Promise.resolve(false);
 		}
 		var segments:(Segment[] | undefined);
 		while (!segments || segments.length === 0) {
-			segments = await this.promptForSegments(account, 'Select the segments whose events will be sent to the webhook.');
+			segments = await this.promptForSegments(account, subscription, 'Select the segments whose events will be sent to the webhook.');
 			if (!segments) {
 				return Promise.resolve(false);
 			}
 		}
-		
+		var fields = await this.promptForUserFields(account, subscription, 'Select the user fields to send to the webhook.');
+
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: `Adding webhook: ${name}`,
+			title: `${subscription ? 'Updating' : 'Adding'} webhook: ${name}`,
 			cancellable: true
 		}, async (progress, token) => {
 			const config = new WebhookConfig();
 			config.name = name;
 			config.description = description;
 			config.webhook_url = url;
-			config.user_fields.push('_uid');
-			config.user_fields.push('email');
-			config.headers = JSON.parse('{"Lytics-Training-Mode":"enabled"}');
+			if (subscription) {
+				config.headers = subscription.headers;
+			}
 			segments.forEach(segment => config.segment_ids.push(segment.id));
+			if (fields) {
+				fields.forEach(field => config.user_fields.push(field.as));
+			}
 			const client = lytics.getClient(account.apikey!);
-			const subscription = await client.createWebhook(config);
+			if (subscription) {
+				subscription = await client.updateWebhook(subscription.id, config);
+			}
+			else {
+				subscription = await client.createWebhook(config);
+			}
 			progress.report({
-				message: `Subscription ${subscription.id} was created.`
+				message: `Subscription ${subscription.id} was ${subscription ? 'updated' : 'added'}.`
 			});
 			await this.refresh();
 		});
 		return Promise.resolve(true);
+	}
+	async upsertSubscription(account: LyticsAccount, channel: string, subscription?: Subscription) : Promise<boolean> {
+		if (channel === 'webhook') {
+			return this.upsertWebhook(account, subscription);
+		}
+		return Promise.resolve(false);
 	}
 	async commandAddSubscription(): Promise<boolean> {
 		try {
@@ -260,10 +362,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			if (!channel) {
 				return Promise.resolve(false);
 			}
-			if (channel === 'webhook') {
-				return this.addWebhook(account);
-			}
-			return Promise.resolve(false);
+			return this.upsertSubscription(account, channel, undefined);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Create subscription failed: ${err.message}`);
@@ -332,6 +431,16 @@ class SegmentQuickPickItem implements vscode.QuickPickItem {
 		this.label = segment.name;
 		this.detail = segment.id;
 		this.description = segment.slug_name;
+	}
+}
+class TableSchemaFieldQuickPickItem implements vscode.QuickPickItem {
+	label: string;	
+	description?: string;
+	detail?: string;
+	picked?: boolean;
+	constructor(public readonly column: TableSchemaField) {
+		this.label = column.as;
+		this.detail = column.shortdesc;
 	}
 }
 class SubscriptionQuickPickItem implements vscode.QuickPickItem {

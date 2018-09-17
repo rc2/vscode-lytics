@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -346,6 +346,15 @@
         }
       },
       {
+        "command": "lytics.subscription.edit",
+        "title": "Edit Subscription",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/edit.svg",
+          "dark": "resources/icons/dark/edit.svg"
+        }
+      },
+      {
         "command": "lytics.subscription.remove",
         "title": "Remove Subscription",
         "category": "Lytics"
@@ -527,6 +536,10 @@
         },
         {
           "command": "lytics.subscription.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.subscription.edit",
           "when": "lyticsAccountConnected"
         },
         {
@@ -772,6 +785,11 @@
         },
         {
           "command": "lytics.subscription.info",
+          "group": "inline",
+          "when": "view == lytics.subscriptions.explorer && viewItem == 'subscription'"
+        },
+        {
+          "command": "lytics.subscription.edit",
           "group": "inline",
           "when": "view == lytics.subscriptions.explorer && viewItem == 'subscription'"
         },
