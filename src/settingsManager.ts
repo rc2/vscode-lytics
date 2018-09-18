@@ -77,6 +77,22 @@ export class SettingsManager {
         return Promise.resolve();
     }
 
+    static async updateAccount(aid: number, apikey: string) {
+        let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
+        let existing = settings.find(obj => obj.aid === aid);
+        if (!existing) {
+            let err = new Error(`The specified account id is not defined in settings.`);
+            return Promise.reject(err);
+        }
+        var index = settings.indexOf(existing);
+        if (index > -1) {
+            const setting = settings[index];
+            setting.apikey = apikey;
+            await vscode.workspace.getConfiguration().update('lytics.accounts', settings, true);
+        }
+        return Promise.resolve();
+    }
+
     static async getTables(aid: number): Promise<TableSchema[]> {
         let tables: TableSchema[] = [];
         const settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
