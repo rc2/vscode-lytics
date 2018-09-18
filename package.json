@@ -132,11 +132,7 @@
       {
         "command": "lytics.account.update",
         "title": "Update Access Token",
-        "category": "Lytics",
-        "icon": {
-          "light": "resources/icons/light/edit.svg",
-          "dark": "resources/icons/dark/edit.svg"
-        }
+        "category": "Lytics"
       },
       {
         "command": "lytics.account.remove",
@@ -742,11 +738,6 @@
         },
         {
           "command": "lytics.account.update",
-          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
-        },
-        {
-          "command": "lytics.account.update",
-          "group": "inline",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
