@@ -19,7 +19,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		const name = account && account.name ? account.name : '';
 		let item = new AccountTreeItem(name, account.aid, vscode.TreeItemCollapsibleState.None);
 		if (!account) {
-			item.tooltip = "A connection to the account cannot be made with the specified API key.";
+			item.tooltip = "A connection to the account cannot be made with the specified access token.";
 		}
 		item.iconPath = this.getIcon(account);
 		return item;
@@ -56,20 +56,20 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 	}
 
 	async commandAddAccount(): Promise<boolean> {
-		const apikey = await vscode.window.showInputBox({ prompt: 'Enter the API key for the account you want to add.' });
+		const apikey = await vscode.window.showInputBox({ prompt: 'Enter the access token for the account you want to add.' });
 		if (!apikey) {
 			return Promise.resolve(false);
 		}
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			title: 'Verifying API key.',
+			title: 'Verifying access token.',
 			cancellable: true
 		}, async (progress, token) => {
 			const client = lytics.getClient(apikey!);
 			try {
 				let accounts = await client.getAccounts();
 				if (!accounts || accounts.length === 0) {
-					vscode.window.showErrorMessage('No accounts were found for the specified API key.');
+					vscode.window.showErrorMessage('No accounts were found for the specified access token.');
 					return Promise.resolve(false);
 				}
 				const accountOptions = accounts.map(a => `${a.aid} : ${a.name}`);
@@ -89,7 +89,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 				let message: (string | undefined);
 				if (err.response) {
 					if (err.response.status === 401) {
-						message = 'Invalid API key was provided.';
+						message = 'Invalid access token was provided.';
 					}
 				}
 				if (!message) {
@@ -291,6 +291,43 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			return await exportHandler!.export(getAccounts, progress);
 		});
 		return Promise.resolve(true);
+	}
+
+	async commandUpdateAccountAccessToken(accountItem: AccountTreeItem): Promise<boolean> {
+		try {
+			let aid = 0;
+			if (!accountItem) {
+				aid = await this.promptForAid('Select the account you want to update.');
+			}
+			else {
+				aid = accountItem.aid;
+			}
+			if (!aid || aid === 0) {
+				return Promise.resolve(false);
+			}
+
+			if (StateManager.isActiveAccount(aid)) {
+				throw new Error(`You must disconnect the account before you can it.`);
+			}
+			const apikey = await vscode.window.showInputBox({ 
+				prompt: `Enter the access token you want to use for account ${aid}.` 
+			});
+			if (!apikey || apikey.trim().length === 0) {
+				return Promise.resolve(false);
+			}
+			const confirm = await this.confirm(`Are you sure you want to update the access token for account ${aid}?`);
+			if (!confirm) {
+				return Promise.resolve(false);
+			}
+			await SettingsManager.updateAccount(aid, apikey);
+			await this.refresh();
+			vscode.window.showInformationMessage(`Access token for account ${aid} was updated.`);
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Access token update failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
 	}
 }
 

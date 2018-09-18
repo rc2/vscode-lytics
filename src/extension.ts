@@ -50,6 +50,8 @@ function activateAccountExplorer(lyticsProvider: LyticsContentProvider, context:
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.account.add', () => explorer.commandAddAccount());
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.account.update', async (account) => await explorer.commandUpdateAccountAccessToken(account));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.account.remove', async (account) => await explorer.commandRemoveAccount(account));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.account.show', async (account) => await explorer.commandShowAccount(account));

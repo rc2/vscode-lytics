@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -24,9 +24,10 @@
   ],
   "activationEvents": [
     "onCommand:lytics.account.add",
+    "onCommand:lytics.account.connect",
     "onCommand:lytics.account.remove",
     "onCommand:lytics.account.show",
-    "onCommand:lytics.account.connect",
+    "onCommand:lytics.account.update",
     "onCommand:lytics.accounts.refresh",
     "onCommand:lytics.accounts.export",
     "onLanguage:lql",
@@ -126,6 +127,15 @@
         "icon": {
           "light": "resources/icons/light/add.svg",
           "dark": "resources/icons/dark/add.svg"
+        }
+      },
+      {
+        "command": "lytics.account.update",
+        "title": "Update Access Token",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/edit.svg",
+          "dark": "resources/icons/dark/edit.svg"
         }
       },
       {
@@ -463,6 +473,9 @@
           "command": "lytics.account.remove"
         },
         {
+          "command": "lytics.account.update"
+        },
+        {
           "command": "lytics.campaign.info",
           "when": "lyticsAccountConnected"
         },
@@ -725,6 +738,15 @@
         },
         {
           "command": "lytics.account.remove",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.account.update",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
+          "command": "lytics.account.update",
+          "group": "inline",
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
