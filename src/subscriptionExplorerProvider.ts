@@ -347,8 +347,14 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 		return Promise.resolve(true);
 	}
 	async upsertSubscription(account: LyticsAccount, channel: string, subscription?: Subscription) : Promise<boolean> {
+		if (!channel && subscription) {
+			channel = subscription.channel;
+		}
 		if (channel === 'webhook') {
 			return this.upsertWebhook(account, subscription);
+		}
+		if (subscription) {
+			vscode.window.showErrorMessage(`Editing this subscription is not supported.`);
 		}
 		return Promise.resolve(false);
 	}
