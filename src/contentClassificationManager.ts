@@ -33,7 +33,7 @@ export class ContentClassificationManager implements vscode.Disposable, ContentD
 		};
 		return this.showClassification(fileName, params);
 	}
-	private async showClassification(fileName: string, params:any) {
+	private async showClassification(fileName: string, params:any): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
 			if (!account) {
@@ -50,11 +50,24 @@ export class ContentClassificationManager implements vscode.Disposable, ContentD
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Attempt to classify content failed: ${err.message}`);
-			return Promise.resolve();
+			return Promise.resolve(false);
 		}
-		return Promise.resolve();
+		return Promise.resolve(true);
 	}
-	async commandClassifyFileContents(uri: vscode.Uri) {
+	async commandClassifyFileContents(uri: vscode.Uri): Promise<boolean> {
+		if (!uri) {
+			const selection = await vscode.window.showOpenDialog({
+				canSelectFiles: true,
+				canSelectMany: false,
+				canSelectFolders: false
+			});
+			if (selection && selection.length > 0) {
+				uri = selection[0];	
+			}
+		}
+		if (!uri) {
+			return Promise.resolve(false);
+		}
 		const parsed = path.parse(uri.fsPath);
 		const fileName = `${parsed.name}${parsed.ext}`;
 		const params = {
