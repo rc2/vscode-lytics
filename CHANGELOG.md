@@ -1,3 +1,6 @@
+## [0.0.24] - 2018-??-??
+- (issue 82) Add ability to select a file when content classification is run from command palette.
+
 ## [0.0.23] - 2018-09-17
 - (issue 79) Added ability to change the access token (API key) for an account.
 
