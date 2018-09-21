@@ -1,3 +1,6 @@
+## [0.0.25] - 2018-??-??
+- (issue 86) Support for latest subscription API, and the ability to specify which user fields to include in a webhook configuration.
+
 ## [0.0.24] - 2018-09-18
 - (issue 82) Added ability to select a file when content classification is run from command palette.
 - (issue 84) Added an error message when a user tries to edit an unsupported subscription type.

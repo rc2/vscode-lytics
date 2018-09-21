@@ -164,8 +164,8 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 
 	private async promptForWebhookUrl(account: LyticsAccount, subscription?: Subscription, message?: string): Promise<URL | undefined> {
 		var currentUrlValue: (string | undefined);
-		if (subscription && subscription.webhook_url) {
-			currentUrlValue = subscription.webhook_url.toString();
+		if (subscription && subscription.config && subscription.config.webhook_url) {
+			currentUrlValue = subscription.config.webhook_url.toString();
 		}
 		var urlNotSet = true;
 		while(urlNotSet) {
@@ -274,7 +274,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 
 		const items = columns.map(column => {
 			const item = new TableSchemaFieldQuickPickItem(column);
-			if (subscription && subscription.user_fields && subscription.user_fields.indexOf(column.as) > -1) {
+			if (subscription && subscription.config && subscription.config.user_fields && subscription.config.user_fields.indexOf(column.as) > -1) {
 				item.picked = true;
 			}
 			return item;
@@ -325,8 +325,8 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			config.name = name;
 			config.description = description;
 			config.webhook_url = url;
-			if (subscription) {
-				config.headers = subscription.headers;
+			if (subscription && subscription.config) {
+				config.headers = subscription.config.headers;
 			}
 			segments.forEach(segment => config.segment_ids.push(segment.id));
 			if (fields) {
