@@ -17,7 +17,7 @@
     "Lytics"
   ],
   "engines": {
-    "vscode": "^1.24.0"
+    "vscode": "^1.27.0"
   },
   "categories": [
     "Other"
@@ -924,11 +924,13 @@
     "@types/query-string": "^6.1.0",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
-    "vscode": "^1.1.21"
+    "vscode": "^1.1.21",
+    "vscode-languageclient": "^5.1.0"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "lytics-js": "latest",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "vscode-languageserver": "^5.1.0"
   }
 }

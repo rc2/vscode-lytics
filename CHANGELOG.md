@@ -1,3 +1,5 @@
+## [0.0.26] - 2018-??-??
+
 ## [0.0.25] - 2018-09-21
 - (issue 86) Support for latest subscription API, and the ability to specify which user fields to include in a webhook configuration.
 - (issue 88) Added support for `map[string]bool` in LQL syntax highlighting.

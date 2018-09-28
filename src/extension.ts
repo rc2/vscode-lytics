@@ -1,5 +1,6 @@
 'use strict';
 
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { AccountExplorerProvider } from './accountExplorerProvider';
 import { QueryEditorProvider } from './queryEditorProvider';
@@ -15,8 +16,15 @@ import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentExplorerProvider } from './segmentExplorerProvider';
 import { TopicExplorerProvider } from './topicExplorerProvider';
 import { SubscriptionExplorerProvider } from './subscriptionExplorerProvider';
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind
+} from 'vscode-languageclient';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
+var client:LanguageClient;
 
 export function activate(context: vscode.ExtensionContext) {
     const contentProvider = new LyticsContentProvider();
@@ -33,6 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateTopicExplorer(contentProvider, context);
     activateTerminalManager(contentProvider, context);
     activateClassificationManager(contentProvider, context);
+    activateLanguageServer(context);
 }
 
 function refreshExplorers(): Promise<any> {
@@ -224,5 +233,39 @@ function activateClassificationManager(lyticsProvider: LyticsContentProvider, co
     context.subscriptions.push(disposable);
 }
 
-export function deactivate() {
+function activateLanguageServer(context: vscode.ExtensionContext) {
+    let serverModule = context.asAbsolutePath(
+        path.join('out', 'server', 'server.js')
+    );
+    let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+    let serverOptions: ServerOptions = {
+        run: { module: serverModule, transport: TransportKind.ipc },
+        debug: {
+            module: serverModule,
+            transport: TransportKind.ipc,
+            options: debugOptions
+        }
+    };
+
+    let clientOptions: LanguageClientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'lql' }],
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
+        }
+    };
+
+    client = new LanguageClient(
+        'languageServerExample',
+        'Language Server Example',
+        serverOptions,
+        clientOptions
+    );
+
+    client.start();
+}
+
+export function deactivate(): Thenable<void> {
+    if (client) {
+        return client.stop();
+    }
 }
