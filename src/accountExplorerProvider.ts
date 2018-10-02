@@ -8,6 +8,7 @@ import { LyticsAccount } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+import { isUndefined } from 'util';
 
 export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccount> {
 
@@ -55,90 +56,70 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		return Promise.resolve([]);
 	}
 
-	async commandAddAccount(): Promise<boolean> {
-		const apikey = await vscode.window.showInputBox({ prompt: 'Enter the access token for the account you want to add.' });
-		if (!apikey) {
-			return Promise.resolve(false);
-		}
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			title: 'Verifying access token.',
-			cancellable: true
-		}, async (progress, token) => {
-			const client = lytics.getClient(apikey!);
-			try {
-				let accounts = await client.getAccounts();
-				if (!accounts || accounts.length === 0) {
-					vscode.window.showErrorMessage('No accounts were found for the specified access token.');
-					return Promise.resolve(false);
-				}
-				const accountOptions = accounts.map(a => `${a.aid} : ${a.name}`);
-				const selectedAccount = await vscode.window.showQuickPick(accountOptions);
-				if (!selectedAccount || selectedAccount.trim().length === 0) {
-					return Promise.resolve(false);
-				}
-				const aid = parseInt(selectedAccount.split(':')[0]);
-				if (!isNaN(aid)) {
-					await SettingsManager.addAccount(aid, apikey);
-					await this.refresh();
-					vscode.window.showInformationMessage(`Account ${aid} was added.`);
-					return Promise.resolve(true);
-				}
-			}
-			catch (err) {
-				let message: (string | undefined);
-				if (err.response) {
-					if (err.response.status === 401) {
-						message = 'Invalid access token was provided.';
-					}
-				}
-				if (!message) {
-					message = `Add account failed: ${err.message}`;
-				}
-				vscode.window.showErrorMessage(message);
-				return Promise.resolve(false);
-			}
-		});
-		return Promise.resolve(false);
-	}
-
-	private async promptForAid(message?: string): Promise<number> {
-		if (!message) {
-			message = `Select an account.`;
-		}
-		const values: string[] = [];
-		await vscode.window.withProgress({
+	private async promptForAccount(getAccounts: () => Promise<LyticsAccount[]>, message: string): Promise<number | undefined> {
+		const accounts = await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			title: 'Loading accounts.',
 			cancellable: true
 		}, async (progress, token) => {
-			const accounts = await SettingsManager.getAccounts();
-			accounts.forEach(account => values.push(`${account.aid}: ${account.name}`));
+			return getAccounts();
 		});
-
-		let value = await vscode.window.showQuickPick(values, {
-			canPickMany: false,
-			placeHolder: message
-		});
-		if (!value) {
+		if (isUndefined(accounts)) {
 			return Promise.resolve(undefined);
 		}
-		const position = value.indexOf(':');
-		if (position !== -1) {
-			value = value.split(':')[0].trim();
+		const items = accounts.map(a => new AccountQuickPickItem(a));
+		const account = await vscode.window.showQuickPick(items, {
+			placeHolder: message
+		});
+		if (account) {
+			const aid = parseInt(account.label);
+			if (isNaN(aid)) {
+				throw new Error('An invalid account id was entered.');
+			}
+			return Promise.resolve(aid);
 		}
-		const aid = Number(value);
-		if (isNaN(aid)) {
-			throw new Error('An invalid account id was entered.');
+		return Promise.resolve(undefined);
+	}
+
+	async commandAddAccount(): Promise<boolean> {
+		try {
+			const apikey = await vscode.window.showInputBox({ prompt: 'Enter the access token for the account you want to add.' });
+			if (!apikey) {
+				return Promise.resolve(false);
+			}
+			const getAccounts = function (): Promise<LyticsAccount[]> {
+				const client = lytics.getClient(apikey);
+				return client.getAccounts()
+				.then(
+					accounts => accounts,
+					error => { 
+						if (error.response.status === 401) {
+							throw new Error('The specified access token is not authorized to read accounts.');
+						};
+						throw error;
+					}
+				  );
+			};
+			const aid = await this.promptForAccount(getAccounts, 'Select the account you want to add.');
+			if (aid !== undefined) {
+				await SettingsManager.addAccount(aid, apikey);
+				await this.refresh();
+				vscode.window.showInformationMessage(`Account ${aid} was added.`);
+				return Promise.resolve(true);
+			}
+			return Promise.resolve(false);
 		}
-		return Promise.resolve(aid);
+		catch (err) {
+			vscode.window.showErrorMessage(`Add account failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
 	}
 
 	async commandRemoveAccount(accountItem: AccountTreeItem): Promise<boolean> {
 		try {
 			let aid = 0;
 			if (!accountItem) {
-				aid = await this.promptForAid('Select the account you want to remove.');
+				aid = await this.promptForAccount(() => SettingsManager.getAccounts(), 'Select the account you want to remove.');
 			}
 			else {
 				aid = accountItem.aid;
@@ -169,7 +150,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		try {
 			let aid = 0;
 			if (!accountItem) {
-				aid = await this.promptForAid('Select the account you want to connect to.');
+				aid = await this.promptForAccount(() => SettingsManager.getAccounts(), 'Select the account you want to connect to.');
 			}
 			else {
 				aid = accountItem.aid;
@@ -193,7 +174,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 							return Promise.resolve(undefined);
 						}
 					}
-				} 
+				}
 				const account = await SettingsManager.getAccount(aid);
 				if (account) {
 					StateManager.setActiveAccount(account);
@@ -239,7 +220,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		try {
 			let aid = 0;
 			if (!accountItem) {
-				aid = await this.promptForAid('Select the account whose information you want to show.');
+				aid = await this.promptForAccount(() => SettingsManager.getAccounts(), 'Select the account whose information you want to show.');
 			}
 			else {
 				aid = accountItem.aid;
@@ -297,7 +278,7 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		try {
 			let aid = 0;
 			if (!accountItem) {
-				aid = await this.promptForAid('Select the account you want to update.');
+				aid = await this.promptForAccount(() => SettingsManager.getAccounts(), 'Select the account you want to update.');
 			}
 			else {
 				aid = accountItem.aid;
@@ -309,8 +290,8 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			if (StateManager.isActiveAccount(aid)) {
 				throw new Error(`You must disconnect the account before you can it.`);
 			}
-			const apikey = await vscode.window.showInputBox({ 
-				prompt: `Enter the access token you want to use for account ${aid}.` 
+			const apikey = await vscode.window.showInputBox({
+				prompt: `Enter the access token you want to use for account ${aid}.`
 			});
 			if (!apikey || apikey.trim().length === 0) {
 				return Promise.resolve(false);
@@ -341,4 +322,15 @@ class AccountTreeItem extends vscode.TreeItem {
 		super(`[${aid}] ${name}`, collapsibleState);
 	}
 	contextValue = 'account';
+}
+
+class AccountQuickPickItem implements vscode.QuickPickItem {
+	label: string;
+	description?: string;
+	detail?: string;
+	picked?: boolean;
+	constructor(public readonly account: LyticsAccount) {
+		this.label = account.aid.toString();
+		this.detail = account.name;
+	}
 }
