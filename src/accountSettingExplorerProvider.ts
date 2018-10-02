@@ -314,8 +314,10 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 				}
 				newValue = await this.promptForValueBoolean(setting);
 			}
+			//
+			//TODO: add support for other types
 			else {
-				vscode.window.showErrorMessage(`The selected account setting cannot be edited because it is an unsupported type: ${type}`);
+				vscode.window.showErrorMessage(`Editing this type of account setting is not yet supported: ${type}`);
 				return Promise.resolve(false);
 			}
 			if (newValue === undefined || current === newValue) {
