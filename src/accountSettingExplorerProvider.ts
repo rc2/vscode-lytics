@@ -184,14 +184,18 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 	/**
 	 * Displays a quick pick from which the user can select an account setting.
 	 * @param account 
+	 * @param editableOnly
 	 * @param message 
 	 * @returns The selected setting, or undefined if none was selected.
 	 */
-	private async promptForAccountSetting(account: LyticsAccount, message?: string): Promise<LyticsAccountSetting | undefined> {
+	private async promptForAccountSetting(account: LyticsAccount, editableOnly: boolean = false, message?: string): Promise<LyticsAccountSetting | undefined> {
 		if (!message) {
 			message = `Select an account setting.`;
 		}
-		const settings = await this.getAccountSettings(account);
+		let settings = await this.getAccountSettings(account);
+		if (editableOnly) {
+			settings = settings.filter(s => s.can_be_assigned);
+		}
 		const items = settings.map(s => new AccountSettingQuickPickItem(s));
 		let item = await vscode.window.showQuickPick(items, {
 			canPickMany: false,
@@ -210,7 +214,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 				throw new Error('No account is connected.');
 			}
 			if (!setting) {
-				setting = await this.promptForAccountSetting(account, `Select the account setting you want to show.`);
+				setting = await this.promptForAccountSetting(account, false, `Select the account setting you want to show.`);
 			}
 			if (!setting) {
 				return Promise.resolve(false);
@@ -296,7 +300,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 				throw new Error('No account is connected.');
 			}
 			if (!setting) {
-				setting = await this.promptForAccountSetting(account, `Select the account setting you want to edit.`);
+				setting = await this.promptForAccountSetting(account, true, `Select the account setting you want to edit.`);
 			}
 			if (!setting) {
 				return Promise.resolve(false);
