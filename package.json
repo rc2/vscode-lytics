@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"

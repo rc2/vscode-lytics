@@ -1,6 +1,6 @@
-## [0.0.??] - 2018-??-??
+## [0.0.26] - 2018-10-02
 - (issue 91) Added explorer for Lytics account settings and the ability to edit boolean settings.
-- (issue 94) Fixed problem with downloading multiple queries.
+- (issue 94) Fixed bug that broke the ability to download multiple queries.
 - (issue 96) Improved account selection interface.
 
 ## [0.0.25] - 2018-09-21
