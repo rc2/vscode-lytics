@@ -31,7 +31,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 			item.iconPath = this.getQueryIcon(element);
 			return item;
 		}
-		throw new Error(`The specified element is not supported by the stream explorer provider.`);
+		throw new Error(`The specified element is not supported by the query explorer provider.`);
 	}
 
 	/**
@@ -148,8 +148,8 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 	 * Wrapper around the API call to get a Lytics query. 
 	 * This function provides user feedback while data is 
 	 * read from Lytics.
-	 * @param account 
-	 * @returns Array of queries.
+	 * @param alias 
+	 * @returns A query.
 	 */
 	private async getQuery(alias: string): Promise<Query | undefined> {
 		const account = StateManager.getActiveAccount();
