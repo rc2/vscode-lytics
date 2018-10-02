@@ -1,5 +1,6 @@
 ## [0.0.??] - 2018-??-??
 - (issue 91) Added explorer for Lytics account settings and the ability to edit boolean settings.
+- (issue 94) Fixed problem with downloading multiple queries.
 
 ## [0.0.25] - 2018-09-21
 - (issue 86) Support for latest subscription API, and the ability to specify which user fields to include in a webhook configuration.

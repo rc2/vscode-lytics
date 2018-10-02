@@ -282,7 +282,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 		}
 	}
 
-	async commandDownloadQueries(selectedTableName: string): Promise<boolean> {
+	async commandDownloadQueries(grouping: QueryGrouping): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
 			if (!account) {
@@ -293,15 +293,10 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 				return Promise.resolve(false);
 			}
 			let queries: Query[] = [];
-			if (!selectedTableName) {
+			if (!grouping) {
 				queries = await this.getQueries(account);
 			}
 			else {
-				const groupings = await this.getQueriesGroupedByTable(account);
-				const grouping = groupings.find(g => g.name === selectedTableName);
-				if (!grouping) {
-					return Promise.resolve(false);
-				}
 				queries = grouping.queries;
 			}
 			var downloadedCount: number = 0;
