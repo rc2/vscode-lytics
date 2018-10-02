@@ -5,6 +5,7 @@ export class LyticsUri {
     public isAccountUri: boolean = false;
     public isQueryUri: boolean = false;
     public isSegmentUri: boolean = false;
+    public isSettingUri: boolean = false;
     public isStreamUri: boolean = false;
     public isStreamQueriesUri: boolean = false;
     public isStreamFieldUri: boolean = false;
@@ -20,6 +21,7 @@ export class LyticsUri {
     public accountId: number = 0;
     public queryAlias: (string | undefined);
     public segmentSlugName: (string | undefined);
+    public settingSlugName: (string | undefined);
     public streamName: (string | undefined);
     public streamFieldName: (string | undefined);
     public subscriptionSlug: (string | undefined);
@@ -49,11 +51,14 @@ export class LyticsUri {
                 case 'segments':
                     this.handleSegmentsUri();
                     return;
-                case 'subscriptions':
-                    this.handleSubscriptionsUri();
+                case 'settings':
+                    this.handleSettingsUri();
                     return;
                 case 'streams':
                     this.handleStreamsUri();
+                    return;
+                case 'subscriptions':
+                    this.handleSubscriptionsUri();
                     return;
                 case 'tables':
                     this.handleTablesUri();
@@ -112,6 +117,22 @@ export class LyticsUri {
                 if (segmentId.length > 0) {
                     this.isSegmentUri = true;
                     this.segmentSlugName = segmentId;
+                    return;
+                }
+            }
+            return;
+        }
+    }
+
+    private handleSettingsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/settings/slug.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const settingSlug = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (settingSlug.length > 0) {
+                    this.isSettingUri = true;
+                    this.settingSlugName = settingSlug;
                     return;
                 }
             }

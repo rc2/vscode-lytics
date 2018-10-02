@@ -15,6 +15,7 @@ import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentExplorerProvider } from './segmentExplorerProvider';
 import { TopicExplorerProvider } from './topicExplorerProvider';
 import { SubscriptionExplorerProvider } from './subscriptionExplorerProvider';
+import { AccountSettingExplorerProvider } from './accountSettingExplorerProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -26,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateCampaignExplorer(contentProvider, context);
     activateQueryEditor(contentProvider, context);
     activateSegmentExplorer(contentProvider, context);
+    activateAccountSettingExplorer(contentProvider, context);
     activateQueryExplorer(contentProvider, context);
     activateStreamExplorer(contentProvider, context);
     activateSubscriptionExplorer(contentProvider, context);
@@ -145,6 +147,19 @@ function activateSegmentExplorer(lyticsProvider: LyticsContentProvider, context:
     disposable = vscode.commands.registerCommand('lytics.segments.refresh', () => explorer.refresh());
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.segment.info', (segment) => explorer.commandShowSegmentInfo(segment));
+    context.subscriptions.push(disposable);
+}
+
+function activateAccountSettingExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new AccountSettingExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.settings.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.settings.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.setting.edit', (setting) => explorer.commandEditAccountSetting(setting));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.setting.info', (setting) => explorer.commandShowAccountSettingInfo(setting));
     context.subscriptions.push(disposable);
 }
 

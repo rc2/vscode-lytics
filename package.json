@@ -106,6 +106,10 @@
           "name": "Segments"
         },
         {
+          "id": "lytics.settings.explorer",
+          "name": "Settings"
+        },
+        {
           "id": "lytics.subscriptions.explorer",
           "name": "Subscriptions"
         },
@@ -286,6 +290,33 @@
         "icon": {
           "light": "resources/icons/light/info.svg",
           "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.settings.refresh",
+        "title": "Refresh Account Setting List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.setting.info",
+        "title": "Show Account Setting Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.setting.edit",
+        "title": "Edit Account Setting",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/edit.svg",
+          "dark": "resources/icons/dark/edit.svg"
         }
       },
       {
@@ -520,6 +551,18 @@
           "when": "lyticsAccountConnected"
         },
         {
+          "command": "lytics.settings.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.setting.edit",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.setting.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.streams.refresh",
           "when": "lyticsAccountConnected"
         },
@@ -674,6 +717,11 @@
           "when": "view == lytics.segments.explorer"
         },
         {
+          "command": "lytics.settings.refresh",
+          "group": "navigation",
+          "when": "view == lytics.settings.explorer"
+        },
+        {
           "command": "lytics.streams.refresh",
           "group": "navigation",
           "when": "view == lytics.streams.explorer"
@@ -780,6 +828,21 @@
           "command": "lytics.segment.info",
           "group": "inline",
           "when": "view == lytics.segments.explorer && viewItem == 'segment'"
+        },
+        {
+          "command": "lytics.setting.edit",
+          "group": "inline",
+          "when": "view == lytics.settings.explorer && viewItem == 'account-setting-editable'"
+        },
+        {
+          "command": "lytics.setting.info",
+          "group": "inline",
+          "when": "view == lytics.settings.explorer && viewItem == 'account-setting'"
+        },
+        {
+          "command": "lytics.setting.info",
+          "group": "inline",
+          "when": "view == lytics.settings.explorer && viewItem == 'account-setting-editable'"
         },
         {
           "command": "lytics.stream.info",
