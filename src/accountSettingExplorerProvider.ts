@@ -6,6 +6,7 @@ import lytics = require("lytics-js/dist/lytics");
 import { LyticsAccountSetting, LyticsAccount } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
+import { isBoolean } from 'util';
 
 export class AccountSettingExplorerProvider extends LyticsExplorerProvider<LyticsAccountSetting> {
 
@@ -230,6 +231,64 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 		}
 	}
 
+	/**
+	 * Wrapper around the API call to update a Lytics account setting. 
+	 * This function provides user feedback while data is 
+	 * written to Lytics.
+	 * @param setting
+	 * @param value
+	 * @param account 
+	 * @returns 
+	 */
+	private async updateAccountSetting(setting: LyticsAccountSetting, value:any, account: LyticsAccount): Promise<boolean> {
+		const wasUpdated = await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: `Updating account setting: ${setting.slug}`,
+			cancellable: true
+		}, async (progress, token) => {
+			const client = lytics.getClient(account.apikey!);
+			const setting2 = await client.updateAccountSetting(setting.slug, value);
+			const wasUpdated = (setting2 !== undefined && setting.slug === setting2.slug);
+			if (wasUpdated) {
+				await this.refresh();
+			}
+			return Promise.resolve(wasUpdated);	
+		});
+		return Promise.resolve(wasUpdated);
+	}
+	private parseBoolean(value:any): boolean {
+		if (value === undefined || value === null) {
+			return false;
+		}
+		if (isBoolean(value)) {
+			return value;
+		}
+		return eval(value);
+	}
+	private async promptForValueBoolean(setting: LyticsAccountSetting): Promise<boolean | undefined> {
+		const current = this.parseBoolean(setting.value);
+		const values:string[] = [];
+		if (current) {
+			values.push('true');
+			values.push('false');
+		}
+		else {
+			values.push('false');
+			values.push('true');
+		}
+		const selectedValue = await vscode.window.showQuickPick(values, {
+			placeHolder: setting.field.description
+		});
+		if (selectedValue === undefined) {
+			return Promise.resolve(undefined);
+		}
+		const newValue = this.parseBoolean(selectedValue);
+		if (newValue === current) {
+			return Promise.resolve(undefined);
+		}
+		return Promise.resolve(newValue);
+	}
+
 	async commandEditAccountSetting(setting: LyticsAccountSetting): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
@@ -243,28 +302,26 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 				return Promise.resolve(false);
 			}
 			const type = setting.field.type;
+			let current = setting.value;
+			var newValue:any = null;
 			if (type === 'boolean') {
-
-			}
-			else if (type === 'string') {
-
-			}
-			else if (type === 'int') {
-
+				if (current === null) {
+					current = false;
+				}
+				newValue = await this.promptForValueBoolean(setting);
 			}
 			else {
 				vscode.window.showErrorMessage(`The selected account setting cannot be edited because it is an unsupported type: ${type}`);
 				return Promise.resolve(false);
 			}
-			// await vscode.window.withProgress({
-			// 	location: vscode.ProgressLocation.Notification,
-			// 	title: `Opening account setting: ${setting.slug}`,
-			// 	cancellable: true
-			// }, async (progress, token) => {
-			// 	const uri = vscode.Uri.parse(`lytics://${account.aid}/settings/${setting.slug}.json`);
-			// 	await this.displayAsReadOnly(uri);
-			// });
-			return Promise.resolve(true);
+			if (newValue === undefined || current === newValue) {
+				return Promise.resolve(false);
+			}
+			const confirm = await this.confirm(`Are you sure you want to change ${setting.slug}?`);
+			if (!confirm) {
+				return Promise.resolve(false);
+			}
+			return this.updateAccountSetting(setting, newValue, account);
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Edit account setting failed: ${err.message}`);
@@ -294,8 +351,13 @@ class AccountSettingTreeItem extends vscode.TreeItem {
 	) {
 		super(name, vscode.TreeItemCollapsibleState.None);
 		this.tooltip = element.field.name;
+		if (element.can_be_assigned) {
+			this.contextValue = 'account-setting-editable';
+		}
+		else {
+			this.contextValue = 'account-setting';
+		}
 	}
-	contextValue = 'account-setting';
 }
 
 class AccountSettingQuickPickItem implements vscode.QuickPickItem {

@@ -832,12 +832,17 @@
         {
           "command": "lytics.setting.edit",
           "group": "inline",
-          "when": "view == lytics.settings.explorer && viewItem == 'account-setting'"
+          "when": "view == lytics.settings.explorer && viewItem == 'account-setting-editable'"
         },
         {
           "command": "lytics.setting.info",
           "group": "inline",
           "when": "view == lytics.settings.explorer && viewItem == 'account-setting'"
+        },
+        {
+          "command": "lytics.setting.info",
+          "group": "inline",
+          "when": "view == lytics.settings.explorer && viewItem == 'account-setting-editable'"
         },
         {
           "command": "lytics.stream.info",
