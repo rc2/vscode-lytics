@@ -172,6 +172,34 @@ export class TopicExplorerProvider extends LyticsExplorerProvider<Topic> {
 			return Promise.resolve(false);
 		}
 	}
+
+	async commandShowTopicsForCrawledUrl(): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			const url = await vscode.window.showInputBox({
+				prompt: 'Enter the URL whose topics you want to see.',
+			});
+			if (!url || url.trim().length === 0) {
+				return Promise.resolve(false);
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Loading topics: ${url}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/document/topics/${url}.json`);
+				await this.displayAsReadOnly(uri);
+			});
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Show topic info failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
 }
 
 class TopicTreeItem extends vscode.TreeItem {

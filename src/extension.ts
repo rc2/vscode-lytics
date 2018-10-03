@@ -221,6 +221,8 @@ function activateTopicExplorer(lyticsProvider: LyticsContentProvider, context: v
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.topic.info', (topic) => explorer.commandShowTopicInfo(topic));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.document.topics.info', () => explorer.commandShowTopicsForCrawledUrl());
+    context.subscriptions.push(disposable);
 }
 
 function activateTerminalManager(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
