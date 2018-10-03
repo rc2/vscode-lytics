@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { StateManager } from './stateManager';
 import { LyticsAccount, DataStream, DataStreamField } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { ContentReader } from './contentReader';
 
@@ -149,7 +148,7 @@ export class StreamExplorerProvider extends LyticsExplorerProvider<DataStream | 
 			title: `Loading data streams for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				return client.getStreams();
 			}

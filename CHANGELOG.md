@@ -1,4 +1,7 @@
 ## [0.0.??] - 2018-??-??
+- (issue 100) Fixed bug where access token was not used in certain cases.
+
+## [0.0.27] - 2018-10-03
 - (issue 98) Added command to display the topics for a specific URL.
 
 ## [0.0.26] - 2018-10-02

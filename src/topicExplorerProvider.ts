@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
 import { LyticsAccount, Topic, TopicUrl } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { ContentReader } from './contentReader';
 
@@ -77,7 +75,7 @@ export class TopicExplorerProvider extends LyticsExplorerProvider<Topic> {
 			title: `Loading topics.`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				var topics:Topic[] = [];
 				if (max > 0) {
@@ -120,7 +118,7 @@ export class TopicExplorerProvider extends LyticsExplorerProvider<Topic> {
 			title: `Loading urls for topic: ${element.label}.`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				const collection = await client.getTopicUrls(element.label!);
 				if (!collection) {

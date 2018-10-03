@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
 import { LyticsAccount, Segment } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
@@ -55,7 +54,7 @@ export class SegmentExplorerProvider extends LyticsExplorerProvider<Segment> {
 			title: `Loading segments for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				const segments = await client.getSegments();
 				var sortedSegments = segments.sort((a, b) => {

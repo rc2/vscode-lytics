@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
 import { StateManager } from './stateManager';
-import lytics = require("lytics-js/dist/lytics");
 import { LyticsAccountSetting, LyticsAccount } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
@@ -92,7 +90,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 			title: `Loading settings for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			return client.getAccountSettingsGroupedByCategory();
 		});
 		if (!map) {
@@ -143,7 +141,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 			title: `Loading settings for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			return client.getAccountSettings();
 		});
 		if (!settings) {
@@ -173,7 +171,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 		if (!account) {
 			return Promise.resolve(undefined);
 		}
-		const client = lytics.getClient(account.apikey!);
+		const client = await this.getClient(account.aid);
 		const setting = await client.getAccountSetting(slug);
 		if (!setting) {
 			throw new Error(`The setting ${slug} does not exist in the Lytics account.`);
@@ -250,7 +248,7 @@ export class AccountSettingExplorerProvider extends LyticsExplorerProvider<Lytic
 			title: `Updating account setting: ${setting.slug}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			const setting2 = await client.updateAccountSetting(setting.slug, value);
 			const wasUpdated = (setting2 !== undefined && setting.slug === setting2.slug);
 			if (wasUpdated) {

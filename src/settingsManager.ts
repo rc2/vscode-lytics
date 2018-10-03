@@ -15,8 +15,19 @@ export class SettingsManager {
         }
         return this.getAccountFromSettings(existing);
     }
+    static async getAccessToken(aid: number): Promise<string | undefined> {
+        let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
+        let existing = settings.find(obj => obj.aid === aid);
+        if (!existing) {
+            return Promise.reject(new Error('The specified account id has not been configured.'));
+        }
+        return Promise.resolve(existing.apikey);
+    }
 
     private static async getAccountFromSettings(setting: AccountSetting): Promise<LyticsAccount | undefined> {
+        if (setting === undefined || setting.apikey === undefined || setting.apikey.trim().length === 0) {
+            return Promise.reject(`No access token is available`);
+        }
         let client = lytics.getClient(setting.apikey);
         var account = await client.getAccount(setting.aid);
         return Promise.resolve(account);
@@ -51,14 +62,14 @@ export class SettingsManager {
         return Promise.resolve(accounts);
     }
 
-    static async addAccount(aid: number, apikey: string) {
+    static async addAccount(aid: number, accessToken: string) {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
-        let existing = settings.find(obj => obj.apikey === apikey && obj.aid === aid);
+        let existing = settings.find(obj => obj.apikey === accessToken && obj.aid === aid);
         if (existing) {
             let err = new Error(`Account ${aid} already exists.`);
             return Promise.reject(err);
         }
-        settings.push(<AccountSetting>{ apikey: apikey, aid: aid });
+        settings.push(<AccountSetting>{ apikey: accessToken, aid: aid });
         await vscode.workspace.getConfiguration().update('lytics.accounts', settings, true);
     }
 
@@ -77,7 +88,7 @@ export class SettingsManager {
         return Promise.resolve();
     }
 
-    static async updateAccount(aid: number, apikey: string) {
+    static async updateAccount(aid: number, accessToken: string) {
         let settings = vscode.workspace.getConfiguration().get('lytics.accounts', [] as AccountSetting[]);
         let existing = settings.find(obj => obj.aid === aid);
         if (!existing) {
@@ -87,7 +98,7 @@ export class SettingsManager {
         var index = settings.indexOf(existing);
         if (index > -1) {
             const setting = settings[index];
-            setting.apikey = apikey;
+            setting.apikey = accessToken;
             await vscode.workspace.getConfiguration().update('lytics.accounts', settings, true);
         }
         return Promise.resolve();

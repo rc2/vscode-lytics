@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { StateManager } from './stateManager';
 import { LyticsAccount, Campaign, CampaignVariation, CampaignVariationDetailOverride } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
@@ -60,7 +59,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 			title: `Loading campaigns for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				const campaigns = await client.getCampaigns();
 				return Promise.resolve(campaigns);
@@ -110,7 +109,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 			title: `Loading variations for campaign: ${campaign.name}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				const variations = await client.getCampaignVariations(campaign.id!);
 				var sortedVariations = variations.sort((a, b) => {
@@ -343,7 +342,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 				title: `Downloading campaign variation detail override: ${variation.id}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const client = lytics.getClient(account.apikey!);
+				const client = await this.getClient(account.aid);
 				const variation2 = await client.getCampaignVariation(variation.id);
 				if (!variation2) {
 					throw new Error(`The detail override for campaign variation ${variation.id} does not exist in the Lytics account.`);
@@ -423,7 +422,7 @@ export class CampaignExplorerProvider extends LyticsExplorerProvider<Campaign | 
 			title: 'Uploading campaign variation.',
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey);
+			const client = await this.getClient(account.aid);
 			try {
 				let variation = await client.getCampaignVariation(variationId);
 				if (!variation) {

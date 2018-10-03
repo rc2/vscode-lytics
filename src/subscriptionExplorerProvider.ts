@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
 import { StateManager } from './stateManager';
 import { LyticsAccount, Subscription, WebhookConfig, Segment, TableSchemaField } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { URL } from 'url';
 import { isUndefined } from 'util';
-import { LyticsClient } from 'lytics-js/dist/LyticsClient';
 
 export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscription> {
 
@@ -58,7 +56,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			title: `Loading subscriptions for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				const subscriptions = await client.getSubscriptions();
 				var sortedSubscriptions = subscriptions.sort((a, b) => {
@@ -214,7 +212,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 		if (!message) {
 			message = `Select the segments for the subscription.`;
 		}
-		const client = lytics.getClient(account.apikey!);
+		const client = await this.getClient(account.aid);
 		var segments = await client.getSegments();
 		if (!segments) {
 			vscode.window.showErrorMessage('No segments are available for this Lytics account.');
@@ -256,7 +254,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 		if (!message) {
 			message = `Select the user fields to include when triggered.`;
 		}
-		const client = lytics.getClient(account.apikey!);
+		const client = await this.getClient(account.aid);
 		const table = await client.getTableSchema('user');
 		if (!table) {
 			vscode.window.showErrorMessage('No user table was found for this Lytics account.');
@@ -332,7 +330,7 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			if (fields) {
 				fields.forEach(field => config.user_fields.push(field.as));
 			}
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			if (subscription) {
 				subscription = await client.updateWebhook(subscription.id, config);
 			}
@@ -391,13 +389,12 @@ export class SubscriptionExplorerProvider extends LyticsExplorerProvider<Subscri
 			if (!confirm) {
 				return Promise.resolve(false);
 			}
-			const client = new LyticsClient(account!.apikey);
+			const client = await this.getClient(account.aid);
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Removing subscription: ${subscription.name}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const client = lytics.getClient(account.apikey!);
 				const wasDeleted = await client.deleteSubscription(subscription.id);
 				progress.report({
 					message: `Subscription ${subscription.id} ${wasDeleted ? 'was': 'was not'} deleted.`

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { StateManager } from './stateManager';
 import lytics = require("lytics-js/dist/lytics");
+import { SettingsManager } from './settingsManager';
 
 export class QueryEditorProvider {
 	constructor(private context: vscode.ExtensionContext) {
@@ -31,7 +32,8 @@ export class QueryEditorProvider {
 			title: `Generating LQL from file: ${uri.fsPath}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const a_token = await SettingsManager.getAccessToken(account.aid);
+			const client = lytics.getClient(a_token);
 			fs.readFile(uri.fsPath, 'utf-8', async (err, data) => {
 				try {
 					var lql = await client.toLql(data);
@@ -101,7 +103,8 @@ export class QueryEditorProvider {
 			//
 			//determine if the query already exists
 			var currentQuery;
-			const client = lytics.getClient(account.apikey!);
+			const a_token = await SettingsManager.getAccessToken(account.aid);
+			const client = lytics.getClient(a_token);
 			try {
 				currentQuery = await client.getQuery(alias);
 			}

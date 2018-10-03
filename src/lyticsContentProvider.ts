@@ -92,42 +92,51 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         }
         return Promise.reject();
     }
-
+    private async getAccessToken(aid: number): Promise<string | undefined> {
+        const token = await SettingsManager.getAccessToken(aid);
+        if (token === undefined || token.trim().length === 0) {
+            return Promise.reject(`The account ${aid} does not have an access token specified.`);
+        }
+        return Promise.resolve(token);
+    }
     private async provideTextDocumentContentForAccount(aid: number): Promise<string> {
         const account = await SettingsManager.getAccount(aid);
         if (!account) {
             throw new Error(`The account ${aid} is not defined.`);
         }
-        if (!account.apikey) {
-            throw new Error(`The account ${aid} does not have an API key specified.`);
-        }
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(aid);
+        const client = lytics.getClient(token);
         const reloadedAccount = await client.getAccount(aid);
         return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
     }
     private async provideTextDocumentContentForQuery(queryAlias: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const query = await client.getQuery(queryAlias);
         const text = query ? query.text : '';
         return Promise.resolve(text!);
     }
     private async provideTextDocumentContentForSegmentInfo(segmentSlugName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let segment = await client.getSegment(segmentSlugName);
         return Promise.resolve(JSON.stringify(segment, null, 4));
     }
     private async provideTextDocumentContentForSettingInfo(settingSlugName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let setting = await client.getAccountSetting(settingSlugName);
         return Promise.resolve(JSON.stringify(setting, null, 4));
     }
     private async provideTextDocumentContentForStreamInfo(streamName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let stream = await client.getStream(streamName);
         return Promise.resolve(JSON.stringify(stream, null, 4));
     }
     private async provideTextDocumentContentForStreamQueries(streamName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let queries = await client.getQueries();
         queries = queries.filter(q => q.from === streamName);
         const aliases = queries.map(q => q.alias);
@@ -138,12 +147,14 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         return Promise.resolve(JSON.stringify(result, null, 4));
     }
     private async provideTextDocumentContentForStreamField(streamName: string, fieldName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let field = await client.getStreamField(streamName, fieldName);
         return Promise.resolve(JSON.stringify(field ? field : {}, null, 4));
     }
     private async provideTextDocumentContentForSubscription(subscriptionSlug: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let subscriptions = await client.getSubscriptions();
         let subscription:(Subscription | undefined);
         if (subscriptions) {
@@ -152,12 +163,14 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         return Promise.resolve(JSON.stringify(subscription ? subscription : {}, null, 4));
     }
     private async provideTextDocumentContentForTableFieldInfo(tableName: string, fieldName: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const info = await client.getTableSchemaFieldInfo(tableName, fieldName);
         return Promise.resolve(JSON.stringify(info ? info : {}, null, 4));
     }
     private async provideTextDocumentContentForTopicInfo(topicLabel: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const settings = SettingsManager.getLyticsApiSettings();
         let collection:(TopicUrlCollection | undefined) = undefined;
         if (settings.maxTopicUrls > 0) {
@@ -169,7 +182,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         return Promise.resolve(JSON.stringify(collection ? collection : {}, null, 4));
     }
     private async provideTextDocumentContentForEntity(tableName: string, fieldName: string, value: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         let entity = await client.getEntity(tableName, fieldName, value, true);
         if (!entity) {
             entity = {};
@@ -177,22 +191,26 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         return Promise.resolve(JSON.stringify(entity, null, 4));
     }
     private async provideTextDocumentContentForCampaign(campaignId: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const campaign = await client.getCampaign(campaignId);
         return Promise.resolve(JSON.stringify(campaign, null, 4));
     }
     private async provideTextDocumentContentForCampaignVariation(campaignVariationId: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const variation = await client.getCampaignVariation(campaignVariationId);
         return Promise.resolve(JSON.stringify(variation, null, 4));
     }
     private async provideTextDocumentContentForCampaignVariationDetailOverride(campaignVariationId: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const override = await client.getCampaignVariationDetailOverride(campaignVariationId);
         return Promise.resolve(JSON.stringify(override, null, 4));
     }
     private async provideTextDocumentContentForContentClassificationForActiveEditor(account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return Promise.reject('No active text editor is available.');
@@ -202,7 +220,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         return Promise.resolve(JSON.stringify(classification, null, 4));
     }
     private async provideTextDocumentContentForContentClassificationForFile(filePath: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const text = await this.readFileToString(filePath);
         const classification = await client.classifyUsingText(text);
         var str = JSON.stringify(classification, null, 4);
@@ -216,7 +235,8 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         });
     }
     private async provideTextDocumentContentForDocumentTopicsUrl(url: string, account: LyticsAccount): Promise<string> {
-        const client = lytics.getClient(account.apikey!);
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
         const topics = await client.getDocumentTopics(url);
         return Promise.resolve(JSON.stringify(topics ? topics : {}, null, 4));
     }

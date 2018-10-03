@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { StateManager } from './stateManager';
-import lytics = require("lytics-js/dist/lytics");
-import { Query, TableSchema, LyticsAccount } from 'lytics-js/dist/types';
+import { Query, LyticsAccount } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 
@@ -75,7 +74,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 			title: `Loading queries for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			return client.getQueriesGroupedByTable();
 		});
 		if (!map) {
@@ -126,7 +125,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 			title: `Loading queries for account: ${account.aid}`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			return client.getQueries();
 		});
 		if (!queries) {
@@ -156,7 +155,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 		if (!account) {
 			return Promise.resolve(undefined);
 		}
-		const client = lytics.getClient(account.apikey!);
+		const client = await this.getClient(account.aid);
 		const query = await client.getQuery(alias);
 		if (!query) {
 			throw new Error(`The query ${alias} does not exist in the Lytics account.`);
