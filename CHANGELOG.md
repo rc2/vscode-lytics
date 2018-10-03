@@ -1,3 +1,6 @@
+## [0.0.??] - 2018-??-??
+- (issue 98) Added command to display the topics for a specific URL.
+
 ## [0.0.26] - 2018-10-02
 - (issue 91) Added explorer for Lytics account settings and the ability to edit boolean settings.
 - (issue 94) Fixed bug that broke the ability to download multiple queries.

@@ -82,6 +82,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
                     return await this.provideTextDocumentContentForContentClassificationForActiveEditor(account);
                 }
             }
+            else if (luri.isDocumentTopicsUri && luri.documentTopicsUrl) {
+                return this.provideTextDocumentContentForDocumentTopicsUrl(luri.documentTopicsUrl, account);
+            }
             throw new Error(`Invalid uri: ${uri.toString()}`);
         }
         catch (err) {
@@ -211,5 +214,10 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
                 err ? reject(err) : resolve(data.toString());
             });
         });
+    }
+    private async provideTextDocumentContentForDocumentTopicsUrl(url: string, account: LyticsAccount): Promise<string> {
+        const client = lytics.getClient(account.apikey!);
+        const topics = await client.getDocumentTopics(url);
+        return Promise.resolve(JSON.stringify(topics ? topics : {}, null, 4));
     }
 }

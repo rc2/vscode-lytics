@@ -461,6 +461,11 @@
         }
       },
       {
+        "command": "lytics.document.topics.info",
+        "title": "Show Topics for Crawled URL",
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.terminal.open",
         "title": "Open Terminal",
         "category": "Lytics"
@@ -628,6 +633,10 @@
         },
         {
           "command": "lytics.topic.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.document.topics.info",
           "when": "lyticsAccountConnected"
         },
         {

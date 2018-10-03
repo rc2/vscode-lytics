@@ -3,6 +3,7 @@ import qs = require('query-string');
 export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
+    public isDocumentTopicsUri: boolean = false;
     public isQueryUri: boolean = false;
     public isSegmentUri: boolean = false;
     public isSettingUri: boolean = false;
@@ -19,6 +20,7 @@ export class LyticsUri {
     public isContentClassificationUri: boolean = false;
     public isEntityUri: boolean = false;
     public accountId: number = 0;
+    public documentTopicsUrl: (string | undefined);
     public queryAlias: (string | undefined);
     public segmentSlugName: (string | undefined);
     public settingSlugName: (string | undefined);
@@ -71,6 +73,9 @@ export class LyticsUri {
                     return;
                 case 'variations':
                     this.handleCampaignVariationUri();
+                    return;
+                case 'document':
+                    this.handleDocumentUri();
                     return;
                 case 'content':
                     if (parts[1] === 'classification') {
@@ -308,6 +313,18 @@ export class LyticsUri {
                 this.contentClassificationFilePath = parsed.path;
                 this.useTextFromActiveEditor = parsed.active;
                 this.isContentClassificationUri = true;
+                return;
+            }
+        }
+    }
+    private handleDocumentUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/document/topics/{url}.json
+        if (parts.length > 2) {
+            if (parts[1] === 'topics' && parts[parts.length - 1].endsWith('.json')) {
+                this.isDocumentTopicsUri = true;
+                const joined = parts.slice(2).join('/');
+                this.documentTopicsUrl = joined.substring(0, joined.indexOf('.json'));
                 return;
             }
         }
