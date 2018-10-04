@@ -3,7 +3,6 @@ import * as path from 'path';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
 import { LyticsAccount, TableSchemaField, TableSchema } from 'lytics-js/dist/types';
-import lytics = require("lytics-js/dist/lytics");
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { ContentReader } from './contentReader';
 
@@ -187,7 +186,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			title: `Loading fields for table: ${element.name}.`,
 			cancellable: true
 		}, async (progress, token) => {
-			const client = lytics.getClient(account.apikey!);
+			const client = await this.getClient(account.aid);
 			try {
 				this.mapOfFieldToTable.clear();
 				const table = await client.getTableSchema(element.name!);
@@ -395,7 +394,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 				title: `Toggling whitelisted field: ${fieldName}`,
 				cancellable: true
 			}, async (progress, token) => {
-				const client = lytics.getClient(account.apikey);
+				const client = await this.getClient(account.aid);
 				const fields = await client.getWhitelistFields(account.aid);
 				const add = (fields.indexOf(fieldName) === -1);
 				var msg = add ? `add the field ${fieldName} to` : `remove the field ${fieldName} from`;

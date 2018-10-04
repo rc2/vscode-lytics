@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { AccountsExportHandler } from './exports';
 import { LyticsAccount } from 'lytics-js/dist/types';
 import lytics = require("lytics-js/dist/lytics");
+import { SettingsManager } from './settingsManager';
 
 export class AccountsExportFilezilla implements AccountsExportHandler {
     async export(getAccounts: () => Promise<LyticsAccount[]>, progress: vscode.Progress<{
@@ -29,7 +30,8 @@ export class AccountsExportFilezilla implements AccountsExportHandler {
         const servers: string[] = [];
         for (let i = 0; i < accounts.length; i++) {
             const account = accounts[i];
-            const client = lytics.getClient(account.apikey!);
+			const a_token = await SettingsManager.getAccessToken(account.aid);
+			const client = lytics.getClient(a_token);
             const account2 = await client.getAccount(account.aid);
             if (account2) {
                 const server = AccountsExportFilezilla.getServer(account2);

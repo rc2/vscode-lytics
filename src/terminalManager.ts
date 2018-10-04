@@ -27,13 +27,14 @@ export class TerminalManager implements vscode.Disposable {
             }
         });
     }
-    private getTerminalCommandForWatch(account: LyticsAccount, uri: vscode.Uri): string | undefined {
+    private async getTerminalCommandForWatch(account: LyticsAccount, uri: vscode.Uri): Promise<string | undefined> {
         const ext = vscode.extensions.getExtension("AdamConn.vscode-lytics");
         if (!ext) {
             return undefined;
         }
         const pth = path.join(ext.extensionPath, 'node_modules', 'lytics-js', "dist", 'lytics-js-watch.js');
-        const params: string[] = ["-k", account.apikey!];
+        const token = await SettingsManager.getAccessToken(account.aid);
+        const params: string[] = ["-k", token];
         //
         //
         const settings = SettingsManager.getWatchSettings();
@@ -91,7 +92,7 @@ export class TerminalManager implements vscode.Disposable {
         }
         let term = this.watchTerminals.get(uri.fsPath);
         if (!term) {
-            const cmd = this.getTerminalCommandForWatch(account, uri);
+            const cmd = await this.getTerminalCommandForWatch(account, uri);
             if (!cmd) {
                 vscode.window.showErrorMessage('Unable to get terminal command for Lytics Watch.');
                 return;
@@ -143,12 +144,13 @@ export class TerminalManager implements vscode.Disposable {
         if (!account) {
             return Promise.resolve(false);
         }
+        const token = await SettingsManager.getAccessToken(account.aid);
         let term = this.accountTerminals.get(account.aid);
         if (!term) {
             term = vscode.window.createTerminal({
                 name: `Lytics Terminal [${account.aid}]`,
                 env: {
-                    "LIOKEY": account.apikey
+                    "LIOKEY": token
                 }
             });
             this.accountTerminals.set(account.aid, term);

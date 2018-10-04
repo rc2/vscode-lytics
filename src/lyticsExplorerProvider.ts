@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { ContentDisplayer } from './contentDisplayer';
 import { ContentReader } from './contentReader';
+import { SettingsManager } from './settingsManager';
+import { LyticsClient } from 'lytics-js/dist/LyticsClient';
+import lytics = require("lytics-js/dist/lytics");
 
 export abstract class LyticsExplorerProvider<T> implements vscode.TreeDataProvider<T>, ContentDisplayer {
 	abstract getTreeItem(element: T): vscode.TreeItem | Thenable<vscode.TreeItem>;
@@ -9,6 +12,15 @@ export abstract class LyticsExplorerProvider<T> implements vscode.TreeDataProvid
 	private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
 	readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 	constructor(private description: string, private contentReader: ContentReader, public context: vscode.ExtensionContext) {
+	}
+
+	async getClient(aid: number): Promise<LyticsClient> {
+		const token = await SettingsManager.getAccessToken(aid);
+		if (token === undefined || token.trim().length === 0) {
+			return Promise.reject(`No access token is available for the account: ${aid}`);
+		}
+		const client = lytics.getClient(token);
+		return Promise.resolve(client);
 	}
 
 	async confirm(message: string): Promise<boolean> {
