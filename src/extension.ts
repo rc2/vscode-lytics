@@ -129,6 +129,8 @@ function activateQueryExplorer(lyticsProvider: LyticsContentProvider, context: v
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.query.download', (query) => explorer.commandDownloadQuery(query));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.query.function', () => explorer.commandTestQueryFunction());
+    context.subscriptions.push(disposable);
 }
 
 function activateQueryEditor(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {

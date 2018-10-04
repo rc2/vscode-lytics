@@ -275,6 +275,11 @@
         }
       },
       {
+        "command": "lytics.query.function",
+        "title": "Test Query Function",
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.segments.refresh",
         "title": "Refresh Segment List",
         "category": "Lytics",
@@ -546,6 +551,10 @@
         {
           "command": "lytics.query.upload",
           "when": "lyticsAccountConnected && resourceLangId == lql && editorReadOnly == false"
+        },
+        {
+          "command": "lytics.query.function",
+          "when": "lyticsAccountConnected"
         },
         {
           "command": "lytics.segments.refresh",
@@ -992,7 +1001,7 @@
   "devDependencies": {
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.70",
+    "@types/node": "^7.0.71",
     "@types/query-string": "^6.1.0",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
