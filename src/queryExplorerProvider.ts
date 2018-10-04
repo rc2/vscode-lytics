@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import qs = require('query-string');
 import { StateManager } from './stateManager';
 import { Query, LyticsAccount } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
@@ -100,7 +101,7 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 				groupings.push(grouping);
 			}
 		}
-		groupings.sort((a,b) => {
+		groupings.sort((a, b) => {
 			if (a.name < b.name) {
 				return -1;
 			}
@@ -321,6 +322,69 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 			vscode.window.showErrorMessage(`Downloading queries failed: ${err.message}`);
 			return Promise.resolve(false);
 		}
+	}
+	async commandTestQueryFunction(): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			const name = await vscode.window.showInputBox({
+				prompt: 'Enter the name of the function you want to test.'
+			});
+			if (name === undefined || name.trim().length === 0) {
+				return Promise.resolve(false);
+			}
+			let sCount: string = '0';
+			let count = NaN;
+			while (isNaN(count) || count < 0) {
+				sCount = await vscode.window.showInputBox({
+					prompt: 'Enter the number of parameters you want to specify.',
+					value: sCount
+				});
+				if (sCount === undefined || sCount.trim().length === 0) {
+					return Promise.resolve(false);
+				}
+				count = parseInt(sCount);
+			}
+			const parameters = new Array<string>(count);
+			parameters.fill('???');
+			for (var i = 0; i < count; i++) {
+				const value = await vscode.window.showInputBox({
+					prompt: `Enter the next parameter value: ${this.formatQueryFunctionCall(name, parameters)}`
+				});
+				if (value === undefined) {
+					return Promise.resolve(false);
+				}
+				parameters[i] = value.replace(/^"(.*)"$/, '$1');
+			}
+			if (! (await this.confirm(`Do you want to test the command: ${this.formatQueryFunctionCall(name, parameters)}`))) {
+				return Promise.resolve(false);
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Testing query function: ${name}`,
+				cancellable: true
+			}, async (progress, token) => {
+				// const client = await this.getClient(account.aid);
+				// const result = await client.testFunction(name, parameters);
+				// vscode.window.showWarningMessage(JSON.stringify(result, null, 4));
+				// return Promise.resolve(true);
+				const params = qs.stringify({
+					params: parameters.map(p => encodeURIComponent(p))
+				});
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/function/${name}.json?${params}`);
+				await this.displayAsReadOnly(uri);
+			});
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Testing query function failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+	private formatQueryFunctionCall(name: string, parameters: string[]): string {
+		return `${name}(${parameters.map(p => p === "???" ? p : `"${p}"`).join(', ')})`;
 	}
 }
 

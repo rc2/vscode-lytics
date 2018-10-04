@@ -1,6 +1,7 @@
 ## [0.0.??] - 2018-??-??
 - (issue 100) Fixed bug where access token was not used in certain cases.
 - (issue 102) Added progress reporting when uploading query.
+- (issue 104) Added command to test query functions.
 
 ## [0.0.27] - 2018-10-03
 - (issue 98) Added command to display the topics for a specific URL.

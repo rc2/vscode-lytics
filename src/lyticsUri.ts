@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import qs = require('query-string');
+import { isArray } from 'util';
 export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
     public isDocumentTopicsUri: boolean = false;
+    public isFunctionUri: boolean = false;
     public isQueryUri: boolean = false;
     public isSegmentUri: boolean = false;
     public isSettingUri: boolean = false;
@@ -22,6 +24,8 @@ export class LyticsUri {
     public accountId: number = 0;
     public documentTopicsUrl: (string | undefined);
     public queryAlias: (string | undefined);
+    public functionName: (string | undefined);
+    public functionParameters: string[] = [];
     public segmentSlugName: (string | undefined);
     public settingSlugName: (string | undefined);
     public streamName: (string | undefined);
@@ -49,6 +53,9 @@ export class LyticsUri {
             switch (parts[0]) {
                 case 'queries':
                     this.handleQueriesUri();
+                    return;
+                case 'function':
+                    this.handleFunctionUri();
                     return;
                 case 'segments':
                     this.handleSegmentsUri();
@@ -113,6 +120,27 @@ export class LyticsUri {
         }
     }
 
+    private handleFunctionUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/function/name.json?params=a&params=b...
+        if (parts.length === 2) {
+            var name = parts[1].substring(0, parts[1].indexOf('.json'));
+            if (name.length > 0) {
+                this.isFunctionUri = true;
+                this.functionName = name;
+                const parsed = qs.parse(this._uri.query);
+                if (parsed.params !== undefined) {
+                    if (!isArray(parsed.params)) {
+                        this.functionParameters.push(parsed.params);
+                    }
+                    else {
+                        this.functionParameters = parsed.params;
+                    }
+                }
+                return;
+            }
+        }
+    }
     private handleSegmentsUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/segments/id.json
