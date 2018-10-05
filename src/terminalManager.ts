@@ -4,6 +4,7 @@ import { LyticsAccount } from 'lytics-js/dist/types';
 import { SettingsManager } from './settingsManager';
 import { isUndefined } from 'util';
 const path = require('path');
+const cmd = require('node-cmd');
 
 export class TerminalManager implements vscode.Disposable {
     private watchTerminals: Map<string, vscode.Terminal> = new Map<string, vscode.Terminal>();
@@ -77,12 +78,34 @@ export class TerminalManager implements vscode.Disposable {
         }
         return Promise.resolve(paths[0]);
     }
-
+    private async isNodeInstalled(): Promise<boolean> {
+        return new Promise<boolean>(function (resolve, reject) {
+            cmd.get('node --version', function (err: Error, data: any, stderr: string) {
+                if (err) {
+                    resolve(false);
+                }
+                else {
+                    resolve(true);
+                }
+            });
+        });
+    }
     async watch(uri: vscode.Uri): Promise<boolean> {
         const account = StateManager.getActiveAccount();
         if (!account) {
             vscode.window.showErrorMessage('Connect a Lytics account before running this command.');
             return;
+        }
+        const isNode = await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Checking for node.js...`,
+            cancellable: true
+        }, async (progress, token) => {
+            return this.isNodeInstalled();
+        });
+        if (!isNode) {
+            vscode.window.showErrorMessage('"Watch Folder" feature requires Node.js. You can download it from https://nodejs.org.');
+            return Promise.resolve(false);
         }
         if (!uri) {
             uri = await this.promptForFolder();
