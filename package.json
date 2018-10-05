@@ -1010,6 +1010,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "lytics-js": "latest",
+    "node-cmd": "^3.0.0",
     "path": "^0.12.7"
   }
 }
