@@ -1,5 +1,6 @@
 ## [0.0.??] - 2018-??-??
 - (issue 106) Added a check to the "lytics watch" feature to display an error message if node.js is not installed.
+- (issue 108) When a Lytics terminal is open, the `lytics-js` command is available.
 
 ## [0.0.28] - 2018-10-04
 - (issue 100) Fixed bug where access token was not used in certain cases.
