@@ -5,6 +5,7 @@ import { SettingsManager } from './settingsManager';
 import { isUndefined } from 'util';
 const path = require('path');
 const cmd = require('node-cmd');
+const os = require('os');
 
 export class TerminalManager implements vscode.Disposable {
     private watchTerminals: Map<string, vscode.Terminal> = new Map<string, vscode.Terminal>();
@@ -90,12 +91,7 @@ export class TerminalManager implements vscode.Disposable {
             });
         });
     }
-    async watch(uri: vscode.Uri): Promise<boolean> {
-        const account = StateManager.getActiveAccount();
-        if (!account) {
-            vscode.window.showErrorMessage('Connect a Lytics account before running this command.');
-            return;
-        }
+    private async canFeatureRun(featureName: string): Promise<boolean> {
         const isNode = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: `Checking for node.js...`,
@@ -104,7 +100,18 @@ export class TerminalManager implements vscode.Disposable {
             return this.isNodeInstalled();
         });
         if (!isNode) {
-            vscode.window.showErrorMessage('"Watch Folder" feature requires Node.js. You can download it from https://nodejs.org.');
+            vscode.window.showErrorMessage(`"${featureName}" feature requires Node.js. You can download it from https://nodejs.org.`);
+        }
+        return Promise.resolve(isNode);
+    }
+    async watch(uri: vscode.Uri): Promise<boolean> {
+        const account = StateManager.getActiveAccount();
+        if (!account) {
+            vscode.window.showErrorMessage('Connect a Lytics account before running this command.');
+            return;
+        }
+        const canFeatureRun = await this.canFeatureRun('Watch Folder');
+        if (!canFeatureRun) {
             return Promise.resolve(false);
         }
         if (!uri) {
@@ -161,6 +168,10 @@ export class TerminalManager implements vscode.Disposable {
         return Promise.resolve(account);
     }
     async openTerminal(account: LyticsAccount): Promise<boolean> {
+        const canFeatureRun = await this.canFeatureRun('Open Terminal');
+        if (!canFeatureRun) {
+            return Promise.resolve(false);
+        }
         if (!account) {
             account = await this.promptForAccount('Select the account a terminal will be opened for.');
         }
@@ -170,10 +181,12 @@ export class TerminalManager implements vscode.Disposable {
         const token = await SettingsManager.getAccessToken(account.aid);
         let term = this.accountTerminals.get(account.aid);
         if (!term) {
+            const ext = vscode.extensions.getExtension("AdamConn.vscode-lytics");
             term = vscode.window.createTerminal({
                 name: `Lytics Terminal [${account.aid}]`,
                 env: {
-                    "LIOKEY": token
+                    "LIOKEY": token,
+                    "PATH": ext ? path.join(ext.extensionPath, 'node_modules', '.bin') : ''
                 }
             });
             this.accountTerminals.set(account.aid, term);

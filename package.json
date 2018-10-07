@@ -30,6 +30,7 @@
     "onCommand:lytics.account.update",
     "onCommand:lytics.accounts.refresh",
     "onCommand:lytics.accounts.export",
+    "onCommand:lytics.terminal.open",
     "onLanguage:lql",
     "onView:lytics.accounts.explorer"
   ],
