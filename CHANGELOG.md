@@ -1,4 +1,4 @@
-## [0.0.??] - 2018-??-??
+## [0.0.29] - 2018-10-08
 - (issue 106) Added a check to the "lytics watch" feature to display an error message if node.js is not installed.
 - (issue 108) When a Lytics terminal is open, the `lytics-js` command is available.
 - (issue 110) Added definition for CSV file type so the feature to generate LQL from a CSV file is available even if you do not have a CSV-enabled extension installed.
