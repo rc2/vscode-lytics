@@ -1012,8 +1012,8 @@
   "devDependencies": {
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.71",
-    "@types/query-string": "^6.1.0",
+    "@types/node": "^7.10.0",
+    "@types/query-string": "^6.1.1",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
     "vscode": "^1.1.21"
