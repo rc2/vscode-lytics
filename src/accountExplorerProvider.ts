@@ -90,15 +90,15 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 			const getAccounts = function (): Promise<LyticsAccount[]> {
 				const client = lytics.getClient(apikey);
 				return client.getAccounts()
-				.then(
-					accounts => accounts,
-					error => { 
-						if (error.response.status === 401) {
-							throw new Error('The specified access token is not authorized to read accounts.');
-						};
-						throw error;
-					}
-				  );
+					.then(
+						accounts => accounts,
+						error => {
+							if (error.response.status === 401) {
+								throw new Error('The specified access token is not authorized to read accounts.');
+							}
+							throw error;
+						}
+					);
 			};
 			const aid = await this.promptForAccount(getAccounts, 'Select the account you want to add.');
 			if (aid !== undefined) {
@@ -307,6 +307,38 @@ export class AccountExplorerProvider extends LyticsExplorerProvider<LyticsAccoun
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Access token update failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+
+	async openEditorForHttpRequest(accountItem: AccountTreeItem): Promise<boolean> {
+		try {
+			let aid = 0;
+			if (!accountItem) {
+				aid = await this.promptForAccount(() => SettingsManager.getAccounts(), 'Select the account you want to send API commands to.');
+			}
+			else {
+				aid = accountItem.aid;
+			}
+			if (!aid || aid === 0) {
+				return Promise.resolve(false);
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Loading HTTP document: ${aid}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const key = await SettingsManager.getAccessToken(aid);
+				const doc = await vscode.workspace.openTextDocument({
+					content: `GET https://api.lytics.io\nAuthorization: ${key}\nContent-Type: application/json`,
+					language: 'http'
+				});
+				await vscode.window.showTextDocument(doc);
+				return Promise.resolve(true);
+			});
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Loading HTTP document: ${err.message}`);
 			return Promise.resolve(false);
 		}
 	}

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import qs = require('query-string');
-import { isArray } from 'util';
+import { isArray, isBoolean } from 'util';
 export class LyticsUri {
     private readonly _uri: vscode.Uri;
     public isAccountUri: boolean = false;
@@ -332,14 +332,23 @@ export class LyticsUri {
             return;
         }
     }
+    private getValueFromStringOrArray(value:string | string[]): any {
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                return undefined;
+            }
+            return value[0];
+        }
+        return value;
+    }
     private handleContentClassificationUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/content/classification/draft/{file name}.json?path={full file path}&active=false
         if (parts.length === 4) {
             if (parts[3].endsWith('.json')) {
                 const parsed = qs.parse(this._uri.query);
-                this.contentClassificationFilePath = parsed.path;
-                this.useTextFromActiveEditor = parsed.active;
+                this.contentClassificationFilePath = this.getValueFromStringOrArray(parsed.path);
+                this.useTextFromActiveEditor = this.getValueFromStringOrArray(parsed.active);
                 this.isContentClassificationUri = true;
                 return;
             }
