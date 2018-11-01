@@ -31,6 +31,7 @@
     "onCommand:lytics.accounts.refresh",
     "onCommand:lytics.accounts.export",
     "onCommand:lytics.terminal.open",
+    "onCommand:lytics.account.api.http",
     "onLanguage:lql",
     "onView:lytics.accounts.explorer"
   ],
@@ -193,6 +194,11 @@
       {
         "command": "lytics.accounts.export",
         "title": "Export Accounts",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.account.api.http",
+        "title": "Generate HTTP Request for API",
         "category": "Lytics"
       },
       {
@@ -524,6 +530,9 @@
           "command": "lytics.account.update"
         },
         {
+          "command": "lytics.account.api.http"
+        },
+        {
           "command": "lytics.campaign.info",
           "when": "lyticsAccountConnected"
         },
@@ -827,6 +836,10 @@
           "when": "view == lytics.accounts.explorer && viewItem == 'account'"
         },
         {
+          "command": "lytics.account.api.http",
+          "when": "view == lytics.accounts.explorer && viewItem == 'account'"
+        },
+        {
           "command": "lytics.queries.download",
           "when": "view == lytics.queries.explorer && viewItem == 'table'"
         },
@@ -1012,7 +1025,7 @@
   "devDependencies": {
     "@types/form-data": "^2.2.1",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^7.10.0",
+    "@types/node": "^7.10.1",
     "@types/query-string": "^6.1.1",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",

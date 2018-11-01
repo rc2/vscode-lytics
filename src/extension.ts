@@ -96,7 +96,11 @@ function activateAccountExplorer(lyticsProvider: LyticsContentProvider, context:
     const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     status.command = 'lytics.account.show';
     context.subscriptions.push(status);
+
+    disposable = vscode.commands.registerCommand('lytics.account.api.http', async (account) => explorer.openEditorForHttpRequest(account));
+    context.subscriptions.push(disposable);
 }
+
 function activateTableExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const explorer = new TableExplorerProvider(lyticsProvider, context);
     explorers.push(explorer);
