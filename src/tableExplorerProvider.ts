@@ -2,9 +2,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
-import { LyticsAccount, TableSchemaField, TableSchema } from 'lytics-js/dist/types';
+import { LyticsAccount, TableSchemaField, TableSchema, LyticsAccountSettingField, DOT } from 'lytics-js/dist/types';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { ContentReader } from './contentReader';
+import { isNullOrUndefined } from 'util';
 
 export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | TableSchemaField> {
 
@@ -123,12 +124,12 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 	 * @param message 
 	 * @returns The selected field, or undefined if none was selected.
 	 */
-	private async promptForField(table: TableSchema, identifiersOnly:boolean, account: LyticsAccount, message?: string): Promise<TableSchemaField | undefined> {
+	private async promptForField(table: TableSchema, identifiersOnly: boolean, account: LyticsAccount, message?: string): Promise<TableSchemaField | undefined> {
 		if (!message) {
 			message = `Select a table.`;
 		}
 		const fields = await this.getFields(table, account);
-		const values:string[] = [];
+		const values: string[] = [];
 		fields.forEach(f => {
 			if (!identifiersOnly || f.is_by) {
 				values.push(f.as);
@@ -136,7 +137,7 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 		});
 		if (values.length === 0) {
 			const msg = identifiersOnly ? `table ${table.name} has no identifier fields` : `table ${table.name} has no fields`;
-			return Promise.reject({message: msg});
+			return Promise.reject({ message: msg });
 		}
 		let value = await vscode.window.showQuickPick(values, {
 			canPickMany: false,
@@ -268,7 +269,111 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			return Promise.resolve(false);
 		}
 	}
+getHtml(data: string, extensionPath:string) {
+	const pathJs1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs',  'vis.min.js'));
+	const pathJs2 = pathJs1.with({ scheme: 'vscode-resource' });
+	const pathCss1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs',  'vis.min.js'));
+	const pathCss2 = pathCss1.with({ scheme: 'vscode-resource' });
 
+	return `<html>
+
+	<head>
+		<script type="text/javascript" src="${pathJs2}"></script>
+		<link href="${pathCss2}" rel="stylesheet" type="text/css" />
+	
+		<style type="text/css">
+			#profile {
+				width: 600px;
+				height: 500px;
+				border: 1px solid lightgray;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<div id="profile"></div>
+	
+		<script type="text/javascript">
+			var DOTstring = '${data}';
+			var parsedData = vis.network.convertDot(DOTstring);
+	
+			var data = {
+				nodes: parsedData.nodes,
+				edges: parsedData.edges
+			}
+	
+			var options = parsedData.options;
+			options.nodes = {
+				shape: 'box',
+				color: {
+					highlight: {
+						border: '#27AE60',
+						background: '#D4EFDF'
+					}
+				}
+			};
+			options.edges = {
+				color: {
+					highlight: '#27AE60'
+				}
+			}
+			options.physics = { enabled: false };
+			var container = document.getElementById('profile');
+			var network = new vis.Network(container, data, options);
+			network.on("selectNode", function(params) {
+				console.log('selectNode: ' + params.nodes);
+			});
+	
+		</script>
+	</body>
+	
+	</html>`;
+}
+	async commandShowEntitySearchVisualize(field: TableSchemaField, context: vscode.ExtensionContext): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+	
+			const values = await this.getEntitySearchValues(field);
+			if (!values || values.length !== 3) {
+				return Promise.resolve(false);
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Loading entity by ${values[1]}: ${values[2]}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const panel = vscode.window.createWebviewPanel(
+					'entityVisualization', 
+					"Hack Day Visualization",
+					vscode.ViewColumn.One,
+					{ 
+						enableScripts: true,
+						localResourceRoots: [
+							vscode.Uri.file(path.join(context.extensionPath, 'resources', 'visjs'))
+						]
+					} 
+				);
+				const client = await this.getClient(account.aid);
+				const fragments = await client.getFragments(values[0], values[1], values[2]);
+				if (isNullOrUndefined(fragments)) {
+					vscode.window.showInformationMessage(`No matching fragments were found.`);
+					return Promise.resolve(false);
+				}
+				let data = DOT.stringify(fragments);
+				data = data.replace(/\n/g, '\\n');
+				panel.webview.html = this.getHtml(data, context.extensionPath);
+				return Promise.resolve(true);
+			});
+	
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
 	async commandShowEntitySearch(field: TableSchemaField): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
@@ -312,7 +417,45 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			return Promise.resolve(false);
 		}
 	}
-
+	async getEntitySearchValues(field: TableSchemaField): Promise<string[]> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			var table: (TableSchema | undefined) = undefined;
+			if (!field) {
+				table = await this.promptForTable(account, 'Select the table whose field you want to search on.');
+				if (table !== undefined) {
+					field = await this.promptForField(table, true, account, 'Select the field you want to search on.');
+				}
+			}
+			if (!field) {
+				return Promise.resolve([]);
+			}
+			if (!table) {
+				table = await this.getParent(field) as TableSchema;
+				if (!table) {
+					throw new Error(`No parent was found for field ${field.as}`);
+				}
+			}
+			const value = await vscode.window.showInputBox({
+				prompt: `Enter the search value for ${field.as}.`
+			});
+			if (!value || value.trim().length === 0) {
+				return Promise.resolve([]);
+			}
+			const values:string[] = [];
+			values.push(table.name);
+			values.push(field.as);
+			values.push(value);
+			return Promise.resolve(values);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
+			return Promise.resolve([]);
+		}
+	}
 	async commandShowFieldInfo(field: TableSchemaField): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();

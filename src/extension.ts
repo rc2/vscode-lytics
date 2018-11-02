@@ -114,6 +114,8 @@ function activateTableExplorer(lyticsProvider: LyticsContentProvider, context: v
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.search', (field) => explorer.commandShowEntitySearch(field));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.table.field.search.visualize', (field) => explorer.commandShowEntitySearchVisualize(field, context));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.info', (field) => explorer.commandShowFieldInfo(field));
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.table.field.whitelist', (field) => explorer.commandToggleWhitelist(field));

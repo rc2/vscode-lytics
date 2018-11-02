@@ -451,6 +451,11 @@
         }
       },
       {
+        "command": "lytics.table.field.search.visualize",
+        "title": "Visualize Entity",
+        "category": "Lytics"
+      },
+      {
         "command": "lytics.table.field.info",
         "title": "Show Table Field Info",
         "category": "Lytics",
@@ -646,6 +651,10 @@
         },
         {
           "command": "lytics.table.field.search",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.table.field.search.visualize",
           "when": "lyticsAccountConnected"
         },
         {
