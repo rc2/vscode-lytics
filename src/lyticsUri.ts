@@ -21,6 +21,7 @@ export class LyticsUri {
     public isCampaignVariationOverrideUri: boolean = false;
     public isContentClassificationUri: boolean = false;
     public isEntityUri: boolean = false;
+    public isHashUri: boolean = false;
     public accountId: number = 0;
     public documentTopicsUrl: (string | undefined);
     public queryAlias: (string | undefined);
@@ -39,6 +40,8 @@ export class LyticsUri {
     public campaignVariationId: (string | undefined);
     public contentClassificationFilePath: (string | undefined);
     public useTextFromActiveEditor: boolean = false;
+    public hashType: (string | undefined);
+    public valueToHash: (string | undefined);    
 
     constructor(uri: vscode.Uri) {
         this._uri = uri;
@@ -48,6 +51,10 @@ export class LyticsUri {
                 this.handleAccountsUri();
                 return;
             }
+        }
+        if (uri.authority === 'utils') {
+            this.handleUtilsUri();
+            return;
         }
         if (parts.length > 1) {
             switch (parts[0]) {
@@ -91,6 +98,19 @@ export class LyticsUri {
                     }
                     break;
             }
+        }
+    }
+
+    private handleUtilsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://utils/hash/{hashType}/{value}.json
+        if (parts[0] === 'hash') {
+            this.isHashUri = true;
+            this.hashType = parts[1];
+            //the value may contain slashes, so all parts 2+ must be joined
+            let valueToHash = parts.slice(2).join('/');
+            this.valueToHash = valueToHash.substring(0, valueToHash.indexOf('.json'));
+            return;
         }
     }
 

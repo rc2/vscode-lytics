@@ -32,6 +32,7 @@
     "onCommand:lytics.accounts.export",
     "onCommand:lytics.terminal.open",
     "onCommand:lytics.account.api.http",
+    "onCommand:lytics.hash.sip",
     "onLanguage:lql",
     "onView:lytics.accounts.explorer"
   ],
@@ -506,6 +507,11 @@
         "command": "lytics.lql.generate",
         "title": "Generate LQL",
         "category": "Lytics"
+      },
+      {
+        "command": "lytics.hash.sip",
+        "title": "Generate Lytics Hash",
+        "category": "Lytics"
       }
     ],
     "menus": {
@@ -547,6 +553,9 @@
         {
           "command": "lytics.campaign.variation.override.upload",
           "when": "lyticsAccountConnected && resourceExtname == .campaign_override && editorReadOnly == false"
+        },
+        {
+          "command": "lytics.hash.sip"
         },
         {
           "command": "lytics.campaigns.refresh",
@@ -1033,8 +1042,10 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "int64": "0.0.5",
     "lytics-js": "latest",
     "node-cmd": "^3.0.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "siphash": "^1.0.3"
   }
 }

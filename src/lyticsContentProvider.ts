@@ -8,6 +8,7 @@ import lytics = require("lytics-js/dist/lytics");
 import { LyticsAccount, TopicUrl, TopicUrlCollection, Subscription } from 'lytics-js/dist/types';
 import fs = require('fs');
 import { ContentReader } from './contentReader';
+import { LyticsUtils } from 'lytics-js/dist/LyticsUtils';
 
 export default class LyticsContentProvider implements vscode.TextDocumentContentProvider, ContentReader {
     removeFromCache(uri: vscode.Uri): void {
@@ -24,6 +25,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             var luri = new LyticsUri(uri);
             if (luri.isAccountUri && luri.accountId) {
                 return await this.provideTextDocumentContentForAccount(luri.accountId);
+            }
+            else if (luri.isHashUri && luri.hashType && luri.valueToHash) {
+                return await this.provideTextDocumentForHashing(luri.hashType, luri.valueToHash);
             }
             const account = StateManager.getActiveAccount();
             if (!account) {
@@ -248,5 +252,20 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const client = lytics.getClient(token);
         const topics = await client.getDocumentTopics(url);
         return Promise.resolve(JSON.stringify(topics ? topics : {}, null, 4));
+    }
+    private async provideTextDocumentForHashing(hashType: string, valueToHash: string): Promise<string> {
+        let hashedValue:any = undefined;
+        if (hashType === 'sip') {
+            hashedValue = await LyticsUtils.generateSipHash(valueToHash);
+        }
+        else {
+            throw new Error(`Hash type ${hashType} is not supported.`);
+        }
+        const result = {
+            type: hashType,
+            value: valueToHash,
+            hashed: hashedValue
+        };
+        return Promise.resolve(JSON.stringify(result, null, 4));
     }
 }
