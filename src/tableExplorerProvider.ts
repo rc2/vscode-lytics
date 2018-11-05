@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { SettingsManager } from './settingsManager';
 import { StateManager } from './stateManager';
-import { LyticsAccount, TableSchemaField, TableSchema, LyticsAccountSettingField, DOT } from 'lytics-js/dist/types';
+import { LyticsAccount, TableSchemaField, TableSchema, DOT, FragmentCollection } from 'lytics-js/dist/types';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { ContentReader } from './contentReader';
 import { isNullOrUndefined } from 'util';
@@ -269,39 +269,67 @@ export class TableExplorerProvider extends LyticsExplorerProvider<TableSchema | 
 			return Promise.resolve(false);
 		}
 	}
-getHtml(data: string, extensionPath:string) {
-	const pathJs1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs',  'vis.min.js'));
-	const pathJs2 = pathJs1.with({ scheme: 'vscode-resource' });
-	const pathCss1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs',  'vis.min.js'));
-	const pathCss2 = pathCss1.with({ scheme: 'vscode-resource' });
+	getHtml(fragments: FragmentCollection, extensionPath: string) {
+		let dotData = DOT.fragmentsToDot(fragments.fragments);
+		dotData = dotData.replace(/\n/g, '\\n');
 
-	return `<html>
+		const pathCss1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs', 'vis.min.js'));
+		const pathCss2 = pathCss1.with({ scheme: 'vscode-resource' });
+		const pathJs1 = vscode.Uri.file(path.join(extensionPath, 'resources', 'visjs', 'vis.min.js'));
+		const pathJs2 = pathJs1.with({ scheme: 'vscode-resource' });
+
+		return `<html>
 
 	<head>
 		<script type="text/javascript" src="${pathJs2}"></script>
 		<link href="${pathCss2}" rel="stylesheet" type="text/css" />
 	
 		<style type="text/css">
+			html, body {
+				height: 100%;
+				width: 100%;
+			}
 			#profile {
-				width: 600px;
-				height: 500px;
-				border: 1px solid lightgray;
+				width: 100%;
+				height: 100%;
 			}
 		</style>
 	</head>
 	
-	<body>
+	<body onload="draw()">
 		<div id="profile"></div>
 	
 		<script type="text/javascript">
-			var DOTstring = '${data}';
-			var parsedData = vis.network.convertDot(DOTstring);
-	
+		
+			function setNode(fragment, node) {
+				const labels = [];
+				fragment.key.forEach(key => {
+					const value = key.value.length > 20 ? key.value.substring(0, 16)+ '...' : key.value;
+					labels.push(key.key + ': ' + value);
+				});
+				node.label = labels.join('\\n');
+			}
+			function draw() {
+			var collection = JSON.parse('${JSON.stringify(fragments)}');
+			var parsedData = vis.network.convertDot('${dotData}');
 			var data = {
 				nodes: parsedData.nodes,
 				edges: parsedData.edges
 			}
-	
+			//
+			//Set node labels.
+			for (let i = 0; i < collection.fragments.length; i++) {
+				const fragment = collection.fragments[i];
+				const labels = [];
+				fragment.key.forEach(key => {
+					const value = key.value.length > 20 ? key.value.substring(0, 16)+ '...' : key.value;
+					labels.push(key.key + ': ' + value);
+				});
+				const node = data.nodes[i];
+				if (node) {
+					setNode(fragment, node);
+				}
+			}
 			var options = parsedData.options;
 			options.nodes = {
 				shape: 'box',
@@ -315,6 +343,9 @@ getHtml(data: string, extensionPath:string) {
 			options.edges = {
 				color: {
 					highlight: '#27AE60'
+				},
+				smooth: {
+					enabled: true
 				}
 			}
 			options.physics = { enabled: false };
@@ -323,19 +354,20 @@ getHtml(data: string, extensionPath:string) {
 			network.on("selectNode", function(params) {
 				console.log('selectNode: ' + params.nodes);
 			});
-	
+		}
 		</script>
 	</body>
 	
 	</html>`;
-}
+	}
+	private _panels: Map<string, vscode.WebviewPanel> = new Map<string, vscode.WebviewPanel>();
 	async commandShowEntitySearchVisualize(field: TableSchemaField, context: vscode.ExtensionContext): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
 			if (!account) {
 				throw new Error('No account is connected.');
 			}
-	
+
 			const values = await this.getEntitySearchValues(field);
 			if (!values || values.length !== 3) {
 				return Promise.resolve(false);
@@ -346,15 +378,15 @@ getHtml(data: string, extensionPath:string) {
 				cancellable: true
 			}, async (progress, token) => {
 				const panel = vscode.window.createWebviewPanel(
-					'entityVisualization', 
-					"Hack Day Visualization",
+					'entityVisualization',
+					`Entity: ${values[0]} > ${values[1]} > ${values[2]}`,
 					vscode.ViewColumn.One,
-					{ 
+					{
 						enableScripts: true,
 						localResourceRoots: [
 							vscode.Uri.file(path.join(context.extensionPath, 'resources', 'visjs'))
 						]
-					} 
+					}
 				);
 				const client = await this.getClient(account.aid);
 				const fragments = await client.getFragments(values[0], values[1], values[2]);
@@ -362,12 +394,10 @@ getHtml(data: string, extensionPath:string) {
 					vscode.window.showInformationMessage(`No matching fragments were found.`);
 					return Promise.resolve(false);
 				}
-				let data = DOT.stringify(fragments);
-				data = data.replace(/\n/g, '\\n');
-				panel.webview.html = this.getHtml(data, context.extensionPath);
+				panel.webview.html = this.getHtml(fragments, context.extensionPath);
 				return Promise.resolve(true);
 			});
-	
+
 		}
 		catch (err) {
 			vscode.window.showErrorMessage(`Entity search failed: ${err.message}`);
@@ -445,7 +475,7 @@ getHtml(data: string, extensionPath:string) {
 			if (!value || value.trim().length === 0) {
 				return Promise.resolve([]);
 			}
-			const values:string[] = [];
+			const values: string[] = [];
 			values.push(table.name);
 			values.push(field.as);
 			values.push(value);
