@@ -16,6 +16,8 @@ import { SegmentExplorerProvider } from './segmentExplorerProvider';
 import { TopicExplorerProvider } from './topicExplorerProvider';
 import { SubscriptionExplorerProvider } from './subscriptionExplorerProvider';
 import { AccountSettingExplorerProvider } from './accountSettingExplorerProvider';
+import { isNullOrUndefined } from 'util';
+import { UtilitiesProvider } from './utilitiesProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -35,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateTopicExplorer(contentProvider, context);
     activateTerminalManager(contentProvider, context);
     activateClassificationManager(contentProvider, context);
+    activateUtilityCommands(contentProvider, context);
 }
 
 function refreshExplorers(): Promise<any> {
@@ -244,6 +247,12 @@ function activateClassificationManager(lyticsProvider: LyticsContentProvider, co
     const classificationManager = new ContentClassificationManager(lyticsProvider);
     context.subscriptions.push(classificationManager);
     var disposable = vscode.commands.registerCommand('lytics.file.classify', (uri) => classificationManager.commandClassifyFileContents(uri));
+    context.subscriptions.push(disposable);
+}
+
+function activateUtilityCommands(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const utilProvider = new UtilitiesProvider(lyticsProvider, context);
+    var disposable = vscode.commands.registerCommand('lytics.hash.sip', async () => utilProvider.commandGenerateHash());
     context.subscriptions.push(disposable);
 }
 
