@@ -499,8 +499,13 @@
         "category": "Lytics"
       },
       {
-        "command": "lytics.file.classify",
-        "title": "Run Content Classification",
+        "command": "lytics.classify.file",
+        "title": "Run Content Classification for File",
+        "category": "Lytics"
+      },
+      {
+        "command": "lytics.classify.url",
+        "title": "Run Content Classification for URL",
         "category": "Lytics"
       },
       {
@@ -685,7 +690,11 @@
           "when": "lyticsAccountConnected"
         },
         {
-          "command": "lytics.file.classify",
+          "command": "lytics.classify.file",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.classify.url",
           "when": "lyticsAccountConnected"
         },
         {
@@ -695,7 +704,7 @@
       ],
       "editor/context": [
         {
-          "command": "lytics.file.classify",
+          "command": "lytics.classify.file",
           "group": "Lytics",
           "when": "lyticsAccountConnected && resourceScheme == file"
         },
@@ -737,7 +746,7 @@
           "when": "lyticsAccountConnected && explorerResourceIsFolder"
         },
         {
-          "command": "lytics.file.classify",
+          "command": "lytics.classify.file",
           "group": "Lytics",
           "when": "lyticsAccountConnected && explorerResourceIsFolder"
         }

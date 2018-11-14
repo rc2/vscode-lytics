@@ -88,6 +88,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
                 else if (luri.useTextFromActiveEditor) {
                     return await this.provideTextDocumentContentForContentClassificationForActiveEditor(account);
                 }
+                else if (luri.contentClassificationUrl) {
+                    return await this.provideTextDocumentContentForContentClassificationForUrl(luri.contentClassificationUrl, account);
+                }
             }
             else if (luri.isDocumentTopicsUri && luri.documentTopicsUrl) {
                 return this.provideTextDocumentContentForDocumentTopicsUrl(luri.documentTopicsUrl, account);
@@ -246,6 +249,13 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
                 err ? reject(err) : resolve(data.toString());
             });
         });
+    }
+    private async provideTextDocumentContentForContentClassificationForUrl(url: string, account: LyticsAccount): Promise<string> {
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
+        const classification = await client.classifyUsingUrl(url, true);
+        var str = JSON.stringify(classification, null, 4);
+        return Promise.resolve(str);
     }
     private async provideTextDocumentContentForDocumentTopicsUrl(url: string, account: LyticsAccount): Promise<string> {
         const token = await this.getAccessToken(account.aid);

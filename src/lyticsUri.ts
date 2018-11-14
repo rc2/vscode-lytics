@@ -39,6 +39,7 @@ export class LyticsUri {
     public campaignId: (string | undefined);
     public campaignVariationId: (string | undefined);
     public contentClassificationFilePath: (string | undefined);
+    public contentClassificationUrl: (string | undefined);
     public useTextFromActiveEditor: boolean = false;
     public hashType: (string | undefined);
     public valueToHash: (string | undefined);    
@@ -364,7 +365,11 @@ export class LyticsUri {
     private handleContentClassificationUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/content/classification/draft/{file name}.json?path={full file path}&active=false
-        if (parts.length === 4) {
+        // lytics://{aid}/content/classification/url/{url}.json
+        if (parts.length < 4) {
+            return;
+        }
+        if (parts[2] === 'draft') {
             if (parts[3].endsWith('.json')) {
                 const parsed = qs.parse(this._uri.query);
                 this.contentClassificationFilePath = this.getValueFromStringOrArray(parsed.path);
@@ -373,6 +378,10 @@ export class LyticsUri {
                 return;
             }
         }
+        else if (parts[2] === 'url') {
+            this.contentClassificationUrl = this.getUrlFromUriPath(this._uri, 3);
+            this.isContentClassificationUri = true;
+        }
     }
     private handleDocumentUri() {
         var parts = this._uri.path.substring(1).split('/');
@@ -380,10 +389,17 @@ export class LyticsUri {
         if (parts.length > 2) {
             if (parts[1] === 'topics' && parts[parts.length - 1].endsWith('.json')) {
                 this.isDocumentTopicsUri = true;
-                const joined = parts.slice(2).join('/');
-                this.documentTopicsUrl = joined.substring(0, joined.indexOf('.json'));
+                this.documentTopicsUrl = this.getUrlFromUriPath(this._uri, 2);
+                // const joined = parts.slice(2).join('/');
+                // this.documentTopicsUrl = joined.substring(0, joined.indexOf('.json'));
                 return;
             }
         }
+    }
+    private getUrlFromUriPath(uri: vscode.Uri, position: number = 0): string | undefined {
+        var parts = uri.path.substring(1).split('/');
+        const joined = parts.slice(position).join('/');
+        const url = joined.substring(0, joined.indexOf('.json'));
+        return url;
     }
 }
