@@ -214,6 +214,34 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 		return Promise.resolve(query);
 	}
 
+	async commandShowQueryInfo(query: Query): Promise<boolean> {
+		try {
+			const account = StateManager.getActiveAccount();
+			if (!account) {
+				throw new Error('No account is connected.');
+			}
+			if (!query) {
+				query = await this.promptForQuery(account, `Select the query you want to show.`);
+			}
+			if (!query) {
+				return Promise.resolve(false);
+			}
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: `Opening query info: ${query.alias}`,
+				cancellable: true
+			}, async (progress, token) => {
+				const uri = vscode.Uri.parse(`lytics://${account.aid}/queries/${query.alias}.json`);
+				await this.displayAsReadOnly(uri);
+			});
+			return Promise.resolve(true);
+		}
+		catch (err) {
+			vscode.window.showErrorMessage(`Open query info failed: ${err.message}`);
+			return Promise.resolve(false);
+		}
+	}
+
 	async commandShowQuery(query: Query): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();
@@ -241,7 +269,6 @@ export class QueryExplorerProvider extends LyticsExplorerProvider<Query> {
 			return Promise.resolve(false);
 		}
 	}
-
 	async commandDownloadQuery(query: Query): Promise<boolean> {
 		try {
 			const account = StateManager.getActiveAccount();

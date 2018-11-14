@@ -5,7 +5,7 @@ import { StateManager } from './stateManager';
 import { LyticsUri } from './lyticsUri';
 import { SettingsManager } from './settingsManager';
 import lytics = require("lytics-js/dist/lytics");
-import { LyticsAccount, TopicUrl, TopicUrlCollection, Subscription } from 'lytics-js/dist/types';
+import { LyticsAccount, TopicUrl, TopicUrlCollection, Subscription, Query } from 'lytics-js/dist/types';
 import fs = require('fs');
 import { ContentReader } from './contentReader';
 import { LyticsUtils } from 'lytics-js/dist/LyticsUtils';
@@ -36,7 +36,13 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             //
             //data that requires an account be connected
             if (luri.isQueryUri && luri.queryAlias) {
-                return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
+                if (luri.queryInfoMode) {
+                    return await this.provideTextDocumentContentForQueryInfo(luri.queryAlias, account);
+                }
+                else if (luri.queryTextMode) {
+                    return await this.provideTextDocumentContentForQuery(luri.queryAlias, account);
+                }
+                
             }
             else if (luri.isFunctionUri && luri.functionName) {
                 return await this.provideTextDocumentContentForFunctionTest(luri.functionName, luri.functionParameters, account);
@@ -119,12 +125,22 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const reloadedAccount = await client.getAccount(aid);
         return Promise.resolve(JSON.stringify(reloadedAccount, null, 4));
     }
-    private async provideTextDocumentContentForQuery(queryAlias: string, account: LyticsAccount): Promise<string> {
+    private async getQuery(queryAlias: string, account: LyticsAccount): Promise<Query> {
         const token = await this.getAccessToken(account.aid);
         const client = lytics.getClient(token);
-        const query = await client.getQuery(queryAlias);
+        return client.getQuery(queryAlias);
+    }
+    private async provideTextDocumentContentForQuery(queryAlias: string, account: LyticsAccount): Promise<string> {
+        // const token = await this.getAccessToken(account.aid);
+        // const client = lytics.getClient(token);
+        // const query = await client.getQuery(queryAlias);
+        const query = await this.getQuery(queryAlias, account);
         const text = query ? query.text : '';
         return Promise.resolve(text!);
+    }
+    private async provideTextDocumentContentForQueryInfo(queryAlias: string, account: LyticsAccount): Promise<string> {
+        const query = await this.getQuery(queryAlias, account);
+        return Promise.resolve(JSON.stringify(query, null, 4));
     }
     private async provideTextDocumentContentForFunctionTest(name: string, parameters: string[], account: LyticsAccount): Promise<string> {
         const token = await this.getAccessToken(account.aid);
