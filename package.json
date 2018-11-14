@@ -275,6 +275,15 @@
         }
       },
       {
+        "command": "lytics.query.info",
+        "title": "Show Query Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
         "command": "lytics.query.open",
         "title": "Open Query",
         "category": "Lytics",
@@ -575,6 +584,10 @@
           "when": "lyticsAccountConnected"
         },
         {
+          "command": "lytics.query.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.query.download",
           "when": "lyticsAccountConnected"
         },
@@ -872,6 +885,15 @@
         },
         {
           "command": "lytics.query.open",
+          "group": "inline",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.query.info",
+          "when": "view == lytics.queries.explorer && viewItem == 'query'"
+        },
+        {
+          "command": "lytics.query.info",
           "group": "inline",
           "when": "view == lytics.queries.explorer && viewItem == 'query'"
         },

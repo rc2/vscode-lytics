@@ -25,6 +25,8 @@ export class LyticsUri {
     public accountId: number = 0;
     public documentTopicsUrl: (string | undefined);
     public queryAlias: (string | undefined);
+    public queryTextMode: boolean = false;
+    public queryInfoMode: boolean = false;
     public functionName: (string | undefined);
     public functionParameters: string[] = [];
     public segmentSlugName: (string | undefined);
@@ -131,8 +133,18 @@ export class LyticsUri {
     private handleQueriesUri() {
         var parts = this._uri.path.substring(1).split('/');
         // lytics://{aid}/queries/default.lql
+        // lytics://{aid}/queries/default.json
         if (parts.length === 2) {
             var alias = parts[1].substring(0, parts[1].indexOf('.lql'));
+            if (alias.length > 0) {
+                this.queryTextMode = true;
+            }
+            else {
+                alias = parts[1].substring(0, parts[1].indexOf('.json'));
+                if (alias.length > 0) {
+                    this.queryInfoMode = true;
+                }
+            }
             if (alias.length > 0) {
                 this.isQueryUri = true;
                 this.queryAlias = alias;
