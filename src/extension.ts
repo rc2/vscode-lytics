@@ -246,7 +246,9 @@ function activateTerminalManager(lyticsProvider: LyticsContentProvider, context:
 function activateClassificationManager(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
     const classificationManager = new ContentClassificationManager(lyticsProvider);
     context.subscriptions.push(classificationManager);
-    var disposable = vscode.commands.registerCommand('lytics.file.classify', (uri) => classificationManager.commandClassifyFileContents(uri));
+    var disposable = vscode.commands.registerCommand('lytics.classify.file', (uri) => classificationManager.commandClassifyFileContents(uri));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.classify.url', () => classificationManager.commandClassifyUrlContents());
     context.subscriptions.push(disposable);
 }
 
