@@ -18,6 +18,7 @@ import { SubscriptionExplorerProvider } from './subscriptionExplorerProvider';
 import { AccountSettingExplorerProvider } from './accountSettingExplorerProvider';
 import { isNullOrUndefined } from 'util';
 import { UtilitiesProvider } from './utilitiesProvider';
+import { SegmentMLExplorerProvider } from './segmentMLExplorerProvider';
 
 const explorers: LyticsExplorerProvider<any>[] = [];
 
@@ -29,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     activateCampaignExplorer(contentProvider, context);
     activateQueryEditor(contentProvider, context);
     activateSegmentExplorer(contentProvider, context);
+    activateSegmentMLExplorer(contentProvider, context);
     activateAccountSettingExplorer(contentProvider, context);
     activateQueryExplorer(contentProvider, context);
     activateStreamExplorer(contentProvider, context);
@@ -158,6 +160,19 @@ function activateSegmentExplorer(lyticsProvider: LyticsContentProvider, context:
     disposable = vscode.commands.registerCommand('lytics.segments.refresh', () => explorer.refresh());
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.segment.info', (segment) => explorer.commandShowSegmentInfo(segment));
+    context.subscriptions.push(disposable);
+}
+
+function activateSegmentMLExplorer(lyticsProvider: LyticsContentProvider, context: vscode.ExtensionContext) {
+    const explorer = new SegmentMLExplorerProvider(lyticsProvider, context);
+    explorers.push(explorer);
+    var disposable = vscode.window.registerTreeDataProvider('lytics.segmentml.explorer', explorer);
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segmentml.refresh', () => explorer.refresh());
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segmentml.info', (segment) => explorer.commandShowModelInfo(segment));
+    context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segmentml.add', () => explorer.commandAddModel());
     context.subscriptions.push(disposable);
 }
 

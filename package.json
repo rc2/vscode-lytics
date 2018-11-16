@@ -119,6 +119,10 @@
           "name": "Segments"
         },
         {
+          "id": "lytics.segmentml.explorer",
+          "name": "SegmentML Models"
+        },
+        {
           "id": "lytics.settings.explorer",
           "name": "Settings"
         },
@@ -322,6 +326,33 @@
         "icon": {
           "light": "resources/icons/light/info.svg",
           "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.segmentml.refresh",
+        "title": "Refresh SegmentML Model List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.segmentml.info",
+        "title": "Show SegmentML Model Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.segmentml.add",
+        "title": "Add SegmentML Model",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
         }
       },
       {
@@ -612,6 +643,18 @@
           "when": "lyticsAccountConnected"
         },
         {
+          "command": "lytics.segmentml.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.segmentml.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.segmentml.add",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.settings.refresh",
           "when": "lyticsAccountConnected"
         },
@@ -786,6 +829,16 @@
           "when": "view == lytics.segments.explorer"
         },
         {
+          "command": "lytics.segmentml.refresh",
+          "group": "navigation",
+          "when": "view == lytics.segmentml.explorer"
+        },
+        {
+          "command": "lytics.segmentml.add",
+          "group": "navigation",
+          "when": "view == lytics.segmentml.explorer"
+        },
+        {
           "command": "lytics.settings.refresh",
           "group": "navigation",
           "when": "view == lytics.settings.explorer"
@@ -910,6 +963,11 @@
           "command": "lytics.segment.info",
           "group": "inline",
           "when": "view == lytics.segments.explorer && viewItem == 'segment'"
+        },
+        {
+          "command": "lytics.segmentml.info",
+          "group": "inline",
+          "when": "view == lytics.segmentml.explorer && viewItem == 'segmentml'"
         },
         {
           "command": "lytics.setting.edit",

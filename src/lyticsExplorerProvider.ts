@@ -66,4 +66,9 @@ export abstract class LyticsExplorerProvider<T> implements vscode.TreeDataProvid
 		}
 		return undefined;
 	}
+	//const wait = (ms:number) => new Promise(resolve => setTimeout(resolve, ms));
+	async wait(ms:number) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
 }
