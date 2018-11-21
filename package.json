@@ -347,6 +347,15 @@
         }
       },
       {
+        "command": "lytics.segmentml.visualize",
+        "title": "Visualize SegmentML Model",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/eye.svg",
+          "dark": "resources/icons/dark/eye.svg"
+        }
+      },
+      {
         "command": "lytics.segmentml.add",
         "title": "Add SegmentML Model",
         "category": "Lytics",
@@ -648,6 +657,10 @@
         },
         {
           "command": "lytics.segmentml.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.segmentml.visualize",
           "when": "lyticsAccountConnected"
         },
         {
@@ -966,6 +979,11 @@
         },
         {
           "command": "lytics.segmentml.info",
+          "group": "inline",
+          "when": "view == lytics.segmentml.explorer && viewItem == 'segmentml'"
+        },
+        {
+          "command": "lytics.segmentml.visualize",
           "group": "inline",
           "when": "view == lytics.segmentml.explorer && viewItem == 'segmentml'"
         },

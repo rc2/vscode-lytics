@@ -172,6 +172,8 @@ function activateSegmentMLExplorer(lyticsProvider: LyticsContentProvider, contex
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.segmentml.info', (segment) => explorer.commandShowModelInfo(segment));
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('lytics.segmentml.visualize', (segment) => explorer.commandShowModelVisualize(segment, context));
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('lytics.segmentml.add', () => explorer.commandAddModel());
     context.subscriptions.push(disposable);
 }
