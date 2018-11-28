@@ -8,6 +8,7 @@ export class LyticsUri {
     public isFunctionUri: boolean = false;
     public isQueryUri: boolean = false;
     public isSegmentUri: boolean = false;
+    public isSegmentCollectionUri: boolean = false;
     public isSegmentMLUri: boolean = false;
     public isSettingUri: boolean = false;
     public isStreamUri: boolean = false;
@@ -31,6 +32,7 @@ export class LyticsUri {
     public functionName: (string | undefined);
     public functionParameters: string[] = [];
     public segmentSlugName: (string | undefined);
+    public segmentCollectionSlugName: (string | undefined);
     public modelName: (string | undefined);
     public settingSlugName: (string | undefined);
     public streamName: (string | undefined);
@@ -71,6 +73,9 @@ export class LyticsUri {
                     return;
                 case 'segments':
                     this.handleSegmentsUri();
+                    return;
+                case 'segmentcollections':
+                    this.handleSegmentCollectionsUri();
                     return;
                 case 'segmentml':
                     this.handleSegmentMLUri();
@@ -195,6 +200,22 @@ export class LyticsUri {
         }
     }
     
+    private handleSegmentCollectionsUri() {
+        var parts = this._uri.path.substring(1).split('/');
+        // lytics://{aid}/segmentcollections/id.json
+        if (parts.length === 2) {
+            if (parts[1].endsWith('.json')) {
+                const collectionId = parts[1].substring(0, parts[1].indexOf('.json')).trim();
+                if (collectionId.length > 0) {
+                    this.isSegmentCollectionUri = true;
+                    this.segmentCollectionSlugName = collectionId;
+                    return;
+                }
+            }
+            return;
+        }
+    }
+
     private handleSegmentMLUri() {
         var parts = this._uri.path.substring(1).split('/');
         //lytics://{aid}/segmentml/{name}.json

@@ -3,6 +3,7 @@
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
   "version": "0.0.29",
+  "license": "MIT",
   "author": {
     "name": "Adam Conn",
     "email": "adam.conn@lytics.com"
@@ -117,6 +118,10 @@
         {
           "id": "lytics.segments.explorer",
           "name": "Segments"
+        },
+        {
+          "id": "lytics.segmentcollections.explorer",
+          "name": "Segment Collections"
         },
         {
           "id": "lytics.segmentml.explorer",
@@ -322,6 +327,24 @@
       {
         "command": "lytics.segment.info",
         "title": "Show Segment Info",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/info.svg",
+          "dark": "resources/icons/dark/info.svg"
+        }
+      },
+      {
+        "command": "lytics.segmentcollections.refresh",
+        "title": "Refresh Segment Collection List",
+        "category": "Lytics",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "lytics.segmentcollection.info",
+        "title": "Show Segment Collection Info",
         "category": "Lytics",
         "icon": {
           "light": "resources/icons/light/info.svg",
@@ -652,6 +675,14 @@
           "when": "lyticsAccountConnected"
         },
         {
+          "command": "lytics.segmentcollections.refresh",
+          "when": "lyticsAccountConnected"
+        },
+        {
+          "command": "lytics.segmentcollection.info",
+          "when": "lyticsAccountConnected"
+        },
+        {
           "command": "lytics.segmentml.refresh",
           "when": "lyticsAccountConnected"
         },
@@ -976,6 +1007,16 @@
           "command": "lytics.segment.info",
           "group": "inline",
           "when": "view == lytics.segments.explorer && viewItem == 'segment'"
+        },
+        {
+          "command": "lytics.segment.info",
+          "group": "inline",
+          "when": "view == lytics.segmentcollections.explorer && viewItem == 'segment'"
+        },
+        {
+          "command": "lytics.segmentcollection.info",
+          "group": "inline",
+          "when": "view == lytics.segmentcollections.explorer && viewItem == 'segmentcollection'"
         },
         {
           "command": "lytics.segmentml.info",

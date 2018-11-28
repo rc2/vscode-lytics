@@ -75,7 +75,7 @@ export class SegmentExplorerProvider extends LyticsExplorerProvider<Segment> {
 	}
 }
 
-class SegmentTreeItem extends vscode.TreeItem {
+export class SegmentTreeItem extends vscode.TreeItem {
 	constructor(element: Segment) {
 		super(element.name!, vscode.TreeItemCollapsibleState.None);
 		this.slugName = element.slug_name;

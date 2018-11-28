@@ -4,6 +4,7 @@
 - (issue 121) Added a command to run content classification on a URL. The command is available from the command palette.
 - (issue 123) Added a command to get query info. This is the raw details of the query as returned by the query endpoint. The command is available from the command palette and from the query explorer.
 - (issue 125) Added support for SegmentML models. A new explorer is available, along with commands to read and create models.
+- (issue 129) Added support for segment collections. A new explorer is available.
 
 ## [0.0.29] - 2018-10-08
 - (issue 106) Added a check to the "lytics watch" feature to display an error message if node.js is not installed.
