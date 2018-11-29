@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { StateManager } from './stateManager';
-import { LyticsAccount, Segment, SegmentMLModel, CreateSegmentMLModelConfig, SegmentMLModelSegment, SegmentMLSummaryConfig } from 'lytics-js/dist/types';
+import { LyticsAccount, Segment, SegmentMLModel, CreateSegmentMLModelConfig, SegmentMLModelSegment, SegmentMLSummaryConflicts } from 'lytics-js/dist/types';
 import { ContentReader } from './contentReader';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentSelector } from './segmentSelector';
@@ -201,6 +201,7 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 		const segmentInfo = await this.getSegmentInfoHtml(source, target);
 		const gauges = await this.getGauges(model);
 		const graph = await this.getFeatureGraph(model);
+		const modelValidationTable = await this.getModelValidationTable(model);
 		const html = `<html>` +
 			`<head>` +
 			`<style>
@@ -213,16 +214,20 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			`google.charts.load('current', { packages: ['corechart', 'bar', 'table', 'gauge'] });
 			var features = JSON.parse('${JSON.stringify(model.features)}');
 			var summary = JSON.parse('${JSON.stringify(model.summary.conf)}');
-			var modelFuzziness = ${SegmentMLSummaryConfig.getModelFuzziness(model.summary.conf)};
-			var falsePositiveRate = ${SegmentMLSummaryConfig.getFalsePositiveRate(model.summary.conf)};
-			var falseNegativeRate = ${SegmentMLSummaryConfig.getFalseNegativeRate(model.summary.conf)};
+			var modelFuzziness = ${this.getModelFuzziness(model)};
+			var falsePositiveRate = ${this.getFalsePositiveRate(model)};
+			var falseNegativeRate = ${this.getFalseNegativeRate(model)};
+
 			google.charts.setOnLoadCallback(drawCharts);` +
 			`</script>` +
 			`<style>` +
-			`#segment-info { width: 700px; padding-bottom: 16px; }` +
-			`#segment-info th, #segment-info td { border: 1px solid; padding: 8px; text-align: center; }` +
-			`#segment-info th.empty { border: 0px; }` +
-			`#segment-info td.right { text-align: right; }` +
+			`.segmentml-table { width: 700px; padding-bottom: 16px; }` +
+			`.segmentml-table th, .segmentml-table td { border: 1px solid; padding: 8px; text-align: center; }` +
+			`.segmentml-table th.empty { border: 0px; }` +
+			`.segmentml-table td.center { text-align: center; }` +
+			`.segmentml-table td.left { text-align: left; }` +
+			`.segmentml-table td.right { text-align: right; }` +
+			`#raw-data-table { padding-top: 10px; }` +
 			`</style>` +
 			`</head>` +
 			`<body>` +
@@ -230,7 +235,8 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			segmentInfo +
 			gauges +
 			graph +
-			`<p style="font-size: x-small; padding-top:20px; ">Generated at: ${new Date()}</p>` +
+			modelValidationTable + 
+			`<p style="font-size: x-small; padding-top: 20px; ">Generated at: ${new Date()}</p>` +
 			`</body>` +
 			`</html>`;
 		return Promise.resolve(html);
@@ -246,7 +252,7 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 		return Promise.resolve(lines.join('\n'));
 	}
 	async getSegmentInfoHtml(source: SegmentMLModelSegment, target: SegmentMLModelSegment): Promise<string> {
-		const html = `<table id="segment-info">` +
+		const html = `<table class="segmentml-table">` +
 			`<tr>` +
 			`<th class="empty"></th>` +
 			`<th>Source segment</th>` +
@@ -259,13 +265,77 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			`</table>`;
 		return Promise.resolve(html);
 	}
+	private formatAsInt(value: number): string {
+		return value.toLocaleString('en', {useGrouping:true});
+	}
+	private formatAsPercent(value: number): string {
+		return `${(value * 100).toFixed(2)}%`;
+	}
+    private getModelFuzziness(model: SegmentMLModel): number {
+		const conflicts = model.summary.conf;
+        const demoninator = conflicts.FalseNegative + conflicts.FalsePositive + conflicts.TrueNegative + conflicts.TruePositive;
+        if (demoninator === 0) {
+            return 0;
+        }
+        return (conflicts.FalseNegative + conflicts.FalsePositive)/demoninator;
+    }
+    private getFalsePositiveRate(model: SegmentMLModel): number {
+		const conflicts = model.summary.conf;
+		if (conflicts.TrueNegative === 0) {
+            return 0;
+        }
+        return conflicts.FalsePositive/conflicts.TrueNegative;
+    }
+    private getFalseNegativeRate(model: SegmentMLModel): number {
+		const conflicts = model.summary.conf;
+		if (conflicts.FalseNegative === 0 && conflicts.TruePositive === 0) {
+            return 0;
+        }
+        return conflicts.FalseNegative/(conflicts.FalseNegative + conflicts.TruePositive);
+    }
+	private getSampleSize(model: SegmentMLModel): number {
+		return model.summary.conf.FalseNegative + model.summary.conf.FalsePositive + model.summary.conf.TrueNegative + model.summary.conf.TruePositive;
+	}
+	async getModelValidationTable(model: SegmentMLModel): Promise<string> {
+		const conflicts = model.summary.conf;
+		const data = [
+			['False Positive', this.formatAsInt(conflicts.FalsePositive), '# of users in the target segment who are not predicted to be in that segment'],
+			['True Positive', this.formatAsInt(conflicts.TruePositive), '# of users in the target segment who are predicted to be in that segment'],
+			['False Negative', this.formatAsInt(conflicts.FalseNegative), '# of users in the source segment who are predicted to be in the target segment'],
+			['True Negative', this.formatAsInt(conflicts.TrueNegative), '# of users in the source segment who are not predicted to be in the target segment'],
+			['Model Fuzziness', this.formatAsPercent(this.getModelFuzziness(model)), '<sup>false negative + false positive</sup>&frasl;<sub>sample size</sub>'],
+			['False Positive Rate', this.formatAsPercent(this.getFalsePositiveRate(model)), '<sup>false positive</sup>&frasl;<sub>true negative</sub>'], 
+			['False Negative Rate', this.formatAsPercent(this.getFalseNegativeRate(model)), '<sup>false negative</sup>&frasl;<sub>false negative + true positive</sub>'],
+			['Sample Size', this.formatAsInt(this.getSampleSize(model)), '# of users from the source and target segments that were used for validation'],
+			['MSE', this.formatAsInt(model.summary.mse), '<a href="https://en.wikipedia.org/wiki/Mean_squared_error">Mean squared error</a>'],
+			['R<sup>2</sup>', this.formatAsInt(model.summary.rsq), '<a href="https://en.wikipedia.org/wiki/Coefficient_of_determination">Coefficient of determination</a>'],
+			['AUC', this.formatAsInt(model.summary.auc), '<a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic#Area_under_the_curve">Area under the curve</a>'],
+			['Threshold', this.formatAsInt(model.summary.threshold), 'Correlation threshold at which to discard features in the model']
+		];
+		const rows:string[] = [];
+		data
+			.sort(function(a, b) { 
+				return a[0] > b[0] ? 1 : -1;
+			})
+			.forEach(d => rows.push(`<tr><td class="right">${d[0]}</td><td class="right">${d[1]}</td><td class="left">${d[2]}</td></tr>`));
+		const html = `<h2>Model Validation Results</h2>` + 
+			`<table class="segmentml-table" id="raw-data-table">` +
+			`<tr>` +
+			`<th>Name</th>` +
+			`<th>Value</th>` +
+			`<th>Description</th>` +
+			`</tr>` +
+			rows.join('\n') +
+			`</table>`;
+		return Promise.resolve(html);
+	}
 	async getGauges(model: SegmentMLModel): Promise<string> {
 		return Promise.resolve(`<div id="gauges"></div>`);
 	}
 	async getFeatureGraph(model: SegmentMLModel): Promise<string> {
 		const html = `<div id="chart" style="width: 700px; height: 450px;">
 		</div>
-		<div id="legend"></div>`;
+		<div id="legend" style="padding-bottom: 20px;"></div>`;
 		return Promise.resolve(html);
 	}
 	async commandAddModel(): Promise<boolean> {
