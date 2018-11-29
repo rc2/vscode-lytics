@@ -1,10 +1,3 @@
-const maxFeatureNameLength = 25;
-function getFeatureNameForLabel(name) {
-    if (name.length <= maxFeatureNameLength) {
-        return name;
-    }
-    return name.substring(0, maxFeatureNameLength - 3) + '...';
-}
 function getScoreName(name) {
     if (name.indexOf('score_') === -1) {
         return name;
@@ -14,190 +7,179 @@ function getScoreName(name) {
 }
 function getKindMap() {
     var map = new Map();
-    map.set('content', { label: 'Topic', color: '#32A9DA' });
-    map.set('score', { label: 'Behavioral Score', color: '#60C364' });
-    map.set('lql', { label: 'User Profile', color: 'orange' });
-    map.set('other', { label: 'Other', color: 'gray' });
+    map.set('content', { label: 'Topic', color: '50,169,218' });
+    map.set('score', { label: 'Behavioral Score', color: '96,195,100' });
+    map.set('lql', { label: 'User Profile', color: '255,165,0' });
+    map.set('other', { label: 'Other', color: '128,128,128' });
     return map;
 }
-function getKindLabel(kind) {
-    const map = getKindMap();
-    var mapping = map.get(kind);
-    if (!mapping) {
-        mapping = map.get('other');
-    }
-    return mapping.label;
-}
-function getKindColor(kind) {
-    const map = getKindMap();
-    const mapping = map.get(kind);
-    if (!mapping) {
-        mapping = map.get('other');
-    }
-    return mapping.color;
-}
-function drawGauges() {
-    var width = 200;
-    var height = 25;
 
-    const data = [
-        [modelFuzziness, 'Model Fuzziness'],
-        [falsePositiveRate, 'False Positives'],
-        [falseNegativeRate, 'False Negatives']
-    ];
-    var options = {
-        width: width,
-        height: height,
-        legend: 'none',
-        bar: { 
-            groupWidth: '75%' 
-        },
-        isStacked: 'percent',
-        enableInteractivity: false,
-        hAxis: {
-            baselineColor: 'transparent',
-            textPosition: 'none',
-            gridlines: {
-                color: 'transparent'
-            }
-        },
-        series: {
-            0: { color: '#32A9DA' },
-            1: { color: 'gray' }
-        },
-        backgroundColor: 'none',
-        chartArea: {
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '100%'
-        }
-    };
-    var div = document.getElementById("gauges");
-    var table = document.createElement('table');
-    table.setAttribute('style', 'padding-top: 10px;');
-    var row = document.createElement('tr');
-    data.forEach(d => {
-        var bar = makeGauge(width, d[0], d[1], options);
-        var col = document.createElement('td');
-        col.setAttribute('style', 'padding-right: 10px;');
-        col.appendChild(bar);
-        row.appendChild(col);
+function formatAsInt(value) {
+    return value.toLocaleString('en', { useGrouping: true });
+}
+function formatAsPercent(value) {
+    return `${(value * 100).toFixed(2)}%`;
+}
+function drawSummaryChart(elementId) {
+    var ctx = document.getElementById(elementId);
+
+    var keys = Object.keys(summary.success);
+    Object.keys(summary.fail).forEach(key => {
+        if (keys.indexOf(key) === -1) { keys.push(key); }
     });
-    table.appendChild(row);
-    div.appendChild(table);
-}
-function makeGauge(width, value, text, options) {
-    var data = google.visualization.arrayToDataTable([
-        ['label', 'bar1', 'bar2'],
-        ['', value, 1-value],
-    ]);
-    var view = new google.visualization.DataView(data);
-    view.setColumns([0, 1,
-        {
-            type: "string",
-            role: "annotation"
-        },
-        2]);
+    keys.sort();
 
-    var bar = document.createElement('div');
-    bar.setAttribute('style', `width: ${width}px;`);
-    var chart = new google.visualization.BarChart(bar);
-    chart.draw(view, options);
-    var label = document.createElement('div');
-    label.setAttribute('style', 'text-align: center');
-    label.appendChild(document.createTextNode(`${text}: ${(value * 100).toFixed(2)}%`));
-    bar.append(label);
-    return bar;
-}
-function drawBarChart() {
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Name');
-    data.addColumn('number', 'Importance');
-    data.addColumn({ type: 'string', role: 'tooltip' });
-    data.addColumn({ type: 'string', role: 'style' });
-    data.addColumn({ type: 'string', role: 'domain' });
-    features.filter(feature => feature.importance > 0)
-        .sort((a, b) => a.importance - b.importance)
-        .reverse()
-        .forEach(feature => {
-            const name = feature.kind === 'score' ? getScoreName(feature.name) : feature.name;
-            const label = getFeatureNameForLabel(name);
-            const kind = getKindLabel(feature.kind);
-            const color = getKindColor(feature.kind);
-            const tooltip = `${name}\n${kind}\n${feature.importance}`;
-            data.addRow([
-                label,
-                feature.importance,
-                tooltip,
-                color,
-                feature.kind
-            ]);
-        });
-    var options = {
-        title: 'SegmentML Variable Importance',
-        chartArea: { width: '50%' },
-        hAxis: {
-            title: 'Importance',
-            baselineColor: '#CCC',
-            gridlines: {
-                color: '#CCC'
-            },
-            textStyle: {
-                color: '#CCC'
-            },
-            minValue: 0
-        },
-        vAxis: {
-            title: 'Feature',
-            textStyle: {
-                color: '#CCC'
-            },
-        },
-        axisTitlesPosition: 'none',
-        titleTextStyle: {
-            color: '#CCC'
-        },
-        legend: 'none',
-        backgroundColor: 'none'
-    };
+    var dataSuccess = keys.map(key => {
+        var obj = {
+            value: key,
+            count: summary.success[key] ? summary.success[key] : 0
+        };
+        return obj;
+    });
+    var dataFail = keys.map(key => {
+        var obj = {
+            value: key,
+            count: summary.fail[key] ? summary.fail[key] : 0
+        };
+        return obj;
+    });
 
-    var element = document.getElementById('chart');
-    var chart = new google.visualization.BarChart(element);
-    chart.draw(data, options);
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: keys,
+            datasets: [{
+                label: 'Target',
+                fill: true,
+                backgroundColor: 'rgba(41, 128, 185, 0.5)',
+                borderColor: 'rgba(41, 128, 185, 1)',
+                data: dataSuccess.map(d => d.count)
+            },
+            {
+                label: 'Source',
+                fill: true,
+                backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                borderColor: 'rgba(231, 76, 60, 1)',
+                data: dataFail.map(d => d.count)
+            }]
+        },
+        options: {
+            tooltips: {
+                intersect: false
+            },
+            elements: {
+                point: {
+                    radius: 0
+                }
+            },
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Prediction'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Sample User Count'
+                    }
+                }]
+            }
+        }
+    });
+}
+
+function drawConflictsChart(elementId) {
+    var ctx = document.getElementById(elementId);
+    var conflictData = [
+        { label: 'True Positives', value: conflicts.TruePositive, color: 'rgb(41, 128, 185)' },
+        { label: 'True Negatives', value: conflicts.TrueNegative, color: 'rgb(133, 193, 233)' },
+        { label: 'False Positives', value: conflicts.FalsePositive, color: 'rgb(231, 76, 60)' },
+        { label: 'False Negatives', value: conflicts.FalseNegative, color: 'rgb(241, 148, 138)' }
+    ];
+    var chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: conflictData.map(d => d.value),
+                backgroundColor: conflictData.map(d => d.color)
+            }],
+            labels: conflictData.map(d => `${d.label}: ${formatAsInt(d.value)}`)
+        },
+        options: {
+            legend: {
+                position: 'left'
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        const d = conflictData[tooltipItem.index];
+                        const label = d.label;
+                        return `  ${d.label}: ${formatAsInt(d.value)}`;
+                    }
+                }
+            }
+        }
+    });
+}
+
+function drawFeaturesChart(elementId) {
+    var ctx = document.getElementById(elementId);
+    const kindMap = this.getKindMap();
+    const labels = features.map(feature => {
+        const name = feature.kind === 'score' ? getScoreName(feature.name) : feature.name;
+        return name;
+    })
+    var chart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: features.map(f => f.importance),
+                backgroundColor: features.map(f => `rgba(${kindMap.get(f.kind).color}, 0.2)`),
+                backgroundColor: features.map(f => `rgba(${kindMap.get(f.kind).color}, 1)`),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            legend: {
+                display: false
+            },
+            tooltips: {
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        const feature = features[tooltipItem.index];
+                        const label = kindMap.get(feature.kind).label;
+                        return `  ${label}`;
+                    },
+                    footer: function (tooltipItems, data) {
+                        const feature = features[tooltipItems[0].index];
+                        return `Importance: ${feature.importance.toFixed(2)}\n` +
+                            `Correlation: ${feature.correlation.toFixed(2)}`;
+                    }
+                }
+            },
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Importance'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
 }
 function drawCharts() {
-    drawGauges();
-    drawBarChart();
-    drawLegend(features);
+    drawSummaryChart("summaryChart");
+    drawConflictsChart("conflictsChart");
+    drawFeaturesChart("featuresChart");
 }
 
-function drawLegend(features) {
-    const kinds = new Set(features.filter(feature => feature.importance > 0).map(feature => feature.kind));
-    var data = new google.visualization.DataTable();
-    var formatter = new google.visualization.ColorFormat();
-    data.addColumn('number', 'Color');
-    data.addColumn('string', 'Kind');
-    const map = getKindMap();
-    let i = 0;
-    kinds.forEach(kind => {
-        const entry = map.get(kind);
-        i++;
-        data.addRow([i, entry.label]);
-        formatter.addRange(i, i + 1, entry.color, entry.color);
-    })
-    var table = new google.visualization.Table(document.getElementById('legend'));
-
-    formatter.format(data, 0); // Apply formatter to second column
-
-    table.draw(data, {
-        allowHtml: true,
-        cssClassNames: {
-            headerCell: 'hide',
-            tableCell: 'transparent',
-            oddTableRow: 'transparent',
-            tableRow: 'transparent'
-        }
-    });
-
-}
