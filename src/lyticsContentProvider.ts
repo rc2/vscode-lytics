@@ -50,6 +50,9 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
             else if (luri.isSegmentUri && luri.segmentSlugName) {
                 return await this.provideTextDocumentContentForSegmentInfo(luri.segmentSlugName, account);
             }
+            else if (luri.isSegmentCollectionUri && luri.segmentCollectionSlugName) {
+                return await this.provideTextDocumentContentForSegmentCollectionInfo(luri.segmentCollectionSlugName, account);
+            }
             else if (luri.isSegmentMLUri && luri.modelName) {
                 return await this.provideTextDocumentContentForModelInfo(luri.modelName, account);
             }
@@ -156,6 +159,12 @@ export default class LyticsContentProvider implements vscode.TextDocumentContent
         const client = lytics.getClient(token);
         let segment = await client.getSegment(segmentSlugName);
         return Promise.resolve(JSON.stringify(segment, null, 4));
+    }
+    private async provideTextDocumentContentForSegmentCollectionInfo(segmentCollectionSlugName: string, account: LyticsAccount): Promise<string> {
+        const token = await this.getAccessToken(account.aid);
+        const client = lytics.getClient(token);
+        let collection = await client.getSegmentCollection(segmentCollectionSlugName);
+        return Promise.resolve(JSON.stringify(collection, null, 4));
     }
     private async provideTextDocumentContentForModelInfo(modelName: string, account: LyticsAccount): Promise<string> {
         const token = await this.getAccessToken(account.aid);

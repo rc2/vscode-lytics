@@ -1,9 +1,10 @@
-## [0.0.30] - 2018-??-??
+## [0.0.30] - 2018-11-29
 - (issue 113) Added a command to generate the stub of an HTTP command for the Lytics API. The stub opens in a new editor. The command is available from the command palette or on the context menu for each account listed in the account explorer.
 - (issue 119) Added a command to generate a SipHash. Lytics uses SipHash to convert URLs. The command is available from the command palette.
 - (issue 121) Added a command to run content classification on a URL. The command is available from the command palette.
 - (issue 123) Added a command to get query info. This is the raw details of the query as returned by the query endpoint. The command is available from the command palette and from the query explorer.
 - (issue 125) Added support for SegmentML models. A new explorer is available, along with commands to read and create models.
+- (issue 129) Added support for segment collections. A new explorer is available.
 
 ## [0.0.29] - 2018-10-08
 - (issue 106) Added a check to the "lytics watch" feature to display an error message if node.js is not installed.
