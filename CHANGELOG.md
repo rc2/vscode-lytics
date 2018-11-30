@@ -1,4 +1,4 @@
-## [0.0.30] - 2018-??-??
+## [0.0.30] - 2018-11-29
 - (issue 113) Added a command to generate the stub of an HTTP command for the Lytics API. The stub opens in a new editor. The command is available from the command palette or on the context menu for each account listed in the account explorer.
 - (issue 119) Added a command to generate a SipHash. Lytics uses SipHash to convert URLs. The command is available from the command palette.
 - (issue 121) Added a command to run content classification on a URL. The command is available from the command palette.

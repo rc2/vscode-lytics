@@ -18,7 +18,11 @@ function formatAsInt(value) {
     return value.toLocaleString('en', { useGrouping: true });
 }
 function formatAsPercent(value) {
-    return `${(value * 100).toFixed(2)}%`;
+    value = value * 100;
+    if (!Number.isInteger(value)) {
+        value = value.toFixed(2);
+    }
+    return `${value}%`;
 }
 function drawSummaryChart(elementId) {
     var ctx = document.getElementById(elementId);
@@ -29,43 +33,61 @@ function drawSummaryChart(elementId) {
     });
     keys.sort();
 
-    var dataSuccess = keys.map(key => {
+    var dataToChart = [];
+    dataToChart.push(keys.map(key => {
         var obj = {
             value: key,
             count: summary.success[key] ? summary.success[key] : 0
         };
         return obj;
-    });
-    var dataFail = keys.map(key => {
+    }));
+    dataToChart.push(keys.map(key => {
         var obj = {
             value: key,
             count: summary.fail[key] ? summary.fail[key] : 0
         };
         return obj;
-    });
+    }));
 
     var chart = new Chart(ctx, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: keys,
             datasets: [{
                 label: 'Target',
                 fill: true,
+                showLine: true,
+                tension: 0.1,
                 backgroundColor: 'rgba(41, 128, 185, 0.5)',
                 borderColor: 'rgba(41, 128, 185, 1)',
-                data: dataSuccess.map(d => d.count)
+                data: dataToChart[0].map(d => {
+                    var obj = { x: d.value, y: d.count};
+                    return obj;
+                })
             },
             {
                 label: 'Source',
                 fill: true,
+                showLine: true,
+                tension: 0.1,
                 backgroundColor: 'rgba(231, 76, 60, 0.5)',
                 borderColor: 'rgba(231, 76, 60, 1)',
-                data: dataFail.map(d => d.count)
+                data: dataToChart[1].map(d => {
+                    var obj = { x: d.value, y: d.count};
+                    return obj;
+                })
             }]
         },
         options: {
             tooltips: {
-                intersect: false
+                intersect: false,
+                mode: 'index',
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        const source = data.datasets[tooltipItem.datasetIndex].label;
+                        const point = dataToChart[tooltipItem.datasetIndex][tooltipItem.index];
+                        return ` ${source}: ${formatAsInt(point.count)} users (${formatAsPercent(point.count/sampleSize)})`;
+                    }
+                }
             },
             elements: {
                 point: {
@@ -116,7 +138,7 @@ function drawConflictsChart(elementId) {
                     label: function (tooltipItem, data) {
                         const d = conflictData[tooltipItem.index];
                         const label = d.label;
-                        return `  ${d.label}: ${formatAsInt(d.value)}`;
+                        return `  ${d.label}: ${formatAsInt(d.value)} users`;
                     }
                 }
             }

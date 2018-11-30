@@ -211,6 +211,7 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			</style>` +
 			jsLinks +
 			`<script type="text/javascript">` +
+			`var sampleSize = ${this.getSampleSize(model)};` +
 			`var summary = JSON.parse('${JSON.stringify(model.summary)}');` + 
 			`var features = JSON.parse('${JSON.stringify(model.features.filter(f => f.importance > 0).sort((a, b) => b.importance - a.importance))}');
 			var conflicts = JSON.parse('${JSON.stringify(model.summary.conf)}');
@@ -277,11 +278,11 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 	}
 	private getModelFuzziness(model: SegmentMLModel): number {
 		const conflicts = model.summary.conf;
-		const demoninator = conflicts.FalseNegative + conflicts.FalsePositive + conflicts.TrueNegative + conflicts.TruePositive;
-		if (demoninator === 0) {
+		const sampleSize = this.getSampleSize(model);
+		if (sampleSize === 0) {
 			return 0;
 		}
-		return (conflicts.FalseNegative + conflicts.FalsePositive) / demoninator;
+		return (conflicts.FalseNegative + conflicts.FalsePositive) / sampleSize;
 	}
 	private getFalsePositiveRate(model: SegmentMLModel): number {
 		const conflicts = model.summary.conf;
@@ -371,6 +372,9 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			if (!source) {
 				return Promise.resolve(false);
 			}
+			//
+			//TODO: prompt to select segment or field
+
 			const target = await selector.promptForSegment('Select the target segment.');
 			if (!target) {
 				return Promise.resolve(false);
@@ -393,6 +397,7 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 			//
 			//TODO: prompt for aspect_collections
 			//TODO: prompt for additional_fields
+			const modelOnly = await this.confirm(`Prevent users from being scored?`);
 			//
 			//confirm
 			const newModelName = `${source.slug_name}::${target.slug_name}`;
@@ -411,6 +416,7 @@ export class SegmentMLExplorerProvider extends LyticsExplorerProvider<SegmentMLM
 				config.source = source.slug_name;
 				config.target = target.slug_name;
 				config.use_scores = useScores;
+				config.model_only = modelOnly;
 				const model = await client.createSegmentMLModel(config);
 				if (model) {
 					progress.report({

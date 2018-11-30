@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "license": "MIT",
   "author": {
     "name": "Adam Conn",
