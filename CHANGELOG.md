@@ -1,3 +1,6 @@
+## [0.0.31] - 2018-12-13
+- (issue 132) Added validation logic to query upload. If a user tries to upload an invalid query, the error message from the Lytics query validation endpoint is displayed.
+
 ## [0.0.30] - 2018-11-29
 - (issue 113) Added a command to generate the stub of an HTTP command for the Lytics API. The stub opens in a new editor. The command is available from the command palette or on the context menu for each account listed in the account explorer.
 - (issue 119) Added a command to generate a SipHash. Lytics uses SipHash to convert URLs. The command is available from the command palette.
