@@ -2,7 +2,7 @@
   "name": "vscode-lytics",
   "displayName": "Lytics",
   "description": "Manage and maintain your Lytics account",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "license": "MIT",
   "author": {
     "name": "Adam Conn",
@@ -1186,7 +1186,7 @@
     "@types/query-string": "^6.1.1",
     "tslint": "^5.11.0",
     "typescript": "^2.6.1",
-    "vscode": "^1.1.21"
+    "vscode": "^1.1.26"
   },
   "dependencies": {
     "axios": "^0.18.0",

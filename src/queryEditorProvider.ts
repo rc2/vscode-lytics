@@ -57,12 +57,6 @@ export class QueryEditorProvider {
 	}
 
 	async commandUploadQuery(uri: vscode.Uri): Promise<boolean> {
-		// await vscode.window.withProgress({
-		// 	location: vscode.ProgressLocation.Notification,
-		// 	title: `Uploading query.`,
-		// 	cancellable: true
-		// }, async (progress, token) => {
-		// });
 		const account = StateManager.getActiveAccount();
 		if (!account) {
 			vscode.window.showErrorMessage('Connect to an account before uploading a query to Lytics.');
@@ -111,6 +105,13 @@ export class QueryEditorProvider {
 					var currentQuery;
 					const a_token = await SettingsManager.getAccessToken(account.aid);
 					const client = lytics.getClient(a_token);
+
+					const validate = await client.validateQuery(data);
+					if (!validate.success) {
+						vscode.window.showErrorMessage(`Invalid query: ${validate.message}`);
+						return Promise.resolve(false);
+					}
+
 					try {
 						currentQuery = await client.getQuery(alias);
 					}
