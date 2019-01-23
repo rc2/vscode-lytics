@@ -10,7 +10,7 @@ import { TableExplorerProvider } from './tableExplorerProvider';
 import { TerminalManager } from './terminalManager';
 import { StateManager } from './stateManager';
 import LyticsContentProvider from './lyticsContentProvider';
-import { ContentClassificationManager } from './ContentClassificationManager';
+import { ContentClassificationManager } from './contentClassificationManager';
 import { LyticsExplorerProvider } from './lyticsExplorerProvider';
 import { SegmentExplorerProvider } from './segmentExplorerProvider';
 import { TopicExplorerProvider } from './topicExplorerProvider';
